@@ -26,6 +26,11 @@
             neovim-nightly-overlay.overlays.default
           ];
 
+          # Allow unfree packages
+          nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [
+            "claude-code"
+          ];
+
           # Use nix-community binary cache for prebuilt neovim
           nix.settings = {
             substituters = ["https://nix-community.cachix.org"];

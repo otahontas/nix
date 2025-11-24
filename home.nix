@@ -2,6 +2,7 @@
 {
   imports = [
     ./configs/alacritty.nix
+    ./configs/claude.nix
     ./configs/neovim.nix
     ./configs/nushell.nix
     ./configs/yazi.nix
