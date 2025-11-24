@@ -1,0 +1,34 @@
+#!/bin/sh
+# Global commit-msg hook - validates commit messages
+
+HOOKS_LIB="$HOME/.config/git/hooks-lib"
+
+# Hook flags (edit these in this file to enable/disable)
+HOOK_COMMITLINT=1
+
+echo ""
+echo "=== Commit-msg hooks ==="
+
+# Track if any hook failed
+HOOK_FAILED=0
+
+# Source and run enabled hooks
+if [ "$HOOK_COMMITLINT" = "1" ]; then
+    . "$HOOKS_LIB/commitlint.sh"
+    if ! run_commitlint "$1"; then
+        HOOK_FAILED=1
+    fi
+    echo ""
+fi
+
+echo "=== Commit-msg hooks complete ==="
+echo ""
+
+# Exit with failure if any hook failed
+if [ $HOOK_FAILED -eq 1 ]; then
+    echo "❌ Commit-msg hooks failed"
+    exit 1
+fi
+
+echo "✅ All commit-msg hooks passed"
+exit 0

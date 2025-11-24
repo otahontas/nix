@@ -1,4 +1,4 @@
-{ ... }:
+{ config, ... }:
 {
   programs.git = {
     enable = true;
@@ -110,5 +110,23 @@
         wt = "worktree";
       };
     };
+
+    ignores = [
+      ".DS_Store"
+      ".localized"
+      "**/.claude/**.json"
+      "**/.local_scripts/**"
+      "**/.worktrees/**"
+    ];
+  };
+
+  xdg.configFile."git/template" = {
+    source = ./git/template;
+    recursive = true;
+  };
+
+  xdg.configFile."git/hooks-lib" = {
+    source = ./git/hooks-lib;
+    recursive = true;
   };
 }

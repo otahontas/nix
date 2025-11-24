@@ -1,0 +1,15 @@
+#!/bin/sh
+# Global prepare-commit-msg hook - generates commit messages
+
+HOOKS_LIB="$HOME/.config/git/hooks-lib"
+
+# Hook flags (edit these in this file to enable/disable)
+HOOK_GPTCOMMIT=1
+
+# Source and run enabled hooks (don't echo here, this runs before editor)
+if [ "$HOOK_GPTCOMMIT" = "1" ]; then
+    . "$HOOKS_LIB/gptcommit.sh"
+    run_gptcommit "$1" "$2" "$3"
+fi
+
+exit 0
