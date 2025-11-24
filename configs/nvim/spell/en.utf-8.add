@@ -1,0 +1,17 @@
+statusline
+unicode
+whitespace
+textwidth
+nvim
+lua
+nvimrc
+exrc
+filetype
+github-action
+yaml
+treesitter
+lsp
+Bigfile
+neovim
+difftool
+github

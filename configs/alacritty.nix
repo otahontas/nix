@@ -12,6 +12,8 @@
 
       window.decorations = "Transparent";
 
+      window.option_as_alt = "OnlyLeft";
+
       # Olympia theme
       colors = {
         primary = {
@@ -92,10 +94,6 @@
           white   = "#c5c6bc"; # TVT H613 - vaal.harmaa
         };
       };
-
-      keyboard.bindings = [
-        { key = "C"; mods = "Alt"; chars = "\\u001bc"; }
-      ];
     };
   };
 }
