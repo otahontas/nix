@@ -5,6 +5,10 @@
       "src": "https://github.com/Saghen/blink.cmp",
       "version": "'v1.7.0'"
     },
+    "rose-pine": {
+      "rev": "main",
+      "src": "https://github.com/rose-pine/neovim"
+    },
     "friendly-snippets": {
       "rev": "572f5660cf05f8cd8834e096d7b4c921ba18e175",
       "src": "https://github.com/rafamadriz/friendly-snippets"

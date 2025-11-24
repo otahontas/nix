@@ -1,4 +1,13 @@
 { pkgs, config, ... }:
+let
+  rose-pine-zellij = pkgs.fetchFromGitHub {
+    owner = "rose-pine";
+    repo = "zellij";
+    rev = "f4b7c27f9515d964a78e07da8332530a45f060d5";
+    hash = "sha256-eilCRSweo0wk4z6snBWFC67NMVvytfDfJqGWVXg6QRc=";
+  };
+  themeConfig = builtins.readFile "${rose-pine-zellij}/dist/rose-pine-dawn.kdl";
+in
 {
   programs.zellij = {
     enable = true;
@@ -7,7 +16,7 @@
 
       show_startup_tips = false;
       default_mode = "locked";
-      theme = "olympia";
+      theme = "rose-pine-dawn";
     };
 
     extraConfig = ''
@@ -18,21 +27,7 @@
         XDG_DATA_HOME "${config.home.homeDirectory}/.local/share"
       }
 
-      themes {
-        olympia {
-          fg 245 240 230
-          bg 219 214 203
-          black 40 40 40
-          red 100 50 45
-          green 90 100 70
-          yellow 140 95 55
-          blue 100 110 95
-          magenta 95 70 55
-          cyan 100 95 85
-          white 245 240 230
-          orange 115 80 50
-        }
-      }
+      ${themeConfig}
     '';
   };
 }
