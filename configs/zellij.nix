@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   programs.zellij = {
     enable = true;
@@ -19,6 +19,15 @@
     # themes option doesn't generate the correct KDL wrapper
     # Colors from Helsinki värikaava (Olympiakylä) - adjusted for better contrast
     extraConfig = ''
+      // Set environment variables for spawned shells
+      // Zellij doesn't expand variables, so use absolute paths from Nix
+      env {
+        HOME "${config.home.homeDirectory}"
+        XDG_CONFIG_HOME "${config.home.homeDirectory}/.config"
+        XDG_CACHE_HOME "${config.home.homeDirectory}/.cache"
+        XDG_DATA_HOME "${config.home.homeDirectory}/.local/share"
+      }
+
       themes {
         olympia {
           fg 245 240 230
