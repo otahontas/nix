@@ -3,10 +3,14 @@
   imports = [
     ./configs/alacritty.nix
     ./configs/claude.nix
+    ./configs/delta.nix
+    ./configs/gh.nix
+    ./configs/git.nix
     ./configs/just.nix
     ./configs/neovim.nix
     ./configs/nixfmt.nix
     ./configs/nushell.nix
+    ./configs/vivid.nix
     ./configs/yazi.nix
     ./configs/zellij.nix
     ./configs/zoxide.nix

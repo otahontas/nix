@@ -18,13 +18,22 @@ in
       font = {
         normal = {
           family = "VictorMono Nerd Font";
-          style = "Regular";
+          style = "Medium";
         };
-        size = 13.75;
+        bold = {
+          family = "VictorMono Nerd Font";
+          style = "Bold";
+        };
+        italic = {
+          family = "VictorMono Nerd Font";
+          style = "Regular Italic";
+        };
+        size = 14;
       };
 
       window.decorations = "Transparent";
       window.option_as_alt = "OnlyLeft";
+      # font.use_thin_strokes = false;
     };
   };
 }
