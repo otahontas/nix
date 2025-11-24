@@ -10,36 +10,53 @@
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
   };
 
-  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, neovim-nightly-overlay, ... }: {
-    darwinConfigurations."otabook-work" = nix-darwin.lib.darwinSystem {
-      system = "aarch64-darwin";
-      modules = [
-        ({ pkgs, ... }: {
-          nix.settings.experimental-features = "nix-command flakes";
-          system.configurationRevision = self.rev or self.dirtyRev or null;
-          system.stateVersion = 6;
+  outputs =
+    inputs@{
+      self,
+      nix-darwin,
+      nixpkgs,
+      home-manager,
+      neovim-nightly-overlay,
+      ...
+    }:
+    {
+      darwinConfigurations."otabook-work" = nix-darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        modules = [
+          (
+            { pkgs, ... }:
+            {
+              nix.settings.experimental-features = "nix-command flakes";
+              system.configurationRevision = self.rev or self.dirtyRev or null;
+              system.stateVersion = 6;
 
-          users.users.otahontas.home = "/Users/otahontas";
+              users.users.otahontas.home = "/Users/otahontas";
 
-          # Apply neovim-nightly overlay
-          nixpkgs.overlays = [
-            neovim-nightly-overlay.overlays.default
-          ];
+              # Enable Touch ID for sudo
+              security.pam.services.sudo_local.touchIdAuth = true;
 
-          # Allow unfree packages
-          nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [
-            "claude-code"
-          ];
+              # Apply neovim-nightly overlay
+              nixpkgs.overlays = [
+                neovim-nightly-overlay.overlays.default
+              ];
 
-          # Use nix-community binary cache for prebuilt neovim
-          nix.settings = {
-            substituters = ["https://nix-community.cachix.org"];
-            trusted-public-keys = ["nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="];
-          };
-        })
-        home-manager.darwinModules.home-manager
-        ./home-manager.nix
-      ];
+              # Allow unfree packages
+              nixpkgs.config.allowUnfreePredicate =
+                pkg:
+                builtins.elem (nixpkgs.lib.getName pkg) [
+                  "claude-code"
+                ];
+
+              # Use nix-community binary cache for prebuilt neovim
+              nix.settings = {
+                substituters = [ "https://nix-community.cachix.org" ];
+                trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
+              };
+            }
+          )
+          home-manager.darwinModules.home-manager
+          ./home-manager.nix
+        ];
+      };
     };
-  };
 }
