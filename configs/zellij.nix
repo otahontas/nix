@@ -5,22 +5,12 @@
     settings = {
       default_shell = "${pkgs.nushell}/bin/nu";
 
-      # Disable tips on startup
       show_startup_tips = false;
-
-      # Start in locked mode - use Ctrl+b (tmux prefix) to access zellij commands
       default_mode = "locked";
-
-      # Use Olympia theme
       theme = "olympia";
     };
 
-    # Olympia theme for Zellij - defined in extraConfig because home-manager
-    # themes option doesn't generate the correct KDL wrapper
-    # Colors from Helsinki värikaava (Olympiakylä) - adjusted for better contrast
     extraConfig = ''
-      // Set environment variables for spawned shells
-      // Zellij doesn't expand variables, so use absolute paths from Nix
       env {
         HOME "${config.home.homeDirectory}"
         XDG_CONFIG_HOME "${config.home.homeDirectory}/.config"

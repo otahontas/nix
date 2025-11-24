@@ -2,10 +2,7 @@
 {
   programs.nushell = {
     enable = true;
-
-    # Environment setup (env.nu)
     extraEnv = ''
-      # Ensure Nix paths are available
       $env.PATH = ($env.PATH | split row (char esep)
         | prepend "/etc/profiles/per-user/${config.home.username}/bin"
         | prepend "/run/current-system/sw/bin"
@@ -14,7 +11,6 @@
       )
     '';
 
-    # Shell configuration (config.nu)
     extraConfig = ''
       # Olympia - A warm, light colorscheme for Nushell
       # https://github.com/otahontas/olympia
