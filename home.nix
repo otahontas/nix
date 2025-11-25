@@ -9,12 +9,14 @@
     ./configs/delta.nix
     ./configs/gh.nix
     ./configs/git.nix
+    ./configs/gpg.nix
     ./configs/cli-tools.nix
     ./configs/local-scripts.nix
     ./configs/mise.nix
     ./configs/neovim.nix
     ./configs/nixfmt.nix
     ./configs/nushell.nix
+    ./configs/ssh.nix
     ./configs/starship.nix
     ./configs/vivid.nix
     ./configs/yazi.nix

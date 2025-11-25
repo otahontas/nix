@@ -7,6 +7,12 @@
       settings = {
         experimental = true;
       };
+      tools = {
+        rust = "latest";
+        node = "latest";
+        python = "latest";
+        go = "latest";
+      };
     };
   };
 }
