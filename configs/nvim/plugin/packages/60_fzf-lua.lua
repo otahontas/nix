@@ -40,6 +40,7 @@ utils.add_package({ "https://github.com/ibhagwan/fzf-lua", },
     fzf.setup({
       -- mini is needed for the icons
       defaults = { git_icons = "true", file_icons = "mini", },
+      fzf_bin = "sk",
     })
 
     -- generic
