@@ -1,0 +1,11 @@
+[tasks.format]
+description = "Format Nix files"
+run = "nixfmt **/*.nix"
+
+[tasks.build]
+description = "Build and switch nix-darwin configuration"
+run = "sudo darwin-rebuild switch --flake ~/.config/nix-darwin"
+
+[tasks.check]
+description = "Check flake configuration"
+run = "nix flake check"

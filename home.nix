@@ -10,8 +10,8 @@
     ./configs/gh.nix
     ./configs/git.nix
     ./configs/cli-tools.nix
-    ./configs/just.nix
     ./configs/local-scripts.nix
+    ./configs/mise.nix
     ./configs/neovim.nix
     ./configs/nixfmt.nix
     ./configs/nushell.nix

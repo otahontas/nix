@@ -17,6 +17,7 @@
 ## Secrets & Credentials
 - [ ] Store the npm auth token (`~/.config/npm/npmrc`) and Neon/OpenAI credentials (`~/.config/neonctl/credentials.json`, `~/.config/gptcommit/config.toml`) in an encrypted secret backend and expose them to programs via environment variables instead of plain text files.
 - [ ] Audit other auth material in `~/.aws`, `~/.gnupg`, `.password-store`, `.ssh`, `.op`, and `.ollama` and decide which parts should be generated (keys) vs. synced (configs) through Nix.
+- [ ] Docker audit WARNING! Your credentials are stored unencrypted in '/Users/otahontas/.docker/config.json'. Configure a credential helper to remove this warning. See https://docs.docker.com/go/credential-store/
 
 ## Homebrew Formulas
 - [ ] After migrating, uninstall formulas already supplied by Nix (`bat`, `coreutils`, `fzf`, `gh`, `git`, `git-delta`, `choose-gui`, `skhd`, `just`, `nixfmt`, `neovim`, `nushell`, `starship`, `yazi`, `zellij`, `zoxide`, etc.) to avoid duplicate toolchains.
@@ -29,3 +30,5 @@
 
 ## Automation
 - [ ] Express the current `justfile` tasks (format/build/check) as part of the flake outputs or keep `just` managed via Nix and ensure contributors invoke the same commands with `nix run`.
+
+Proper fzf setup it's shit atm

@@ -6,7 +6,6 @@
     commitlint
     fd
     gitleaks
-    nodejs_22
     ripgrep
     skim
     uv
