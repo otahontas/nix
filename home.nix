@@ -5,6 +5,7 @@
     ./configs/bat.nix
     ./configs/choose.nix
     ./configs/claude.nix
+    ./configs/colima.nix
     ./configs/delta.nix
     ./configs/gh.nix
     ./configs/git.nix
