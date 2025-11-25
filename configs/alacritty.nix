@@ -34,6 +34,8 @@
       window.startup_mode = "Fullscreen";
       window.option_as_alt = "OnlyLeft";
 
+      mouse.hide_when_typing = true;
+
       keyboard.bindings = [
         {
           key = "Return";

@@ -5,6 +5,9 @@ source $"($nu.cache-dir)/carapace.nu"
 
 $env.config.show_banner = false
 
+$env.config.completions.case_sensitive = false
+$env.config.completions.algorithm = "fuzzy"
+
 $env.config.history = {
   max_size: 10000
   sync_on_enter: true
@@ -142,3 +145,15 @@ def create_right_prompt [] {
 
 $env.PROMPT_COMMAND = { || create_left_prompt }
 $env.PROMPT_COMMAND_RIGHT = { || create_right_prompt }
+
+# LLM command completion keybinding (Alt-\)
+$env.config.keybindings ++= [{
+  name: llm_cmdcomp
+  modifier: alt
+  keycode: char_\
+  mode: [emacs, vi_normal, vi_insert]
+  event: {
+    send: executehostcommand
+    cmd: "commandline edit --replace (commandline | llm -s 'You are a shell command generator for macOS using Nushell. Convert the user request into a valid shell command. Return ONLY the command, no explanation, no markdown, no code blocks. Just the raw command that can be executed in Nushell.' | str trim)"
+  }
+}]

@@ -17,10 +17,12 @@
     ./configs/neovim.nix
     ./configs/nixfmt.nix
     ./configs/nushell.nix
+    ./configs/skhd.nix
     ./configs/skim.nix
     ./configs/ssh.nix
     ./configs/starship.nix
     ./configs/vivid.nix
+    ./configs/yabai.nix
     ./configs/yazi.nix
     ./configs/zellij.nix
     ./configs/zoxide.nix
