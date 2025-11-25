@@ -47,10 +47,7 @@
 
       commit.gpgsign = true;
 
-      init = {
-        defaultBranch = "main";
-        templatedir = "/Users/otahontas/.config/git/template";
-      };
+      init.defaultBranch = "main";
 
       interactive.diffFilter = "delta --color-only";
 
@@ -121,13 +118,11 @@
     ];
   };
 
-  xdg.configFile."git/template" = {
-    source = ./git/template;
-    recursive = true;
+  xdg.configFile."git/lefthook.yml" = {
+    source = ./git/lefthook.yml;
   };
 
-  xdg.configFile."git/hooks-lib" = {
-    source = ./git/hooks-lib;
-    recursive = true;
+  xdg.configFile."commitlint/commitlint.config.mjs" = {
+    source = ./git/commitlint.config.mjs;
   };
 }

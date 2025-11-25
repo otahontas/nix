@@ -6,6 +6,7 @@
     commitlint
     fd
     gitleaks
+    lefthook
     ripgrep
     skim
     uv

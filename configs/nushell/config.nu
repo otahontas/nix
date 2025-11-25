@@ -106,37 +106,31 @@ def enable-sleep [] {
   sudo pmset -a disablesleep 0
 }
 
-def git-hooks-reset [] {
+def lefthook-setup [] {
   let repo_root = (git rev-parse --show-toplevel | str trim)
-  let template_hooks = $"($env.HOME)/.config/git/template/hooks"
+  let template = $"($env.HOME)/.config/git/lefthook.yml"
 
-  if not ($template_hooks | path exists) {
-    print $"Error: Template hooks not found: ($template_hooks)"
+  if not ($template | path exists) {
+    print $"Error: Template not found: ($template)"
     return
   }
 
-  git config --unset core.hooksPath
+  let lefthook_file = $"($repo_root)/lefthook.yml"
 
-  let hooks_dir = (git rev-parse --git-path hooks | str trim)
-  mkdir $hooks_dir
-
-  let existing = (ls $hooks_dir | where type == file)
-  if ($existing | length) > 0 {
-    let timestamp = (date now | format date "%Y%m%d%H%M%S")
-    let backup_dir = $"($hooks_dir)/reset-backup-($timestamp)"
-    mkdir $backup_dir
-    $existing | each { |file| cp $file.name $backup_dir }
-    print $"🗃  Existing hooks backed up to ($backup_dir)"
+  if ($lefthook_file | path exists) {
+    let response = (input "lefthook.yml already exists. Overwrite? [y/N] ")
+    if ($response | str downcase) not-in ["y", "yes"] {
+      print "Cancelled"
+      return
+    }
   }
 
-  ls $template_hooks
-    | where type == file
-    | each { |hook|
-        cp $hook.name $hooks_dir
-        chmod +x $"($hooks_dir)/(($hook.name | path basename))"
-      }
+  cp $template $lefthook_file
+  chmod a+x $lefthook_file
+  print $"📝 Created lefthook.yml"
 
-  print $"✅ Hooks reset using ($template_hooks)"
+  lefthook install
+  print $"✅ Lefthook installed in ($repo_root)"
 }
 
 # Initialize Starship prompt

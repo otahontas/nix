@@ -55,6 +55,8 @@ vim.iter({
   inccommand = "split",
   -- Adjust case of completion matches based on typed text
   infercase = true,
+  -- Ignorecase
+  ignorecase = true,
   -- Characters considered part of a word: @ (all letters), 48-57 (digits 0-9),
   -- _ (underscore), 192-255 (extended ASCII/accented chars), - (dash)
   iskeyword = "@,48-57,_,192-255,-",

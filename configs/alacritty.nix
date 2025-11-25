@@ -38,7 +38,7 @@ in
       };
 
       window.decorations = "Transparent";
-      window.startup_mode = "SimpleFullscreen";
+      window.startup_mode = "Fullscreen";
       window.option_as_alt = "OnlyLeft";
 
       keyboard.bindings = [

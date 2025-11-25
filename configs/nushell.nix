@@ -15,14 +15,6 @@
       $env.VISUAL = "nvim"
       $env.EDITOR = "nvim"
 
-      let skim_base = "fd --hidden --follow --strip-cwd-prefix"
-      $env.SKIM_DEFAULT_OPTIONS = "--height 50% --layout=reverse"
-      $env.SKIM_DEFAULT_COMMAND = $skim_base
-      $env.SKIM_ALT_C_COMMAND = $"($skim_base) --type directory"
-      $env.SKIM_ALT_C_OPTS = "--preview 'eza -la --color=always {}' --select-1 --exit-0"
-      $env.SKIM_CTRL_T_COMMAND = $"($skim_base) --type file"
-      $env.SKIM_CTRL_T_OPTS = "--preview 'bat --style=numbers --color=always --line-range :500 {}' --select-1 --exit-0"
-
       $env.CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense'
       mkdir ($nu.cache-dir)
       carapace _carapace nushell | save --force $"($nu.cache-dir)/carapace.nu"
