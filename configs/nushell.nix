@@ -22,6 +22,10 @@
       $env.SKIM_ALT_C_OPTS = "--preview 'eza -la --color=always {}' --select-1 --exit-0"
       $env.SKIM_CTRL_T_COMMAND = $"($skim_base) --type file"
       $env.SKIM_CTRL_T_OPTS = "--preview 'bat --style=numbers --color=always --line-range :500 {}' --select-1 --exit-0"
+
+      $env.CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense'
+      mkdir ($nu.cache-dir)
+      carapace _carapace nushell | save --force $"($nu.cache-dir)/carapace.nu"
     '';
 
     extraConfig = builtins.readFile ./nushell/rose_pine_dawn.nu + builtins.readFile ./nushell/config.nu;

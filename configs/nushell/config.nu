@@ -2,6 +2,8 @@ $env.LS_COLORS = (vivid generate rose-pine-dawn | str replace '*.lock=0;38;2;242
 
 $env.STARSHIP_SHELL = "nu"
 
+source $"($nu.cache-dir)/carapace.nu"
+
 $env.config.show_banner = false
 
 $env.config.history = {
