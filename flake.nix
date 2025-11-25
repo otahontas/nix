@@ -31,9 +31,25 @@
               system.stateVersion = 6;
 
               users.users.otahontas.home = "/Users/otahontas";
+              system.primaryUser = "otahontas";
 
               # Enable Touch ID for sudo
               security.pam.services.sudo_local.touchIdAuth = true;
+
+              # Disable Spotlight cmd+space keybinding
+              system.defaults.CustomUserPreferences = {
+                "com.apple.symbolichotkeys" = {
+                  AppleSymbolicHotKeys = {
+                    "64" = {
+                      enabled = false;
+                      value = {
+                        parameters = [ 65535 49 1048576 ];
+                        type = "standard";
+                      };
+                    };
+                  };
+                };
+              };
 
               # Apply neovim-nightly overlay
               nixpkgs.overlays = [

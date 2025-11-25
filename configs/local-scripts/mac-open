@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -o errexit
+set -o nounset
+set -o pipefail
+
+# Check that at least one argument was provided
+if [[ "$#" -lt 1 ]]; then
+  echo "Usage: open [--skip] [-a application] ...arguments"
+  exit 1
+fi
+
+# If "--skip" flag is provided, remove it and proceed
+if [[ "$1" == "--skip" ]]; then
+  shift
+  exec /usr/bin/open "$@"
+fi
+
+# If "-a" flag is provided, assume it's an app launch and bypass text handling
+if [[ "$1" == "-a" ]]; then
+  exec /usr/bin/open "$@"
+fi
+
+# Check if the first argument is a file and get its MIME type
+if [[ -f "$1" ]]; then
+  text_mime_types=(
+    "text/*"
+    "application/json"
+  )
+
+  input_mime_type=$(file -b --mime-type "$1")
+
+  for text_mime_type in "${text_mime_types[@]}"; do
+    if echo "$input_mime_type" | grep -q "$text_mime_type"; then
+      exec "$EDITOR" "$@" # Open in editor and exit
+    fi
+  done
+fi
+
+# Otherwise, open the file in the default application
+exec /usr/bin/open "$@"

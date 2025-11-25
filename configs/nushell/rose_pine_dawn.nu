@@ -1,29 +1,19 @@
-# Rosé Pine Dawn theme for Nushell
-# Based on https://rosepinetheme.com/palette/ingredients/
-
 let theme = {
-  # Rosé Pine Dawn accent colors
-  love: "#b4637a"      # Red tones
-  gold: "#ea9d34"      # Yellow/gold
-  rose: "#d7827e"      # Pink/rose
-  pine: "#286983"      # Teal/cyan
-  foam: "#56949f"      # Blue/foam
-  iris: "#907aa9"      # Purple/iris
-
-  # Base colors
-  base: "#faf4ed"      # Main background
-  surface: "#fffaf3"   # Slightly lighter surface
-  overlay: "#f2e9e1"   # Overlays and borders
-
-  # Text colors
-  text: "#575279"      # Main text
-  subtle: "#797593"    # Subtle text
-  muted: "#9893a5"     # Muted/disabled text
-
-  # Highlights
-  highlight_low: "#f4ede8"   # Low emphasis highlight
-  highlight_med: "#dfdad9"   # Medium emphasis highlight
-  highlight_high: "#cecacd"  # High emphasis highlight
+  love: "#b4637a"
+  gold: "#ea9d34"
+  rose: "#d7827e"
+  pine: "#286983"
+  foam: "#56949f"
+  iris: "#907aa9"
+  base: "#faf4ed"
+  surface: "#fffaf3"
+  overlay: "#f2e9e1"
+  text: "#575279"
+  subtle: "#797593"
+  muted: "#9893a5"
+  highlight_low: "#f4ede8"
+  highlight_med: "#dfdad9"
+  highlight_high: "#cecacd"
 }
 
 let scheme = {

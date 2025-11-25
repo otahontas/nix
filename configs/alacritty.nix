@@ -13,7 +13,13 @@ in
     settings = {
       general.import = [ "${rose-pine-alacritty}/dist/rose-pine-dawn.toml" ];
 
-      terminal.shell.program = "${pkgs.zellij}/bin/zellij";
+      terminal.shell = {
+        program = "${pkgs.zellij}/bin/zellij";
+        args = [
+          "-l"
+          "welcome"
+        ];
+      };
 
       font = {
         normal = {
@@ -33,7 +39,14 @@ in
 
       window.decorations = "Transparent";
       window.option_as_alt = "OnlyLeft";
-      # font.use_thin_strokes = false;
+
+      keyboard.bindings = [
+        {
+          key = "Return";
+          mods = "Shift";
+          chars = "\\u001b[13;2u";
+        }
+      ];
     };
   };
 }

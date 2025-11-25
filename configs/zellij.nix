@@ -15,7 +15,6 @@ in
       default_shell = "${pkgs.nushell}/bin/nu";
 
       show_startup_tips = false;
-      default_mode = "locked";
       theme = "rose-pine-dawn";
     };
 

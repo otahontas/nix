@@ -7,6 +7,9 @@
     vimAlias = true;
     vimdiffAlias = true;
     defaultEditor = true;
+    extraPackages = with pkgs; [
+      tree-sitter
+    ];
   };
 
   xdg.configFile."nvim" = {

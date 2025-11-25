@@ -60,6 +60,7 @@
         navigate = true;
         side-by-side = true;
         hyperlinks = true;
+        dark = false;
       };
 
       alias = {
