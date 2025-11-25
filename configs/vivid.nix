@@ -1,4 +1,6 @@
-{ pkgs, ... }:
+{ ... }:
 {
-  home.packages = [ pkgs.vivid ];
+  catppuccin.vivid.enable = true;
+
+  programs.vivid.enable = true;
 }

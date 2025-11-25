@@ -1,5 +1,7 @@
 { config, ... }:
 {
+  catppuccin.nushell.enable = true;
+
   programs.nushell = {
     enable = true;
     extraEnv = ''
@@ -11,7 +13,6 @@
         | uniq
       )
 
-      $env.BAT_THEME = "rose-pine-dawn"
       $env.VISUAL = "nvim"
       $env.EDITOR = "nvim"
 
@@ -20,6 +21,6 @@
       carapace _carapace nushell | save --force $"($nu.cache-dir)/carapace.nu"
     '';
 
-    extraConfig = builtins.readFile ./nushell/rose_pine_dawn.nu + builtins.readFile ./nushell/config.nu;
+    extraConfig = builtins.readFile ./nushell/config.nu;
   };
 }

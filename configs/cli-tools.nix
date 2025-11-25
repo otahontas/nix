@@ -8,7 +8,6 @@
     gitleaks
     lefthook
     ripgrep
-    skim
     uv
     wget
   ];

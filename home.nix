@@ -1,6 +1,7 @@
 { pkgs, lib, ... }:
 {
   imports = [
+    ./configs/theme.nix
     ./configs/alacritty.nix
     ./configs/bat.nix
     ./configs/choose.nix
@@ -16,6 +17,7 @@
     ./configs/neovim.nix
     ./configs/nixfmt.nix
     ./configs/nushell.nix
+    ./configs/skim.nix
     ./configs/ssh.nix
     ./configs/starship.nix
     ./configs/vivid.nix

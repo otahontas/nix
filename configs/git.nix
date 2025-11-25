@@ -49,17 +49,6 @@
 
       init.defaultBranch = "main";
 
-      interactive.diffFilter = "delta --color-only";
-
-      core.pager = "delta";
-
-      delta = {
-        navigate = true;
-        side-by-side = true;
-        hyperlinks = true;
-        dark = false;
-      };
-
       alias = {
         a = "add";
         ap = "add -p";

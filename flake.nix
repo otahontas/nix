@@ -8,6 +8,7 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+    catppuccin.url = "github:catppuccin/nix";
   };
 
   outputs =
@@ -17,11 +18,13 @@
       nixpkgs,
       home-manager,
       neovim-nightly-overlay,
+      catppuccin,
       ...
     }:
     {
       darwinConfigurations."otabook-work" = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
+        specialArgs = { inherit inputs; };
         modules = [
           (
             { pkgs, ... }:

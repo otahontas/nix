@@ -1,6 +1,11 @@
+{ inputs, ... }:
 {
-  home-manager.useGlobalPkgs = true;
-  home-manager.useUserPackages = true;
-  home-manager.backupFileExtension = "backup";
-  home-manager.users.otahontas = import ./home.nix;
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    backupFileExtension = "backup";
+    extraSpecialArgs = { inherit inputs; };
+    sharedModules = [ inputs.catppuccin.homeModules.catppuccin ];
+    users.otahontas = import ./home.nix;
+  };
 }

@@ -6,14 +6,10 @@ let
     rev = "a603d9e";
     hash = "sha256-9i6x/VxGOA3bB3FPieB7mQ1zGaMK5wnMhYqsq4CvaM4=";
   };
-  rose-pine = pkgs.fetchFromGitHub {
-    owner = "rose-pine";
-    repo = "yazi";
-    rev = "fd385266af5f3419657e449607f3e87f062d0d2e";
-    hash = "sha256-3j7TTtzG+GCB4uVeCiuvb/0dCkHPz7X+MDBVVUp646A=";
-  };
 in
 {
+  catppuccin.yazi.enable = true;
+
   programs.yazi = {
     enable = true;
     shellWrapperName = "y";
@@ -47,16 +43,6 @@ in
 
     plugins = {
       relative-motions = relative-motions;
-    };
-
-    flavors = {
-      rose-pine-dawn = "${rose-pine}/flavors/rose-pine-dawn.yazi";
-    };
-
-    theme = {
-      flavor = {
-        use = "rose-pine-dawn";
-      };
     };
   };
 }
