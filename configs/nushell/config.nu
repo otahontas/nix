@@ -1,5 +1,6 @@
 $env.LS_COLORS = (vivid generate rose-pine-dawn | str replace '*.lock=0;38;2;242;233;225' '*.lock=0;38;2;152;147;165')
 
+$env.SHELL = (which nu).path.0
 $env.STARSHIP_SHELL = "nu"
 
 source $"($nu.cache-dir)/carapace.nu"
