@@ -32,6 +32,10 @@
 
   xdg.enable = true;
 
+  home.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+  ];
+
   home.sessionVariables = {
     VISUAL = lib.mkDefault "vim";
     EDITOR = lib.mkDefault "vim";

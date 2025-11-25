@@ -16,16 +16,16 @@
 
       font = {
         normal = {
-          family = "VictorMono Nerd Font";
-          style = "Medium";
+          family = "JetBrainsMono Nerd Font";
+          style = "Regular";
         };
         bold = {
-          family = "VictorMono Nerd Font";
+          family = "JetBrainsMono Nerd Font";
           style = "Bold";
         };
         italic = {
-          family = "VictorMono Nerd Font";
-          style = "Regular Italic";
+          family = "JetBrainsMono Nerd Font";
+          style = "Italic";
         };
         size = 14;
       };
