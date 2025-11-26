@@ -29,8 +29,4 @@
     };
   };
 
-  # Shell completion for docker
-  programs.nushell.extraConfig = ''
-    # Docker completion is handled by nushell's built-in completions
-  '';
 }

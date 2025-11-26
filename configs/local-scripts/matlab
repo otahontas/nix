@@ -1,22 +1,20 @@
-#!/usr/bin/env bash
+#!/usr/bin/env nu
 
-MATLAB_APPS=$(ls /Applications | grep MATLAB_R | sort)
+let matlab_apps = (ls /Applications | where name =~ "MATLAB_R" | sort-by name)
 
-if [ -z "$MATLAB_APPS" ]; then
-    echo "Warning: No MATLAB installation found in /Applications." >&2
-    exit 1
-fi
+if ($matlab_apps | is-empty) {
+    error make {msg: "No MATLAB installation found in /Applications."}
+}
 
-if [ $(echo "$MATLAB_APPS" | wc -l) -gt 1 ]; then
-    echo "Warning: Multiple MATLAB installations found. Using the latest one." >&2
-fi
+if ($matlab_apps | length) > 1 {
+    print -e "Warning: Multiple MATLAB installations found. Using the latest one."
+}
 
-LATEST_MATLAB=$(echo "$MATLAB_APPS" | tail -n 1)
-MATLAB_PATH="/Applications/$LATEST_MATLAB/bin/matlab"
+let latest_matlab = ($matlab_apps | last | get name | path basename)
+let matlab_path = $"/Applications/($latest_matlab)/bin/matlab"
 
-if [ -x "$MATLAB_PATH" ]; then
-    exec "$MATLAB_PATH" "$@"
-else
-    echo "Error: MATLAB executable not found at $MATLAB_PATH" >&2
-    exit 1
-fi
+if not ($matlab_path | path exists) {
+    error make {msg: $"MATLAB executable not found at ($matlab_path)"}
+}
+
+^$matlab_path ...$rest

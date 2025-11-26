@@ -1,5 +1,12 @@
-{ config, ... }:
+{ pkgs, config, ... }:
 {
+  home.packages = with pkgs; [
+    git-crypt
+    gitleaks
+    lefthook
+    commitlint
+  ];
+
   programs.git = {
     enable = true;
 

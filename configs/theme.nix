@@ -7,5 +7,6 @@
     enable = true;
     flavor = "latte"; # Change this to switch themes
     accent = "mauve"; # blue, flamingo, green, lavender, maroon, mauve, peach, pink, red, rosewater, sapphire, sky, teal, yellow
+    eza.enable = false;
   };
 }

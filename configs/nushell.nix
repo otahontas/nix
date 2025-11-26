@@ -1,5 +1,12 @@
-{ config, ... }:
+{ pkgs, config, ... }:
 {
+  home.packages = with pkgs; [
+    carapace
+    (llm.withPlugins {
+      llm-cmd = true;
+    })
+  ];
+
   catppuccin.nushell.enable = true;
 
   programs.nushell = {
@@ -22,6 +29,7 @@
       $env.NODE_OPTIONS = "--dns-result-order=ipv4first"
 
       $env.CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense'
+      $env.CARAPACE_MATCH = '1'
       mkdir ($nu.cache-dir)
       carapace _carapace nushell | save --force $"($nu.cache-dir)/carapace.nu"
     '';

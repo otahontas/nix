@@ -6,7 +6,7 @@ source $"($nu.cache-dir)/carapace.nu"
 $env.config.show_banner = false
 
 $env.config.completions.case_sensitive = false
-$env.config.completions.algorithm = "fuzzy"
+$env.config.completions.algorithm = "substring"
 
 $env.config.history = {
   max_size: 10000
@@ -132,6 +132,78 @@ def lefthook-setup [] {
 
   lefthook install
   print $"✅ Lefthook installed in ($repo_root)"
+}
+
+def gh-release-slack [pr_number: int] {
+  let pr_data = (^gh pr view $pr_number --json title,body --template '{{ .title }}{{"\n"}}{{ .body }}' | complete)
+
+  if $pr_data.exit_code != 0 or ($pr_data.stdout | is-empty) {
+    error make {msg: $"Failed to read PR ($pr_number)."}
+  }
+
+  let lines = ($pr_data.stdout | lines)
+  let title = ($lines | first)
+  let release_notes = ($lines | skip 1 | str join "\n")
+
+  let regex_match = ($title | parse -r '^Release\s+(.+?)\s+(\S+)$')
+
+  if ($regex_match | is-empty) {
+    error make {msg: $"PR ($pr_number) title \"($title)\" does not match \"Release <service> <version>\" format."}
+  }
+
+  let service = ($regex_match | get capture0.0 | str trim)
+  let version = ($regex_match | get capture1.0)
+
+  if ($release_notes | str trim | is-empty) {
+    error make {msg: $"PR ($pr_number) release notes are empty."}
+  }
+
+  let output = $"Release ($service) `($version)`\n\n($release_notes)"
+
+  print $output
+
+  if (which pbcopy | is-not-empty) {
+    try {
+      $output | pbcopy
+      print -e "Copied to clipboard."
+    } catch {
+      print -e "Failed to copy to clipboard."
+    }
+  } else {
+    print -e "pbcopy not available; clipboard copy skipped."
+  }
+}
+
+def mac-open [...args: string] {
+  if ($args | is-empty) {
+    error make {msg: "Usage: mac-open [--skip] [-a application] ...arguments"}
+  }
+
+  # If "--skip" flag is provided, remove it and proceed
+  if ($args.0 == "--skip") {
+    ^/usr/bin/open ...($args | skip 1)
+    return
+  }
+
+  # If "-a" flag is provided, assume it's an app launch and bypass text handling
+  if ($args.0 == "-a") {
+    ^/usr/bin/open ...$args
+    return
+  }
+
+  # Check if the first argument is a file and get its MIME type
+  let file_path = $args.0
+  if ($file_path | path exists) and ($file_path | path type) == "file" {
+    let input_mime_type = (^file -b --mime-type $file_path | str trim)
+
+    if ($input_mime_type | str starts-with "text/") or ($input_mime_type == "application/json") {
+      ^$env.EDITOR ...$args
+      return
+    }
+  }
+
+  # Otherwise, open the file in the default application
+  ^/usr/bin/open ...$args
 }
 
 # Initialize Starship prompt
