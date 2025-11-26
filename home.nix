@@ -14,7 +14,6 @@
     ./configs/git.nix
     ./configs/gnugrep.nix
     ./configs/gpg.nix
-    ./configs/local-scripts.nix
     ./configs/mise.nix
     ./configs/neovim.nix
     ./configs/nixfmt.nix
