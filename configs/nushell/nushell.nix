@@ -1,4 +1,27 @@
-{ pkgs, config, ... }:
+{ pkgs, config, lib, ... }:
+let
+  # Auto-discover tool integrations
+  configsDir = ../..;
+
+  # Get all subdirectories in configs/
+  toolDirs = builtins.readDir configsDir;
+
+  # For each tool dir, check if tool.nu exists and read it
+  collectNuFiles = lib.attrsets.mapAttrsToList (name: type:
+    let
+      nuFile = configsDir + "/${name}/${name}.nu";
+    in
+      if type == "directory" && builtins.pathExists nuFile
+      then builtins.readFile nuFile
+      else ""
+  ) toolDirs;
+
+  # Combine all tool integrations
+  allIntegrations = lib.concatStrings collectNuFiles;
+
+  # Read core nushell config
+  coreConfig = builtins.readFile ./nushell.nu;
+in
 {
   home.packages = with pkgs; [
     carapace
@@ -34,6 +57,7 @@
       carapace _carapace nushell | save --force $"($nu.cache-dir)/carapace.nu"
     '';
 
-    extraConfig = builtins.readFile ./nushell/config.nu;
+    # Load core config + auto-discovered tool integrations
+    extraConfig = coreConfig + "\n" + allIntegrations;
   };
 }
