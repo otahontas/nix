@@ -1,0 +1,18 @@
+{ ... }:
+{
+  programs.gh = {
+    enable = true;
+
+    settings = {
+      git_protocol = "ssh";
+      editor = "nvim";
+      prompt = "enabled";
+      pager = "bat";
+
+      aliases = {
+        co = "pr checkout";
+        web = "repo view --web";
+      };
+    };
+  };
+}
