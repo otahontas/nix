@@ -122,10 +122,10 @@
   };
 
   xdg.configFile."git/lefthook.yml" = {
-    source = ./git/lefthook.yml;
+    source = ./lefthook.yml;
   };
 
   xdg.configFile."commitlint/commitlint.config.mjs" = {
-    source = ./git/commitlint.config.mjs;
+    source = ./commitlint.config.mjs;
   };
 }
