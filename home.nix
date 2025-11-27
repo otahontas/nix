@@ -10,6 +10,7 @@
     ./configs/delta.nix
     ./configs/fd.nix
     ./configs/fonts.nix
+    ./configs/gfortran.nix
     ./configs/gh.nix
     ./configs/git.nix
     ./configs/gnugrep.nix
@@ -19,6 +20,7 @@
     ./configs/neovim.nix
     ./configs/nixfmt.nix
     ./configs/nushell.nix
+    ./configs/qpdf.nix
     ./configs/ripgrep.nix
     ./configs/skhd.nix
     ./configs/skim.nix

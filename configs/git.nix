@@ -56,6 +56,13 @@
 
       init.defaultBranch = "main";
 
+      rerere = {
+        enabled = true;
+        autoupdate = true;
+      };
+
+      rebase.updateRefs = true;
+
       alias = {
         a = "add";
         ap = "add -p";
