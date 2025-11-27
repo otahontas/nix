@@ -3,25 +3,26 @@
   imports = [
     ./configs/theme.nix
     ./configs/alacritty.nix
-    ./configs/awscli.nix
-    ./configs/bat.nix
+    ./configs/awscli/awscli.nix
+    ./configs/bat/bat.nix
     ./configs/chordpro.nix
     ./configs/claude.nix
     ./configs/colima.nix
     ./configs/delta.nix
+    ./configs/eza/eza.nix
     ./configs/fd.nix
     ./configs/fonts.nix
     ./configs/gfortran.nix
-    ./configs/gh.nix
-    ./configs/git.nix
+    ./configs/gh/gh.nix
+    ./configs/git/git.nix
     ./configs/gnugrep.nix
     ./configs/gpg.nix
     ./configs/keyboard.nix
     ./configs/mise.nix
     ./configs/neovim.nix
     ./configs/nixfmt.nix
-    ./configs/nushell.nix
-    ./configs/qpdf.nix
+    ./configs/nushell/nushell.nix
+    ./configs/qpdf/qpdf.nix
     ./configs/ripgrep.nix
     ./configs/skhd.nix
     ./configs/skim.nix
