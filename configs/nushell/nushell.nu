@@ -45,6 +45,13 @@ $env.config.keybindings ++= [
     mode: [emacs, vi_normal, vi_insert]
     event: { send: menuprevious }
   }
+  {
+    name: insert_newline
+    modifier: shift
+    keycode: enter
+    mode: [emacs, vi_insert]
+    event: { edit: insertnewline }
+  }
 ]
 
 # LLM command completion keybinding (Alt-\)
@@ -192,3 +199,10 @@ def trash-empty [] {
     print "Cancelled"
   }
 }
+
+# Common ls aliases
+alias la = ls -a
+alias ll = ls -l
+alias lla = ls -la
+alias ... = cd ../..
+alias .... = cd ../../..
