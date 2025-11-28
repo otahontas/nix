@@ -10,7 +10,7 @@
     ./configs/colima.nix
     ./configs/delta.nix
     ./configs/eza/eza.nix
-    ./configs/fd.nix
+    ./configs/fd/fd.nix
     ./configs/fonts.nix
     ./configs/gfortran.nix
     ./configs/gh/gh.nix
@@ -19,15 +19,15 @@
     ./configs/gpg.nix
     ./configs/keyboard.nix
     ./configs/mise.nix
-    ./configs/neovim.nix
+    ./configs/neovim/neovim.nix
     ./configs/nixfmt.nix
     ./configs/nushell/nushell.nix
     ./configs/qpdf/qpdf.nix
     ./configs/ripgrep.nix
     ./configs/skhd.nix
-    ./configs/skim.nix
+    ./configs/skim/skim.nix
     ./configs/ssh.nix
-    ./configs/starship.nix
+    ./configs/starship/starship.nix
     ./configs/uv.nix
     ./configs/vivid.nix
     ./configs/wget.nix

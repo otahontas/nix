@@ -1,5 +1,4 @@
 $env.SHELL = (which nu).path.0
-$env.STARSHIP_SHELL = "nu"
 
 source $"($nu.cache-dir)/carapace.nu"
 
@@ -26,8 +25,44 @@ $env.config.cursor_shape = {
   vi_normal: block
 }
 
-alias todo = nvim ~/Documents/todo/todo.txt
+# Completion menu configuration (fzf-tab style)
+$env.config.keybindings ++= [
+  {
+    name: completion_menu
+    modifier: none
+    keycode: tab
+    mode: [emacs, vi_normal, vi_insert]
+    event: {
+      until: [
+        { send: menu name: completion_menu }
+        { send: menunext }
+        { edit: complete }
+      ]
+    }
+  }
+  {
+    name: completion_previous
+    modifier: shift
+    keycode: backtab
+    mode: [emacs, vi_normal, vi_insert]
+    event: { send: menuprevious }
+  }
+]
 
+# LLM command completion keybinding (Alt-\)
+# Requires: llm package with llm-cmd plugin
+$env.config.keybindings ++= [{
+  name: llm_cmdcomp
+  modifier: alt
+  keycode: char_\
+  mode: [emacs, vi_normal, vi_insert]
+  event: {
+    send: executehostcommand
+    cmd: "commandline edit --replace (commandline | llm -s 'You are a shell command generator for macOS using Nushell. Convert the user request into a valid shell command. Return ONLY the command, no explanation, no markdown, no code blocks. Just the raw command that can be executed in Nushell.' | str trim)"
+  }
+}]
+
+# Generic helper functions
 def week [] { date now | format date "%U" }
 def today [] { date now | format date "%F" }
 
@@ -59,17 +94,6 @@ def myip [] {
     | where ($it | str contains "inet ")
     | where { |line| not ($line | str contains "127.0.0.1") }
     | each { |line| $line | str trim | split row ' ' | get 1 }
-}
-
-def find-and-prune [pattern: string] {
-  print $"This will delete all files/directories matching: ($pattern)"
-  let response = (input "Are you sure? [y/N] ")
-
-  if ($response | str downcase) in ["y", "yes"] {
-    fd -H $pattern --exec rm -rf
-  } else {
-    print "Cancelled"
-  }
 }
 
 def daily [date?: string] {
@@ -140,91 +164,6 @@ def mac-open [
   # Otherwise, open the file in the default application
   ^/usr/bin/open ...$args
 }
-
-# Initialize Starship prompt
-def create_left_prompt [] {
-  starship prompt --cmd-duration $env.CMD_DURATION_MS --status $env.LAST_EXIT_CODE
-}
-
-def create_right_prompt [] {
-  ""
-}
-
-$env.PROMPT_COMMAND = { || create_left_prompt }
-$env.PROMPT_COMMAND_RIGHT = { || create_right_prompt }
-
-# Completion menu configuration (fzf-tab style)
-$env.config.keybindings ++= [
-  {
-    name: completion_menu
-    modifier: none
-    keycode: tab
-    mode: [emacs, vi_normal, vi_insert]
-    event: {
-      until: [
-        { send: menu name: completion_menu }
-        { send: menunext }
-        { edit: complete }
-      ]
-    }
-  }
-  {
-    name: completion_previous
-    modifier: shift
-    keycode: backtab
-    mode: [emacs, vi_normal, vi_insert]
-    event: { send: menuprevious }
-  }
-]
-
-# LLM command completion keybinding (Alt-\)
-$env.config.keybindings ++= [{
-  name: llm_cmdcomp
-  modifier: alt
-  keycode: char_\
-  mode: [emacs, vi_normal, vi_insert]
-  event: {
-    send: executehostcommand
-    cmd: "commandline edit --replace (commandline | llm -s 'You are a shell command generator for macOS using Nushell. Convert the user request into a valid shell command. Return ONLY the command, no explanation, no markdown, no code blocks. Just the raw command that can be executed in Nushell.' | str trim)"
-  }
-}]
-
-# Skim fuzzy finder keybindings
-$env.config.keybindings ++= [
-  # CTRL-T: File/directory selection
-  {
-    name: skim_file_select
-    modifier: control
-    keycode: char_t
-    mode: [emacs, vi_normal, vi_insert]
-    event: {
-      send: executehostcommand
-      cmd: "commandline edit --insert (fd --type f --hidden --follow --exclude .git | sk --multi --preview 'bat --color=always --style=numbers --line-range=:500 {}' | str join ' ')"
-    }
-  }
-  # CTRL-R: Command history search
-  {
-    name: skim_history_search
-    modifier: control
-    keycode: char_r
-    mode: [emacs, vi_normal, vi_insert]
-    event: {
-      send: executehostcommand
-      cmd: "commandline edit --replace (history | get command | reverse | sk --no-sort --tac | str trim)"
-    }
-  }
-  # ALT-C: Directory navigation
-  {
-    name: skim_directory_cd
-    modifier: alt
-    keycode: char_c
-    mode: [emacs, vi_normal, vi_insert]
-    event: {
-      send: executehostcommand
-      cmd: "cd (fd --type d --hidden --follow --exclude .git | sk --preview 'ls -la {}' | str trim)"
-    }
-  }
-]
 
 # System maintenance and cleanup utilities
 def cleanup-cache [] {
