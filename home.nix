@@ -5,6 +5,7 @@
     ./configs/act.nix
     ./configs/alacritty.nix
     ./configs/awscli/awscli.nix
+    ./configs/bash.nix
     ./configs/bat/bat.nix
     ./configs/carapace/carapace.nix
     ./configs/chordpro.nix
@@ -36,6 +37,7 @@
     ./configs/yazi.nix
     ./configs/zellij.nix
     ./configs/zoxide.nix
+    ./configs/zsh.nix
   ];
 
   home.username = "otahontas";
