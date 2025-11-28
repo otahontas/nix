@@ -10,7 +10,6 @@
     ./configs/claude.nix
     ./configs/colima.nix
     ./configs/delta.nix
-    ./configs/eza/eza.nix
     ./configs/fd/fd.nix
     ./configs/fonts.nix
     ./configs/gfortran.nix
