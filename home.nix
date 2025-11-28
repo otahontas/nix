@@ -29,7 +29,7 @@
     ./configs/ssh.nix
     ./configs/starship/starship.nix
     ./configs/uv.nix
-    ./configs/vivid.nix
+    ./configs/vivid/vivid.nix
     ./configs/wget.nix
     ./configs/yabai.nix
     ./configs/yazi.nix
