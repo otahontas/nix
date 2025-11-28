@@ -2,6 +2,7 @@
 {
   imports = [
     ./configs/theme.nix
+    ./configs/act.nix
     ./configs/alacritty.nix
     ./configs/awscli/awscli.nix
     ./configs/bat/bat.nix
