@@ -2,8 +2,16 @@
 description = "Format Nix files"
 run = "nixfmt **/*.nix"
 
-[tasks.build]
-description = "Build and switch nix-darwin configuration"
+[tasks.verify]
+description = "Verify configuration (format + check + build)"
+run = """
+nixfmt **/*.nix && \
+nix flake check && \
+darwin-rebuild build --flake ~/.config/nix-darwin
+"""
+
+[tasks.apply]
+description = "Apply nix-darwin configuration (requires sudo)"
 run = "sudo darwin-rebuild switch --flake ~/.config/nix-darwin"
 
 [tasks.check]

@@ -1,9 +1,11 @@
 Nix-darwin system configuration with Nushell shell.
 
 ## Testing changes workflow:
-1. `mise run format` - format code
+1. `mise run verify` - format, check flake, and build (no sudo)
 2. `git add .` - stage changes (required for flake to see them)
-3. `mise run build` - rebuild and apply changes
+3. `mise run apply` - apply configuration with sudo (only after verify passes)
+
+Always run `mise run verify` before `mise run apply`. Only apply if verify succeeds.
 
 ## Nushell integration patterns:
 

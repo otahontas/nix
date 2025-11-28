@@ -1,6 +1,5 @@
 # TODO
 
-- proper minimal .zshrc and and .bashrc to reduce cluttering home folder
 - nix + password store setup for passwords
 - custom keyboard layout + installing it
 - safe-chain aikido setup
