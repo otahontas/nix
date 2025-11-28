@@ -1,5 +1,7 @@
 pre-commit:
   commands:
+    format:
+      run: mise run format
     gitleaks:
       run: gitleaks protect --staged --verbose --no-banner
 
