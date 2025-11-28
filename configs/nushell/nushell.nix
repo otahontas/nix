@@ -25,7 +25,6 @@ let
 in
 {
   home.packages = with pkgs; [
-    carapace
     (llm.withPlugins {
       llm-cmd = true;
     })
@@ -51,11 +50,6 @@ in
       $env.DOCKER_HOST = $"unix://($env.HOME)/.colima/default/docker.sock"
       $env.TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE = "/var/run/docker.sock"
       $env.NODE_OPTIONS = "--dns-result-order=ipv4first"
-
-      $env.CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense'
-      $env.CARAPACE_MATCH = '1'
-      mkdir ($nu.cache-dir)
-      carapace _carapace nushell | save --force $"($nu.cache-dir)/carapace.nu"
     '';
 
     # Load core config + auto-discovered tool integrations

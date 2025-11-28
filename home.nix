@@ -5,6 +5,7 @@
     ./configs/alacritty.nix
     ./configs/awscli/awscli.nix
     ./configs/bat/bat.nix
+    ./configs/carapace/carapace.nix
     ./configs/chordpro.nix
     ./configs/claude.nix
     ./configs/colima.nix

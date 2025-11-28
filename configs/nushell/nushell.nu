@@ -1,7 +1,5 @@
 $env.SHELL = (which nu).path.0
 
-source $"($nu.cache-dir)/carapace.nu"
-
 $env.config.show_banner = false
 
 $env.config.completions = {
