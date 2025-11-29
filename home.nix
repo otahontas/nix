@@ -8,6 +8,7 @@
     ./configs/bash.nix
     ./configs/bat/bat.nix
     ./configs/carapace/carapace.nix
+    ./configs/cargo.nix
     ./configs/chordpro.nix
     ./configs/claude.nix
     ./configs/colima.nix

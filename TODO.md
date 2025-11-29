@@ -1,7 +1,6 @@
 # TODO
 
 - nix + password store setup for passwords
-- custom keyboard layout + installing it
 - safe-chain aikido setup
 - .aws audit
 - 1password cli -> trash
