@@ -25,6 +25,7 @@
     ./configs/neovim/neovim.nix
     ./configs/nixfmt.nix
     ./configs/nushell/nushell.nix
+    ./configs/pass/pass.nix
     ./configs/qpdf/qpdf.nix
     ./configs/ripgrep.nix
     ./configs/safe-chain/safe-chain.nix

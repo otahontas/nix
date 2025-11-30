@@ -9,7 +9,7 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
     catppuccin.url = "github:catppuccin/nix";
-    safe-chain-nix.url = "github:AikidoSec/safe-chain-nix";
+    safe-chain-nix.url = "github:LucioFranco/safe-chain-nix";
   };
 
   outputs =
