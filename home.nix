@@ -27,6 +27,7 @@
     ./configs/nushell/nushell.nix
     ./configs/qpdf/qpdf.nix
     ./configs/ripgrep.nix
+    ./configs/safe-chain/safe-chain.nix
     ./configs/skhd.nix
     ./configs/skim/skim.nix
     ./configs/ssh.nix
