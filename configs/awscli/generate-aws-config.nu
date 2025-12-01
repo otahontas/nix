@@ -3,9 +3,9 @@
 # Generate AWS config from pass stored metadata
 # This script fetches AWS metadata from password-store and generates ~/.aws/config
 
-def main [] {
+def main [pass_bin: string] {
   # Get metadata from pass
-  let metadata = ^pass show mindler/aws/config-metadata | lines | parse "{key}: {value}"
+  let metadata = ^$pass_bin show mindler/aws/config-metadata | lines | parse "{key}: {value}"
 
   if ($metadata | is-empty) {
     error make {msg: "Failed to read AWS metadata from pass. Make sure 'pass show mindler/aws/config-metadata' works"}
