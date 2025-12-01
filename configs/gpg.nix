@@ -13,7 +13,7 @@
     enable = true;
     enableSshSupport = false;
     pinentry.package = pkgs.pinentry_mac;
-    defaultCacheTtl = 604800;
-    maxCacheTtl = 604800;
+    defaultCacheTtl = 7200; # 2 hours
+    maxCacheTtl = 7200; # 2 hours
   };
 }

@@ -31,3 +31,9 @@ Always run `mise run verify` before `mise run apply`. Only apply if verify succe
 1. Create `configs/toolname/toolname.nix` - import it in home.nix
 2. Create `configs/toolname/toolname.nu` - automatically discovered, no import needed
 3. Put static config/env in .nix, runtime Nushell code in .nu
+
+## File management:
+- Always prefer separate configuration files over inline text in .nix files
+- Use `home.file.".config/tool/config".source = ./path/to/config;` instead of `text = "..."`
+- Benefits: syntax highlighting, easier editing, better version control diffs
+- Exception: very short content (1-2 lines) can be inline
