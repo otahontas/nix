@@ -37,3 +37,38 @@ Always run `mise run verify` before `mise run apply`. Only apply if verify succe
 - Use `home.file.".config/tool/config".source = ./path/to/config;` instead of `text = "..."`
 - Benefits: syntax highlighting, easier editing, better version control diffs
 - Exception: very short content (1-2 lines) can be inline
+
+## Accessing user secrets in nix-darwin:
+
+### Problem:
+- Home-manager activation scripts run during `darwin-rebuild switch` before user login
+- They run in restricted environment without GPG agent, password-store, or user environment
+- Cannot access secrets during build/activation phase
+
+### Solution: Use launchd agents for secrets access
+- Launchd agents with `RunAtLoad = true` run after user login
+- They have access to GPG agent, password-store, and full user environment
+- Must explicitly set environment variables (they don't inherit shell environment)
+
+### Example pattern:
+```nix
+launchd.agents.my-secret-script = {
+  enable = true;
+  config = {
+    ProgramArguments = [ "${pkgs.nushell}/bin/nu" "/path/to/script.nu" ];
+    EnvironmentVariables = {
+      PASSWORD_STORE_DIR = "${config.home.homeDirectory}/.local/share/password-store";
+      HOME = config.home.homeDirectory;
+    };
+    RunAtLoad = true;
+    StandardOutPath = "/tmp/my-script.out.log";
+    StandardErrorPath = "/tmp/my-script.err.log";
+  };
+};
+```
+
+### When to use this pattern:
+- Generating config files from password-store
+- Accessing credentials from 1Password
+- Any operation requiring GPG decryption
+- Scripts that need user's authentication context
