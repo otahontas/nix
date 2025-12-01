@@ -5,8 +5,8 @@ let
 in
 {
   home.packages = [
-    # Install safe-chain wrapped package managers for malware protection
-    (safeChain.wrapNode pkgs.nodejs)
+    # Install safe-chain aikido binaries for malware protection with mise-managed node
+    safeChain.package
   ];
 
   programs.nushell.extraEnv = ''

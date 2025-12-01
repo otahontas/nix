@@ -1,22 +1,31 @@
 # Wrap npm commands with safe-chain for malware protection
-# safe-chain intercepts package downloads and checks them against threat intelligence
+# These wrappers call aikido-* binaries that intercept package downloads
+# and check them against threat intelligence before installation
 
 def --env npm [...args] {
-  safe-chain npm ...$args
+  aikido-npm ...$args
 }
 
 def --env npx [...args] {
-  safe-chain npx ...$args
+  aikido-npx ...$args
 }
 
 def --env pnpm [...args] {
-  safe-chain pnpm ...$args
+  aikido-pnpm ...$args
 }
 
 def --env pnpx [...args] {
-  safe-chain pnpx ...$args
+  aikido-pnpx ...$args
 }
 
 def --env yarn [...args] {
-  safe-chain yarn ...$args
+  aikido-yarn ...$args
+}
+
+def --env bun [...args] {
+  aikido-bun ...$args
+}
+
+def --env bunx [...args] {
+  aikido-bunx ...$args
 }
