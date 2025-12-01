@@ -28,10 +28,20 @@ def --env acp [
     }
   }
 
-  # Get fallback credentials
-  let fallback_access_key = try { ^aws configure get aws_access_key_id --profile $profile | str trim } catch { "" }
-  let fallback_secret_key = try { ^aws configure get aws_secret_access_key --profile $profile | str trim } catch { "" }
-  let fallback_session_token = try { ^aws configure get aws_session_token --profile $profile | str trim } catch { "" }
+  # Get source profile for credential lookup
+  # For role profiles, get the source_profile; for base profiles, use the profile itself
+  let source_profile = try { ^aws configure get source_profile --profile $profile | str trim } catch { $profile }
+
+  # Get fallback credentials from password-store using source profile
+  let fallback_creds = try {
+    ^pass show mindler/aws/($source_profile) | lines
+  } catch {
+    []
+  }
+
+  let fallback_access_key = if ($fallback_creds | length) >= 1 { $fallback_creds.0 | str trim } else { "" }
+  let fallback_secret_key = if ($fallback_creds | length) >= 2 { $fallback_creds.1 | str trim } else { "" }
+  let fallback_session_token = ""  # Never stored, only obtained via STS
 
   mut aws_access_key_id = $fallback_access_key
   mut aws_secret_access_key = $fallback_secret_key
@@ -80,19 +90,17 @@ def --env acp [
       $aws_command = ($aws_command | append [--external-id $external_id])
     }
 
-    # Get source profile
-    let source_profile = try { ^aws configure get source_profile --profile $profile | str trim } catch { "profile" }
+    # Get session name
     let session_name = if ($sess_name | is-not-empty) { $sess_name } else { $source_profile }
 
     $aws_command = ($aws_command | append [
-      --profile $source_profile
       --role-session-name $session_name
     ])
 
     print $"Assuming role ($role_arn) using profile ($source_profile)"
   } else {
     # Just get session token with MFA
-    $aws_command = [aws sts get-session-token --profile $profile]
+    $aws_command = [aws sts get-session-token]
     $aws_command = ($aws_command | append $mfa_opts)
     print $"Obtaining session token for profile ($profile)"
   }
@@ -103,9 +111,18 @@ def --env acp [
     --output text
   ])
 
+  # Store command as immutable for closure capture
+  let final_command = $aws_command
+
   # Execute AWS command and get credentials
+  # Set credentials in environment for AWS CLI to use
   let credentials_result = try {
-    ^$aws_command.0 ...($aws_command | skip 1) | complete
+    with-env {
+      AWS_ACCESS_KEY_ID: $fallback_access_key,
+      AWS_SECRET_ACCESS_KEY: $fallback_secret_key
+    } {
+      ^$final_command.0 ...($final_command | skip 1) | complete
+    }
   } catch {|err|
     error make {msg: $"AWS command failed: ($err.msg)"}
   }
