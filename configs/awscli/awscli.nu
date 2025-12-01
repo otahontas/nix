@@ -45,26 +45,21 @@ def --env acp [
   mut token = $mfa_token
 
   if ($mfa_serial | is-not-empty) {
-    # Prompt for MFA token if not provided
+    # Get MFA token from password-store if not provided
     if ($token | is-empty) {
-      print -n $"Please enter your MFA token for ($mfa_serial): "
-      $token = input
-    }
-
-    # Prompt for session duration if not configured
-    mut sess_duration = $duration_seconds
-    if ($sess_duration | is-empty) {
-      print -n "Please enter the session duration in seconds (900-43200; default: 3600): "
-      $sess_duration = input
-      if ($sess_duration | is-empty) {
-        $sess_duration = "3600"
+      $token = try {
+        ^pass otp mindler/aws/cli-mfa | str trim
+      } catch {|err|
+        error make {
+          msg: $"Failed to retrieve MFA token from password-store: ($err.msg)\nMake sure 'pass otp mindler/aws/cli-mfa' works"
+        }
       }
     }
 
     $mfa_opts = [
       --serial-number $mfa_serial
       --token-code $token
-      --duration-seconds $sess_duration
+      --duration-seconds $duration_seconds
     ]
   }
 
