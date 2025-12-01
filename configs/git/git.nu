@@ -19,14 +19,41 @@ def lefthook-setup [] {
       print "Cancelled"
       return
     }
+    rm -f $lefthook_file
   }
 
-  cp $template $lefthook_file
-  chmod a+x $lefthook_file
+  ^cp -L $template $lefthook_file
   print $"📝 Created lefthook.yml"
 
   lefthook install
   print $"✅ Lefthook installed in ($repo_root)"
+}
+
+# Completion functions for git worktree commands
+def worktree-names [] {
+  let repo_root = try {
+    ^git rev-parse --show-toplevel | str trim
+  } catch {
+    return []
+  }
+
+  let worktrees_dir = $"($repo_root)/.worktrees"
+
+  if not ($worktrees_dir | path exists) {
+    return []
+  }
+
+  ls $worktrees_dir | get name | path basename
+}
+
+def pr-numbers [] {
+  try {
+    ^gh pr list --json number,title --limit 50
+      | from json
+      | each {|pr| {value: ($pr.number | into string), description: $pr.title}}
+  } catch {
+    []
+  }
 }
 
 # Git worktree integration with git-crypt support
@@ -78,7 +105,7 @@ def --env git-worktree-new [branch_name: string] {
   print "✓ Worktree created successfully"
 }
 
-def --env git-worktree-pr [pr_number: int] {
+def --env git-worktree-pr [pr_number: int@pr-numbers] {
   $env.HUSKY = "0"
 
   let repo_root = try {
@@ -137,7 +164,7 @@ def --env git-worktree-pr [pr_number: int] {
   print $"Location: ($worktree_path)"
 }
 
-def git-worktree-prune [branch_name: string] {
+def git-worktree-prune [branch_name: string@worktree-names] {
   $env.HUSKY = "0"
 
   let repo_root = try {
@@ -169,7 +196,7 @@ def git-worktree-prune [branch_name: string] {
   }
 }
 
-def --env git-worktree-cd [branch_name: string] {
+def --env git-worktree-cd [branch_name: string@worktree-names] {
   let repo_root = try {
     ^git rev-parse --show-toplevel | str trim
   } catch {

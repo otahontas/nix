@@ -13,3 +13,7 @@
 - Merge .ssh/keys.conf into configs/ssh.nix
 - Handle .npmrc - remove token, use env var or 1Password
 - Expand AWS config in configs/awscli.nix (profiles without credentials)
+
+
+
+TODO: even better modular setup (some things are build time, some even runtime creds?)
