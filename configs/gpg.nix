@@ -3,6 +3,7 @@
   programs.gpg = {
     enable = true;
     settings = {
+      use-agent = true;
       auto-key-retrieve = true;
       no-emit-version = true;
     };
