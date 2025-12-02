@@ -1,7 +1,12 @@
 - nushell extraenv splitted to multiple and put to correct places
 - nushell llm to separate file
-- acp cleanup: much simpler setup
-- acp autocompletion: 
+- acp cleanup: much simpler setup (not so much defaults and other shit from zsh version)
+- acp autocompletion: all the profiles
 - better aws config generation (maybe just directly from pass)
 - skhd better combo (the setup is a bit messy atm)
 - xdg config wherever possible
+- test that docker login through pass works
+- test that npm login through pass works
+- replace 1password ssh with gpg signing. But make sure that all the commits are still properly verified.
+- gpg touchid setup
+- replace 1password setups from 

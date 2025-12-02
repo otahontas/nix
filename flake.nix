@@ -32,47 +32,18 @@
         modules = [
           (
             { lib, ... }:
+            let
+              systemConfigFiles = lib.filter (path: lib.hasSuffix ".nix" path) (
+                lib.filesystem.listFilesRecursive ./configs/system
+              );
+            in
             {
-              nix.settings.experimental-features = "nix-command flakes";
+              imports = systemConfigFiles;
+
               system.configurationRevision = self.rev or self.dirtyRev or null;
               system.stateVersion = 6;
               system.primaryUser = username;
               users.users.${username}.home = homeDirectory;
-
-              security.pam.services.sudo_local.touchIdAuth = true;
-
-              system.defaults.CustomUserPreferences = {
-                "com.apple.symbolichotkeys" = {
-                  AppleSymbolicHotKeys = {
-                    "64" = {
-                      enabled = false;
-                      value = {
-                        parameters = [
-                          65535
-                          49
-                          1048576
-                        ];
-                        type = "standard";
-                      };
-                    };
-                  };
-                };
-              };
-
-              nixpkgs.overlays = [
-                neovim-nightly-overlay.overlays.default
-              ];
-
-              nix.settings = {
-                substituters = [ "https://nix-community.cachix.org" ];
-                trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
-              };
-
-              nixpkgs.config.allowUnfreePredicate =
-                pkg:
-                builtins.elem (lib.getName pkg) [
-                  "claude-code"
-                ];
             }
           )
           home-manager.darwinModules.home-manager
@@ -87,12 +58,12 @@
                 sharedModules = [ catppuccin.homeModules.catppuccin ];
                 users.${username} =
                   let
-                    configFiles = lib.filter (path: lib.hasSuffix ".nix" path) (
-                      lib.filesystem.listFilesRecursive ./configs
+                    homeConfigFiles = lib.filter (path: lib.hasSuffix ".nix" path) (
+                      lib.filesystem.listFilesRecursive ./configs/home
                     );
                   in
                   {
-                    imports = configFiles;
+                    imports = homeConfigFiles;
                     home.username = username;
                     home.homeDirectory = homeDirectory;
                     home.stateVersion = "25.05";
