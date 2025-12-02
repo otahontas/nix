@@ -10,6 +10,12 @@
     extraPackages = with pkgs; [
       tree-sitter
     ];
+    extraWrapperArgs = [
+      "--prefix"
+      "PATH"
+      ":"
+      "${config.home.homeDirectory}/.local/share/mise/installs/node/latest/bin"
+    ];
   };
 
   xdg.configFile."nvim" = {

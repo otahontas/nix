@@ -11,8 +11,6 @@
       # Use full path to yabai for launchd compatibility
       YABAI="${pkgs.yabai}/bin/yabai"
 
-      # TODO: check which options I want to use
-
       # Ignore specific apps
       $YABAI -m rule --add app="^System Settings$" manage=off
       $YABAI -m rule --add app="^Calculator$" manage=off
