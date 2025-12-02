@@ -1,9 +1,21 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 {
   home.packages = with pkgs; [
     colima # Container runtime using Lima
     docker-client # Docker CLI for interacting with Colima
+    docker-credential-helpers # Includes docker-credential-pass
   ];
+
+  # Configure Docker to use pass for credential storage
+  home.file.".docker/config.json".text = builtins.toJSON {
+    credsStore = "pass";
+    currentContext = "colima";
+  };
 
   # Auto-start Colima on login
   launchd.agents.colima = {

@@ -24,6 +24,7 @@
     ./configs/mise.nix
     ./configs/neovim/neovim.nix
     ./configs/nixfmt.nix
+    ./configs/npm/npm.nix
     ./configs/nushell/nushell.nix
     ./configs/pass/pass.nix
     ./configs/qpdf/qpdf.nix

@@ -1,7 +1,12 @@
 # TODO
 
-- Docker audit WARNING! Your credentials are stored unencrypted in '/Users/otahontas/.docker/config.json'. Configure a credential helper to remove this warning. See https://docs.docker.com/go/credential-store/
+## Credential migration (in progress)
+- [ ] Run migration scripts to move credentials to pass
+  - `.local_scripts/setup-docker-credentials.nu`
+  - `.local_scripts/setup-npm-token.nu`
+- [ ] Apply configuration: `mise run verify && mise run apply`
+- [ ] Rotate Docker and NPM tokens (exposed in plaintext)
+  - See MIGRATION_CREDENTIALS.md for details
 
 ## Dotfiles to move to Nix
 - Merge .ssh/keys.conf into configs/ssh.nix
-- Handle .npmrc - remove token, use env var or 1Password
