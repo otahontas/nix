@@ -5,19 +5,9 @@
   ];
 
   home.file.".yabairc" = {
-    text = ''
-      #!/usr/bin/env sh
-
-      # Use full path to yabai for launchd compatibility
-      YABAI="${pkgs.yabai}/bin/yabai"
-
-      # Ignore specific apps
-      $YABAI -m rule --add app="^System Settings$" manage=off
-      $YABAI -m rule --add app="^Calculator$" manage=off
-      $YABAI -m rule --add app="^Finder$" manage=off
-      $YABAI -m rule --add app="^Activity Monitor$" manage=off
-      $YABAI -m rule --add app="^1Password$" manage=off
-    '';
+    source = pkgs.replaceVars ./yabairc.sh {
+      yabai_bin = "${pkgs.yabai}/bin/yabai";
+    };
     executable = true;
   };
 
