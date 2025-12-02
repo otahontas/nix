@@ -2,42 +2,44 @@
   description = "otahontas nix-darwin + home-manager config";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    nix-darwin.url = "github:nix-darwin/nix-darwin/master";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
-    home-manager.url = "github:nix-community/home-manager";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
     catppuccin.url = "github:catppuccin/nix";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager.url = "github:nix-community/home-manager";
+    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    nix-darwin.url = "github:nix-darwin/nix-darwin/master";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     safe-chain-nix.url = "github:LucioFranco/safe-chain-nix";
   };
 
   outputs =
     inputs@{
       self,
-      nix-darwin,
-      nixpkgs,
+      catppuccin,
       home-manager,
       neovim-nightly-overlay,
-      catppuccin,
+      nix-darwin,
+      nixpkgs,
       safe-chain-nix,
       ...
     }:
+    let
+      username = "otahontas";
+      homeDirectory = "/Users/${username}";
+    in
     {
       darwinConfigurations."otabook-work" = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
         specialArgs = { inherit inputs; };
         modules = [
-          # System configuration
           (
             { pkgs, lib, ... }:
             {
               nix.settings.experimental-features = "nix-command flakes";
               system.configurationRevision = self.rev or self.dirtyRev or null;
               system.stateVersion = 6;
-
-              users.users.otahontas.home = "/Users/otahontas";
-              system.primaryUser = "otahontas";
+              system.primaryUser = username;
+              users.users.${username}.home = homeDirectory;
 
               security.pam.services.sudo_local.touchIdAuth = true;
 
@@ -75,8 +77,6 @@
                 ];
             }
           )
-
-          # Home-manager configuration
           home-manager.darwinModules.home-manager
           (
             { lib, ... }:
@@ -87,20 +87,17 @@
                 backupFileExtension = "backup";
                 extraSpecialArgs = { inherit inputs; };
                 sharedModules = [ inputs.catppuccin.homeModules.catppuccin ];
-                users.otahontas =
+                users.${username} =
                   let
-                    # Auto-discover all .nix files in configs directory
                     configFiles = lib.filter (path: lib.hasSuffix ".nix" path) (
                       lib.filesystem.listFilesRecursive ./configs
                     );
                   in
                   {
                     imports = configFiles;
-
-                    home.username = "otahontas";
-                    home.homeDirectory = "/Users/otahontas";
+                    home.username = username;
+                    home.homeDirectory = homeDirectory;
                     home.stateVersion = "25.05";
-
                     xdg.enable = true;
                   };
               };

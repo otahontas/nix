@@ -8,6 +8,7 @@
     vimdiffAlias = true;
     defaultEditor = true;
     extraPackages = with pkgs; [
+      nixd
       tree-sitter
     ];
     extraWrapperArgs = [

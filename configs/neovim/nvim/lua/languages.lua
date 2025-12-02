@@ -36,6 +36,10 @@ local languages = {
     treesitter = "markdown",
   },
   matlab = { treesitter = "matlab", },
+  nix = {
+    treesitter = "nix",
+    lsp = { "nixd", },
+  },
   python = {
     treesitter = "python",
     lsp = { "basedpyright", "ruff", },
