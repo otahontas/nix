@@ -94,8 +94,6 @@ vim.iter({
   showmatch = true,
   -- Don't show mode text (INSERT, VISUAL, etc) in command line
   showmode = false,
-  -- Don't show tab line
-  showtabline = 0,
   -- Always show sign column (for git signs, LSP diagnostics, etc)
   signcolumn = "yes",
   -- Case-insensitive search unless query contains uppercase
