@@ -28,8 +28,9 @@
         system = "aarch64-darwin";
         specialArgs = { inherit inputs; };
         modules = [
+          # System configuration
           (
-            { pkgs, ... }:
+            { pkgs, lib, ... }:
             {
               nix.settings.experimental-features = "nix-command flakes";
               system.configurationRevision = self.rev or self.dirtyRev or null;
@@ -38,17 +39,19 @@
               users.users.otahontas.home = "/Users/otahontas";
               system.primaryUser = "otahontas";
 
-              # Enable Touch ID for sudo
               security.pam.services.sudo_local.touchIdAuth = true;
 
-              # Disable Spotlight cmd+space keybinding
               system.defaults.CustomUserPreferences = {
                 "com.apple.symbolichotkeys" = {
                   AppleSymbolicHotKeys = {
                     "64" = {
                       enabled = false;
                       value = {
-                        parameters = [ 65535 49 1048576 ];
+                        parameters = [
+                          65535
+                          49
+                          1048576
+                        ];
                         type = "standard";
                       };
                     };
@@ -56,27 +59,53 @@
                 };
               };
 
-              # Apply neovim-nightly overlay
               nixpkgs.overlays = [
-                neovim-nightly-overlay.overlays.default
+                inputs.neovim-nightly-overlay.overlays.default
               ];
 
-              # Allow unfree packages
-              nixpkgs.config.allowUnfreePredicate =
-                pkg:
-                builtins.elem (nixpkgs.lib.getName pkg) [
-                  "claude-code"
-                ];
-
-              # Use nix-community binary cache for prebuilt neovim
               nix.settings = {
                 substituters = [ "https://nix-community.cachix.org" ];
                 trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
               };
+
+              nixpkgs.config.allowUnfreePredicate =
+                pkg:
+                builtins.elem (lib.getName pkg) [
+                  "claude-code"
+                ];
             }
           )
+
+          # Home-manager configuration
           home-manager.darwinModules.home-manager
-          ./home-manager.nix
+          (
+            { lib, ... }:
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                backupFileExtension = "backup";
+                extraSpecialArgs = { inherit inputs; };
+                sharedModules = [ inputs.catppuccin.homeModules.catppuccin ];
+                users.otahontas =
+                  let
+                    # Auto-discover all .nix files in configs directory
+                    configFiles = lib.filter (path: lib.hasSuffix ".nix" path) (
+                      lib.filesystem.listFilesRecursive ./configs
+                    );
+                  in
+                  {
+                    imports = configFiles;
+
+                    home.username = "otahontas";
+                    home.homeDirectory = "/Users/otahontas";
+                    home.stateVersion = "25.05";
+
+                    xdg.enable = true;
+                  };
+              };
+            }
+          )
         ];
       };
     };

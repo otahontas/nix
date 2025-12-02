@@ -1,11 +1,11 @@
 [tasks.format]
 description = "Format Nix files"
-run = "nixfmt **/*.nix"
+run = "fd -e nix -x nixfmt"
 
 [tasks.verify]
 description = "Verify configuration (format + check + build)"
 run = """
-nixfmt **/*.nix && \
+fd -e nix -x nixfmt && \
 nix flake check && \
 darwin-rebuild build --flake ~/.config/nix-darwin
 """

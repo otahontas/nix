@@ -1,4 +1,9 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 let
   # Auto-discover tool integrations
   configsDir = ../.;
@@ -8,13 +13,15 @@ let
 
   # For each tool dir, check if tool.nu exists and read it
   # Skip nushell directory to avoid duplicates
-  collectNuFiles = lib.attrsets.mapAttrsToList (name: type:
+  collectNuFiles = lib.attrsets.mapAttrsToList (
+    name: type:
     let
       nuFile = configsDir + "/${name}/${name}.nu";
     in
-      if type == "directory" && name != "nushell" && builtins.pathExists nuFile
-      then builtins.readFile nuFile
-      else ""
+    if type == "directory" && name != "nushell" && builtins.pathExists nuFile then
+      builtins.readFile nuFile
+    else
+      ""
   ) toolDirs;
 
   # Combine all tool integrations
