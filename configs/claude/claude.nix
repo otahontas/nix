@@ -3,7 +3,6 @@
   home.packages = with pkgs; [
     claude-code
   ];
-
   programs.nushell.shellAliases = {
     c = "claude";
     cc = "claude -c";

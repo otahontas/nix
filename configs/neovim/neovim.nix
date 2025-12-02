@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 {
   programs.neovim = {
     enable = true;
@@ -11,14 +11,7 @@
       nixd
       tree-sitter
     ];
-    extraWrapperArgs = [
-      "--prefix"
-      "PATH"
-      ":"
-      "${config.home.homeDirectory}/.local/share/mise/installs/node/latest/bin"
-    ];
   };
-
   xdg.configFile."nvim" = {
     source = ./nvim;
     recursive = true;

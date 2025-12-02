@@ -1,7 +1,3 @@
-# Git shell integrations
-
-alias gsw = git sw
-
 def lefthook-setup [] {
   let repo_root = (git rev-parse --show-toplevel | str trim)
   let template = $"($env.HOME)/.config/git/lefthook.yml"
@@ -29,7 +25,6 @@ def lefthook-setup [] {
   print $"✅ Lefthook installed in ($repo_root)"
 }
 
-# Completion functions for git worktree commands
 def worktree-names [] {
   let repo_root = try {
     ^git rev-parse --show-toplevel | str trim
@@ -56,7 +51,6 @@ def pr-numbers [] {
   }
 }
 
-# Git worktree integration with git-crypt support
 def --env git-worktree-new [branch_name: string] {
   $env.HUSKY = "0"
 
@@ -72,7 +66,6 @@ def --env git-worktree-new [branch_name: string] {
   print $"Creating worktree for branch: ($branch_name)"
   print $"Location: ($worktree_path)"
 
-  # Check for git-crypt
   let has_git_crypt = ($repo_root | path join ".git/git-crypt" | path exists)
 
   if $has_git_crypt {
@@ -94,7 +87,6 @@ def --env git-worktree-new [branch_name: string] {
     cd $worktree_path
   }
 
-  # Verify status
   let status = (^git status --short | str trim)
   if ($status | is-not-empty) {
     print "Warning: Worktree has uncommitted changes:"
@@ -114,7 +106,6 @@ def --env git-worktree-pr [pr_number: int@pr-numbers] {
     error make {msg: "Not in a git repository"}
   }
 
-  # Get PR branch name from GitHub
   let pr_branch = try {
     ^gh pr view $pr_number --json headRefName -q .headRefName | str trim
   } catch {
@@ -130,7 +121,6 @@ def --env git-worktree-pr [pr_number: int@pr-numbers] {
 
   print $"Creating worktree for PR #($pr_number)..."
 
-  # Check for git-crypt
   let has_git_crypt = ($repo_root | path join ".git/git-crypt" | path exists)
 
   if $has_git_crypt {
@@ -152,7 +142,6 @@ def --env git-worktree-pr [pr_number: int@pr-numbers] {
     cd $worktree_path
   }
 
-  # Verify status
   let status = (^git status --short | str trim)
   if ($status | is-not-empty) {
     print "Warning: Worktree has uncommitted changes:"
@@ -187,7 +176,6 @@ def git-worktree-prune [branch_name: string@worktree-names] {
   ^git worktree remove $worktree_path --force
   print "✓ Worktree removed"
 
-  # Delete the branch if it exists
   let branch_exists = (^git show-ref --verify --quiet $"refs/heads/($branch_name)" | complete | get exit_code) == 0
   if $branch_exists {
     print $"Deleting branch: ($branch_name)"
@@ -216,8 +204,8 @@ def --env git-worktree-cd [branch_name: string@worktree-names] {
   cd $worktree_path
 }
 
-# Aliases for git-worktree functions
+alias gsw = git sw
+alias gwcd = git-worktree-cd
 alias gwnew = git-worktree-new
 alias gwpr = git-worktree-pr
-alias gwcd = git-worktree-cd
 alias gwprune = git-worktree-prune

@@ -21,7 +21,6 @@ def combine-pdfs-in-folder [folder: string] {
 
   print $"Combining ($pdf_files | length) PDFs from ($folder_name)..."
 
-  # Use qpdf to concatenate PDFs
   ^qpdf --empty --pages ...$pdf_files -- $output_file
 
   print $"✓ Combined PDF created: ($output_file)"

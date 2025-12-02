@@ -1,5 +1,3 @@
-# GitHub CLI helpers
-
 def gh-pr-get-url [] {
   if (which gh | is-empty) {
     error make {msg: "gh CLI not found"}

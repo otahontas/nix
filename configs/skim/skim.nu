@@ -1,6 +1,3 @@
-# Skim fuzzy finder keybindings
-
-# CTRL-T: File/directory selection
 $env.config.keybindings ++= [{
   name: skim_file_select
   modifier: control
@@ -11,8 +8,6 @@ $env.config.keybindings ++= [{
     cmd: "commandline edit --insert (fd --type f --hidden --follow --exclude .git | sk --multi --preview 'bat --color=always --style=numbers --line-range=:500 {}' | str join ' ')"
   }
 }]
-
-# CTRL-R: Command history search
 $env.config.keybindings ++= [{
   name: skim_history_search
   modifier: control
@@ -23,8 +18,6 @@ $env.config.keybindings ++= [{
     cmd: "commandline edit --replace (history | get command | reverse | sk --no-sort --tac | str trim)"
   }
 }]
-
-# ALT-C: Directory navigation
 $env.config.keybindings ++= [{
   name: skim_directory_cd
   modifier: alt

@@ -3,14 +3,12 @@
   home.packages = with pkgs; [
     yabai
   ];
-
   home.file.".yabairc" = {
     source = pkgs.replaceVars ./yabairc.sh {
       yabai_bin = "${pkgs.yabai}/bin/yabai";
     };
     executable = true;
   };
-
   launchd.agents.yabai = {
     enable = true;
     config = {

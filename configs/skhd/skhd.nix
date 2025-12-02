@@ -12,7 +12,6 @@ in
     less
     coreutils
   ];
-
   home.file.".skhdrc".text = ''
     # App launcher
     cmd - space : sh -c '(${findApps}) | ${formatApps} | ${launchApp}'

@@ -8,12 +8,11 @@
       no-emit-version = true;
     };
   };
-
   services.gpg-agent = {
     enable = true;
     enableSshSupport = false;
     pinentry.package = pkgs.pinentry_mac;
-    defaultCacheTtl = 7200; # 2 hours
-    maxCacheTtl = 7200; # 2 hours
+    defaultCacheTtl = 7200;
+    maxCacheTtl = 7200;
   };
 }

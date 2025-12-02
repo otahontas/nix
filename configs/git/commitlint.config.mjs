@@ -1,5 +1,4 @@
 export default {
-  // Inline conventional commits rules without requiring @commitlint/config-conventional
   rules: {
     "body-leading-blank": [1, "always"],
     "body-max-line-length": [2, "always", 100],

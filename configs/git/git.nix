@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 {
   home.packages = with pkgs; [
     git-crypt
@@ -6,63 +6,47 @@
     lefthook
     commitlint
   ];
-
   programs.git = {
     enable = true;
-
     signing = {
       key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNqZN/gQy2WDb5T4f9dLpmNQ1YhJDfq3eB12lZDvX8J";
       signByDefault = true;
     };
-
     settings = {
       user = {
         name = "Otto Ahoniemi";
         email = "otto@ottoahoniemi.fi";
       };
-
       gpg = {
         format = "ssh";
         ssh.program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
       };
-
       push = {
         default = "matching";
         followTags = true;
       };
-
       pull.rebase = true;
-
       merge = {
         tool = "nvim_mergetool";
         conflictstyle = "zdiff3";
       };
-
       mergetool = {
         keepBackup = false;
         nvim_mergetool.cmd = "nvim -d $LOCAL $REMOTE $MERGED -c '$wincmd w' -c 'wincmd J'";
       };
-
       diff = {
         tool = "nvim_difftool";
         colorMoved = "default";
       };
-
       difftool.nvim_difftool.cmd = ''nvim -c "packadd nvim.difftool" -c "DiffTool $LOCAL $REMOTE"'';
-
       tag.gpgsign = true;
-
       commit.gpgsign = true;
-
       init.defaultBranch = "main";
-
       rerere = {
         enabled = true;
         autoupdate = true;
       };
-
       rebase.updateRefs = true;
-
       alias = {
         a = "add";
         ap = "add -p";
@@ -111,7 +95,6 @@
         wt = "worktree";
       };
     };
-
     ignores = [
       ".DS_Store"
       ".localized"
@@ -120,11 +103,9 @@
       "**/.worktrees/**"
     ];
   };
-
   xdg.configFile."git/lefthook.yml" = {
     source = ./lefthook.yml;
   };
-
   xdg.configFile."commitlint/commitlint.config.mjs" = {
     source = ./commitlint.config.mjs;
   };

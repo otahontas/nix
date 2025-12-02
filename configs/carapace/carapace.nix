@@ -3,9 +3,7 @@
   home.packages = with pkgs; [
     carapace
   ];
-
   programs.nushell.extraEnv = ''
-    # Carapace completion setup
     $env.CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense'
     $env.CARAPACE_MATCH = '1'
     mkdir ($nu.cache-dir)

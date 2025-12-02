@@ -1,10 +1,7 @@
 { pkgs, config, ... }:
 {
-  # Install script to generate .npmrc from pass
   home.file.".local/bin/generate-npmrc".source = ./generate-npmrc.nu;
   home.file.".local/bin/generate-npmrc".executable = true;
-
-  # Generate .npmrc from pass via launchd service
   launchd.agents.generate-npmrc = {
     enable = true;
     config = {

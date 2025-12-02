@@ -1,0 +1,7 @@
+- nushell extraenv splitted to multiple and put to correct places
+- nushell llm to separate file
+- acp cleanup: much simpler setup
+- acp autocompletion: 
+- better aws config generation (maybe just directly from pass)
+- skhd better combo (the setup is a bit messy atm)
+- xdg config wherever possible

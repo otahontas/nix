@@ -19,8 +19,6 @@
       home-manager,
       neovim-nightly-overlay,
       nix-darwin,
-      nixpkgs,
-      safe-chain-nix,
       ...
     }:
     let
@@ -33,7 +31,7 @@
         specialArgs = { inherit inputs; };
         modules = [
           (
-            { pkgs, lib, ... }:
+            { lib, ... }:
             {
               nix.settings.experimental-features = "nix-command flakes";
               system.configurationRevision = self.rev or self.dirtyRev or null;
@@ -62,7 +60,7 @@
               };
 
               nixpkgs.overlays = [
-                inputs.neovim-nightly-overlay.overlays.default
+                neovim-nightly-overlay.overlays.default
               ];
 
               nix.settings = {
@@ -86,7 +84,7 @@
                 useUserPackages = true;
                 backupFileExtension = "backup";
                 extraSpecialArgs = { inherit inputs; };
-                sharedModules = [ inputs.catppuccin.homeModules.catppuccin ];
+                sharedModules = [ catppuccin.homeModules.catppuccin ];
                 users.${username} =
                   let
                     configFiles = lib.filter (path: lib.hasSuffix ".nix" path) (

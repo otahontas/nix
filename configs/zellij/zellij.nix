@@ -8,7 +8,6 @@
       default_shell = "${pkgs.nushell}/bin/nu";
       show_startup_tips = false;
     };
-
     extraConfig = ''
       env {
         HOME "${config.home.homeDirectory}"

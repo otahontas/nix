@@ -5,14 +5,8 @@
   ...
 }:
 let
-  # Auto-discover tool integrations
   configsDir = ../.;
-
-  # Get all subdirectories in configs/
   toolDirs = builtins.readDir configsDir;
-
-  # For each tool dir, check if tool.nu exists and read it
-  # Skip nushell directory to avoid duplicates
   collectNuFiles = lib.attrsets.mapAttrsToList (
     name: type:
     let
@@ -23,11 +17,7 @@ let
     else
       ""
   ) toolDirs;
-
-  # Combine all tool integrations
   allIntegrations = lib.concatStrings collectNuFiles;
-
-  # Read core nushell config
   coreConfig = builtins.readFile ./nushell.nu;
 in
 {
@@ -36,9 +26,7 @@ in
       llm-cmd = true;
     })
   ];
-
   catppuccin.nushell.enable = true;
-
   programs.nushell = {
     enable = true;
     extraEnv = ''
@@ -49,7 +37,6 @@ in
         | prepend "/nix/var/nix/profiles/default/bin"
         | uniq
       )
-
       $env.VISUAL = "nvim"
       $env.EDITOR = "nvim"
 
@@ -58,8 +45,6 @@ in
       $env.TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE = "/var/run/docker.sock"
       $env.NODE_OPTIONS = "--dns-result-order=ipv4first"
     '';
-
-    # Load core config + auto-discovered tool integrations
     extraConfig = coreConfig + "\n" + allIntegrations;
   };
 }

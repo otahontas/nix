@@ -8,13 +8,8 @@
   home.packages = with pkgs; [
     awscli2
   ];
-
-  # Install the generation script to ~/.local/bin
   home.file.".local/bin/generate-aws-config".source = ./generate-aws-config.nu;
   home.file.".local/bin/generate-aws-config".executable = true;
-
-  # Generate AWS config from pass via launchd service
-  # This runs in full user environment with GPG access
   launchd.agents.generate-aws-config = {
     enable = true;
     config = {
