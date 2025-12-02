@@ -1,0 +1,8 @@
+- postgresl setup: lsp, formatting?
+- better formatting: stop formatting by lsps (except eslint of course), for others use something else
+- better claude integration --> 
+- next edit suggestions and better copilot setup (so prob no just copilot lsp but actually the copilot.lua that I used to have hehe)
+- better nix integration?
+- inline files lsps (otter?)
+- inline files formatting
+- fix fzf (=skim) not working properly with the ripgrep from package.json 

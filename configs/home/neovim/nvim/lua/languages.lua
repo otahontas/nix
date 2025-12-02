@@ -55,7 +55,7 @@ local languages = {
     lsp = { "ts_ls", "eslint", },
   },
   typescriptreact = {
-    treesitter = "typescript",
+    treesitter = "tsx",
     lsp = { "ts_ls", "eslint", },
   },
   typst = { treesitter = "typst", },

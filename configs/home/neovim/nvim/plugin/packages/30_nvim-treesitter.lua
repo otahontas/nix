@@ -18,6 +18,7 @@ require("utils").add_package(
 
     vim.treesitter.language.register("yaml", "yaml.docker-compose")
     vim.treesitter.language.register("yaml", "yaml.github-action")
+    -- vim.treesitter.language.register("tsx", "typescriptreact")
 
     vim.api.nvim_create_autocmd("FileType", {
       pattern = languages.filetypes,

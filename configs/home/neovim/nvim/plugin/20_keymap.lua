@@ -48,9 +48,6 @@ set(
 )
 -- Open new tab
 set("n", "<leader>tn", "<cmd>tabnew<cr>", { silent = true, desc = "Open new tab", })
--- Move between tabs with []t
-set("n", "<leader>[t", "<cmd>tabprevious<cr>", { silent = true, desc = "Previous tab", })
-set("n", "<leader>]t", "<cmd>tabnext<cr>", { silent = true, desc = "Next tab", })
 -- Save file
 set("n", "<leader>ww", "<cmd>w!<cr>", { silent = false, desc = "Save file", })
 -- Go to normal mode with Ctrl-W-Esc in terminal mode

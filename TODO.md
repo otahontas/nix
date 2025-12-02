@@ -9,4 +9,7 @@
 - test that npm login through pass works
 - replace 1password ssh with gpg signing. But make sure that all the commits are still properly verified.
 - gpg touchid setup
-- replace 1password setups from 
+- replace 1password setups everywhere, leave 1password to be just an application
+- in general don't allow claude or copilot to access tokens / env files / secret files, I hate it when those do
+- remember to rotate keys often (how? some sort of check)
+- add claude files to nix
