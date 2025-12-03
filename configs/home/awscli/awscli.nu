@@ -1,5 +1,10 @@
+# Completer for AWS profiles
+def aws-profiles-completer [] {
+  ^aws configure list-profiles | lines
+}
+
 def --env acp [
-  profile?: string    # AWS profile to switch to (empty to clear)
+  profile?: string@aws-profiles-completer    # AWS profile to switch to (empty to clear)
   mfa_token?: string  # MFA token (will prompt if needed)
 ] {
   # Clear credentials if no profile specified
