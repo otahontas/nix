@@ -10,6 +10,8 @@
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     safe-chain-nix.url = "github:LucioFranco/safe-chain-nix";
+    yazi-relative-motions.flake = false;
+    yazi-relative-motions.url = "github:dedukun/relative-motions.yazi";
   };
 
   outputs =

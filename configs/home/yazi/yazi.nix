@@ -1,12 +1,4 @@
-{ pkgs, ... }:
-let
-  relative-motions = pkgs.fetchFromGitHub {
-    owner = "dedukun";
-    repo = "relative-motions.yazi";
-    rev = "a603d9e";
-    hash = "sha256-9i6x/VxGOA3bB3FPieB7mQ1zGaMK5wnMhYqsq4CvaM4=";
-  };
-in
+{ inputs, ... }:
 {
   catppuccin.yazi.enable = true;
   programs.yazi = {
@@ -38,7 +30,7 @@ in
           ];
     };
     plugins = {
-      relative-motions = relative-motions;
+      relative-motions = inputs.yazi-relative-motions;
     };
   };
 }
