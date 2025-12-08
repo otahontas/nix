@@ -1,7 +1,7 @@
 { pkgs, config, ... }:
 let
   homeDir = config.home.homeDirectory;
-  findApps = ''find -L /Applications -maxdepth 2 -name "*.app" 2>/dev/null; find -L ${homeDir}/Applications -maxdepth 3 -name "*.app" 2>/dev/null'';
+  findApps = ''find -L /Applications /System/Applications -maxdepth 3 -name "*.app" 2>/dev/null; find -L ${homeDir}/Applications -maxdepth 3 -name "*.app" 2>/dev/null'';
   formatApps = ''sed "s|.*/||;s|\.app\$||" | sort -u'';
   launchApp = ''${pkgs.choose-gui}/bin/choose | xargs -I{} open -a "{}"'';
 in

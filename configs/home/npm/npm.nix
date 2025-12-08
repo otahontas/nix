@@ -1,22 +1,5 @@
-{ pkgs, config, ... }:
 {
-  home.file.".local/bin/generate-npmrc".source = ./generate-npmrc.nu;
-  home.file.".local/bin/generate-npmrc".executable = true;
-  launchd.agents.generate-npmrc = {
-    enable = true;
-    config = {
-      ProgramArguments = [
-        "${pkgs.nushell}/bin/nu"
-        "${config.home.homeDirectory}/.local/bin/generate-npmrc"
-        "${pkgs.pass}/bin/pass"
-      ];
-      EnvironmentVariables = {
-        PASSWORD_STORE_DIR = "${config.home.homeDirectory}/.local/share/password-store";
-        HOME = config.home.homeDirectory;
-      };
-      RunAtLoad = true;
-      StandardOutPath = "/tmp/generate-npmrc.out.log";
-      StandardErrorPath = "/tmp/generate-npmrc.err.log";
-    };
-  };
+  # NPM_TOKEN is set via mise.toml in project directories (e.g. ~/code/mindler)
+  # using pass for secure token retrieval
+  home.file.".npmrc".source = ./.npmrc;
 }
