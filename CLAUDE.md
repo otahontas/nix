@@ -1,5 +1,9 @@
 Nix-darwin system configuration with Nushell shell.
 
+## Package management:
+- NEVER install anything through Homebrew
+- All packages must be managed through Nix (nix-darwin or home-manager)
+
 ## Testing changes workflow:
 1. `mise run verify` - format, check flake, and build (no sudo)
 2. `git add .` - stage changes (required for flake to see them)
