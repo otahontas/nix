@@ -45,7 +45,10 @@ local languages = {
     lsp = { "basedpyright", "ruff", },
     formatter = "ruff",
   },
-  sql = { treesitter = "sql", },
+  sql = {
+    treesitter = "sql",
+    lsp = { "postgres_lsp", },
+  },
   sshconfig = { treesitter = "ssh_config", },
   tex = { treesitter = "latex", },
   todotxt = { treesitter = "todotxt", },

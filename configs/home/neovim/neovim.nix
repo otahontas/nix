@@ -9,6 +9,7 @@
     defaultEditor = true;
     extraPackages = with pkgs; [
       nixd
+      postgres-language-server
       tree-sitter
     ];
   };
