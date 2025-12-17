@@ -1,19 +1,29 @@
+[tasks.apply]
+description = "Apply nix-darwin configuration (requires sudo)"
+depends = ["verify"]
+run = "sudo darwin-rebuild switch --flake ~/.config/nix-darwin"
+
+[tasks.check-flake]
+description = "Check flake configuration"
+run = "nix flake check"
+
 [tasks.format]
+description = "Run all formatters in parallel"
+depends = ["format-*"]
+
+[tasks.format-nix]
 description = "Format Nix files"
 run = "fd -e nix -x nixfmt"
 
+[tasks.lint]
+description = "Run all linters in parallel"
+depends = ["format", "lint-*"]
+
+[tasks.lint-nu]
+description = "Lint all Nushell files"
+run = "for f in configs/home/**/*.nu; do nu -c \"source $f\" || exit 1; done"
+
 [tasks.verify]
-description = "Verify configuration (format + check + build)"
-run = """
-fd -e nix -x nixfmt && \
-nix flake check && \
-darwin-rebuild build --flake ~/.config/nix-darwin
-"""
-
-[tasks.apply]
-description = "Apply nix-darwin configuration (requires sudo)"
-run = "sudo darwin-rebuild switch --flake ~/.config/nix-darwin"
-
-[tasks.check]
-description = "Check flake configuration"
-run = "nix flake check"
+description = "Verify config"
+depends = ["lint", "check-flake"]
+run = "darwin-rebuild build --flake ~/.config/nix-darwin"
