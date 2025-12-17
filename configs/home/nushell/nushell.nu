@@ -68,6 +68,21 @@ def listening [pattern?: string] {
     }
   }
 }
+def nukeport [port: int] {
+  let pids = (lsof -ti :($port) | lines | uniq)
+
+  if ($pids | is-empty) {
+    print $"No process found on port ($port)"
+    return
+  }
+
+  $pids | each { |pid|
+    print $"Killing PID ($pid) on port ($port)"
+    kill -9 ($pid | into int)
+  }
+
+  print $"✓ Port ($port) freed"
+}
 def myip [] {
   ifconfig
     | lines
