@@ -98,6 +98,8 @@
     ignores = [
       ".DS_Store"
       ".localized"
+      ".direnv"
+      ".envrc"
       "**/.claude/**.json"
       "**/.local_scripts/**"
       "**/.worktrees/**"

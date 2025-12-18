@@ -1,7 +1,7 @@
 pre-commit:
   commands:
     verify:
-      run: mise run verify
+      run: just verify
     gitleaks:
       run: gitleaks protect --staged --verbose --no-banner
 
