@@ -1,3 +1,4 @@
+# Get the URL of the current branch's pull request
 def gh-pr-get-url [] {
   if (which gh | is-empty) {
     error make {msg: "gh CLI not found"}
@@ -17,6 +18,7 @@ def gh-pr-get-url [] {
   $pr_url
 }
 
+# Copy the current branch's PR URL to clipboard
 def gh-pr-copy-url [] {
   if (which pbcopy | is-empty) {
     error make {msg: "Clipboard tool pbcopy not available"}
@@ -27,6 +29,7 @@ def gh-pr-copy-url [] {
   print $"Copied PR URL to clipboard: ($pr_url)"
 }
 
+# Get the URL of the current git repository
 def gh-repo-get-url [] {
   if (which gh | is-empty) {
     error make {msg: "gh CLI not found"}
@@ -46,6 +49,7 @@ def gh-repo-get-url [] {
   $repo_url
 }
 
+# Copy the current repository URL to clipboard
 def gh-repo-copy-url [] {
   if (which pbcopy | is-empty) {
     error make {msg: "Clipboard tool pbcopy not available"}
@@ -56,6 +60,7 @@ def gh-repo-copy-url [] {
   print $"Copied repo URL to clipboard: ($repo_url)"
 }
 
+# Interactively select and view an open PR with comments
 def gh-pr-review [] {
   if (which gh | is-empty) or (which sk | is-empty) {
     error make {msg: "gh and sk are required"}
@@ -83,6 +88,7 @@ def gh-pr-review [] {
   ^gh pr view --comments $pr_number
 }
 
+# Interactively select, approve, and auto-merge an open PR
 def gh-pr-approve-and-merge [] {
   if (which gh | is-empty) or (which sk | is-empty) {
     error make {msg: "gh and sk are required"}
@@ -113,6 +119,7 @@ def gh-pr-approve-and-merge [] {
   ^gh pr merge $pr_number --auto
 }
 
+# Interactively select and view a GitHub Actions workflow run
 def gh-run-view [] {
   if (which gh | is-empty) or (which sk | is-empty) {
     error make {msg: "gh and sk are required"}
@@ -182,6 +189,7 @@ def gh-run-view [] {
   ^gh run view $run_id
 }
 
+# Format a release PR's notes for Slack and copy to clipboard
 def gh-release-slack [pr_number: int] {
   let pr_data = (^gh pr view $pr_number --json title,body --template '{{ .title }}{{"\n"}}{{ .body }}' | complete)
 

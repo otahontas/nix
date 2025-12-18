@@ -2,10 +2,12 @@ def aws-profiles-completer [] {
   ^aws configure list-profiles | lines
 }
 
+# Parse value from aws config
 def get-aws-config [profile: string, key: string] {
   ^aws configure get $key --profile $profile | str trim
 }
 
+# Assume aws role for a duration
 def --env acp [
   profile?: string@aws-profiles-completer
 ] {

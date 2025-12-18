@@ -1,4 +1,3 @@
-# Aliases
 alias c = claude
 alias cc = claude -c
 alias cr = claude -r

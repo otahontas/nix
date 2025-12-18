@@ -1,3 +1,4 @@
+# Find files or directories and delete those
 def find-and-prune [pattern: string] {
   print $"This will delete all files/directories matching: ($pattern)"
   let response = (input "Are you sure? [y/N] ")
