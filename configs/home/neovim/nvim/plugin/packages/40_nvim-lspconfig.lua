@@ -1,9 +1,6 @@
 require("utils").add_package({
   "https://github.com/neovim/nvim-lspconfig",
-  "https://github.com/mason-org/mason.nvim",
 }, function()
-  require("mason").setup()
-
   local languages = require("languages")
 
   -- Add the same capabilities to ALL server configurations.
@@ -11,8 +8,6 @@ require("utils").add_package({
   vim.lsp.config("*", {
     capabilities = vim.lsp.protocol.make_client_capabilities(),
   })
-
-  -- TODO: Add automatic LSP installation (NOTE: mason registry names differ from lspconfig names)
 
   -- Enable all LSP servers defined in languages.lua
   vim.lsp.enable(languages.lsps)

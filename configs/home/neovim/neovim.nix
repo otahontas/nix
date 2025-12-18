@@ -8,8 +8,18 @@
     vimdiffAlias = true;
     defaultEditor = true;
     extraPackages = with pkgs; [
+      # LSP servers
+      basedpyright
+      bash-language-server
+      lua-language-server
       nixd
       postgres-language-server
+      ruff
+      typescript-language-server
+      vscode-langservers-extracted # eslint, jsonls
+
+      # Runtime dependencies
+      nodejs_24
       tree-sitter
     ];
   };
