@@ -13,3 +13,4 @@
 - in general don't allow claude or copilot to access tokens / env files / secret files, I hate it when those do
 - remember to rotate keys often (how? some sort of check)
 - add claude files to nix
+- docker config -> how to do it in merge way, not like now (which only writes it once that's it)
