@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 let
   codeformat = pkgs.stdenv.mkDerivation rec {
     pname = "codeformat";
@@ -64,5 +64,8 @@ in
 
     # python
     pkgs.ruff
+
+    # nushell
+    inputs.topiary-nushell.packages.aarch64-darwin.default
   ];
 }

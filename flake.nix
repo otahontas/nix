@@ -10,6 +10,7 @@
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     safe-chain-nix.url = "github:LucioFranco/safe-chain-nix";
+    topiary-nushell.url = "github:blindFS/topiary-nushell";
     yazi-relative-motions.flake = false;
     yazi-relative-motions.url = "github:dedukun/relative-motions.yazi";
   };

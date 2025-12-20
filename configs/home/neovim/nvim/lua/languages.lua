@@ -40,6 +40,10 @@ local languages = {
     treesitter = "nix",
     lsp = { "nixd", },
   },
+  nu = {
+    treesitter = "nu",
+    lsp = { "nushell", },
+  },
   python = {
     treesitter = "python",
     lsp = { "basedpyright", "ruff", },
