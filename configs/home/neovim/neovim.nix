@@ -1,4 +1,21 @@
 { pkgs, ... }:
+let
+  codeformat = pkgs.stdenv.mkDerivation rec {
+    pname = "codeformat";
+    version = "1.5.7";
+    src = pkgs.fetchzip {
+      url = "https://github.com/CppCXY/EmmyLuaCodeStyle/releases/download/${version}/darwin-arm64.tar.gz";
+      sha256 = "sha256-wW7xfecXW7l2hisCLo1Q2VdmO/eU8+lGqzdS4M4D9oo=";
+      stripRoot = false;
+    };
+    installPhase = ''
+      mkdir -p $out/bin $out/lib
+      cp darwin-arm64/bin/CodeFormat $out/bin/
+      cp darwin-arm64/lib/*.dylib $out/lib/
+      chmod +x $out/bin/CodeFormat
+    '';
+  };
+in
 {
   programs.neovim = {
     enable = true;
@@ -11,10 +28,8 @@
       # LSP servers
       basedpyright
       bash-language-server
-      emmylua-ls
       nixd
       postgres-language-server
-      ruff
       typescript-language-server
       vscode-langservers-extracted # eslint, jsonls
 
@@ -27,4 +42,11 @@
     source = ./nvim;
     recursive = true;
   };
+
+  # Expose select tools to shell (extraPackages only available inside nvim)
+  home.packages = [
+    codeformat
+    pkgs.emmylua-ls
+    pkgs.ruff
+  ];
 }
