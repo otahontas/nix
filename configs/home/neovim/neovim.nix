@@ -62,6 +62,9 @@ in
     codeformat
     pkgs.emmylua-check
 
+    # nix
+    pkgs.nixfmt-rfc-style
+
     # python
     pkgs.ruff
 

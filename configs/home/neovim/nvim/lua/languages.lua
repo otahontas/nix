@@ -39,6 +39,7 @@ local languages = {
   nix = {
     treesitter = "nix",
     lsp = { "nixd", },
+    formatter = "nixd",
   },
   nu = {
     treesitter = "nu",
