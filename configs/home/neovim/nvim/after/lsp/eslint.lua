@@ -11,7 +11,7 @@ return {
   },
   -- Override root_dir to search for eslint.config.mjs
   root_dir = function(bufnr, on_dir)
-    local root = vim.fs.root(bufnr, { "eslint.config.mjs", })
+    local root = vim.fs.root(bufnr, { "eslint.config.mjs", ".eslintrc.json", })
     if root then
       on_dir(root)
     else
