@@ -11,7 +11,7 @@ def lefthook-setup [] {
 
   if ($lefthook_file | path exists) {
     let response = (input "lefthook.yml already exists. Overwrite? [y/N] ")
-    if ($response | str downcase) not-in ["y", "yes"] {
+    if ($response | str downcase) not-in ["y" "yes"] {
       print "Cancelled"
       return
     }
@@ -44,8 +44,8 @@ def worktree-names [] {
 def pr-numbers [] {
   try {
     ^gh pr list --json number,title --limit 50
-      | from json
-      | each {|pr| {value: ($pr.number | into string), description: $pr.title}}
+    | from json
+    | each {|pr| {value: ($pr.number | into string) description: $pr.title} }
   } catch {
     []
   }
@@ -117,7 +117,7 @@ def --env git-worktree-pr [pr_number: int@pr-numbers] {
   mkdir ($repo_root | path join ".worktrees")
 
   print $"Fetching PR #($pr_number)..."
-  ^git fetch origin $"pull/($pr_number)/head:($pr_branch)" | lines | where {|line| not ($line | str starts-with "From")}
+  ^git fetch origin $"pull/($pr_number)/head:($pr_branch)" | lines | where {|line| not ($line | str starts-with "From") }
 
   print $"Creating worktree for PR #($pr_number)..."
 

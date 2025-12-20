@@ -3,7 +3,7 @@ def aws-profiles-completer [] {
 }
 
 # Parse value from aws config
-def get-aws-config [profile: string, key: string] {
+def get-aws-config [profile: string key: string] {
   ^aws configure get $key --profile $profile | str trim
 }
 
@@ -13,12 +13,12 @@ def --env acp [
 ] {
   if ($profile | is-empty) {
     [
-     AWS_ACCESS_KEY_ID
-     AWS_DEFAULT_PROFILE
-     AWS_EB_PROFILE
-     AWS_PROFILE
-     AWS_SECRET_ACCESS_KEY
-     AWS_SESSION_TOKEN
+      AWS_ACCESS_KEY_ID
+      AWS_DEFAULT_PROFILE
+      AWS_EB_PROFILE
+      AWS_PROFILE
+      AWS_SECRET_ACCESS_KEY
+      AWS_SESSION_TOKEN
     ]
     | each { hide-env -i $in }
     print "AWS profile cleared."
@@ -35,7 +35,7 @@ def --env acp [
   print $"Assuming role ($role_arn) using profile ($source_profile)"
 
   let creds = with-env {
-    AWS_ACCESS_KEY_ID: $source_creds.0,
+    AWS_ACCESS_KEY_ID: $source_creds.0
     AWS_SECRET_ACCESS_KEY: $source_creds.1
   } {
     (

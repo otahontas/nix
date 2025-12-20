@@ -1,41 +1,36 @@
-# Default recipe - does nothing
+set shell := ["nu", "-c"]
+
 default:
 
-# Apply nix-darwin configuration (requires sudo)
-apply: verify
-    sudo darwin-rebuild switch --flake ~/.config/nix-darwin
-
-# Check flake configuration
-check-flake:
-    nix flake check
-
-# Run all formatters in parallel
 [parallel]
-format: format-nix format-nvim
+format: format-nix format-nu format-nvim
 
-# Format Nix files
 format-nix:
-    fd -e nix -x nixfmt
+  nixfmt ...(glob **/*.nix)
 
-# Format nvim lua files
+format-nu:
+  topiary-nushell format ...(glob **/*.nu)
+
 format-nvim:
-    just configs/home/neovim/nvim/format
+  just configs/home/neovim/nvim/format
 
-# Run all linters in parallel (format runs first)
-lint: format _lint-tasks
+lint: format _lint-tasks # hack: run format sequentially before running all linters in parallel
 
 [parallel]
 [private]
 _lint-tasks: lint-nu lint-nvim
 
-# Lint nvim lua files
+lint-nu:
+    glob configs/home/**/*.nu | each { |f| nu -c $"source ($f)" } | ignore
+
 lint-nvim:
     just configs/home/neovim/nvim/lint
 
-# Lint all Nushell files
-lint-nu:
-    for f in configs/home/**/*.nu; do nu -c "source $f" || exit 1; done
+check-flake:
+    nix flake check
 
-# Verify config
 verify: lint check-flake
     darwin-rebuild build --flake ~/.config/nix-darwin
+
+apply: verify
+    sudo darwin-rebuild switch --flake ~/.config/nix-darwin

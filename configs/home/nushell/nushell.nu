@@ -23,12 +23,12 @@ $env.config.keybindings ++= [
     name: completion_menu
     modifier: none
     keycode: tab
-    mode: [emacs, vi_normal, vi_insert]
+    mode: [emacs vi_normal vi_insert]
     event: {
       until: [
-        { send: menu name: completion_menu }
-        { send: menunext }
-        { edit: complete }
+        {send: menu name: completion_menu}
+        {send: menunext}
+        {edit: complete}
       ]
     }
   }
@@ -36,15 +36,15 @@ $env.config.keybindings ++= [
     name: completion_previous
     modifier: shift
     keycode: backtab
-    mode: [emacs, vi_normal, vi_insert]
-    event: { send: menuprevious }
+    mode: [emacs vi_normal vi_insert]
+    event: {send: menuprevious}
   }
   {
     name: insert_newline
     modifier: shift
     keycode: enter
-    mode: [emacs, vi_insert]
-    event: { edit: insertnewline }
+    mode: [emacs vi_insert]
+    event: {edit: insertnewline}
   }
 ]
 def week [] { date now | format date "%U" }
@@ -63,8 +63,8 @@ def listening [pattern?: string] {
   if ($pattern | is-empty) {
     $ports
   } else {
-    $ports | where { |row|
-      ($row | values | any { |val| ($val | into string) =~ $pattern })
+    $ports | where {|row|
+      ($row | values | any {|val| ($val | into string) =~ $pattern })
     }
   }
 }
@@ -76,7 +76,7 @@ def nukeport [port: int] {
     return
   }
 
-  $pids | each { |pid|
+  $pids | each {|pid|
     print $"Killing PID ($pid) on port ($port)"
     kill -9 ($pid | into int)
   }
@@ -85,10 +85,10 @@ def nukeport [port: int] {
 }
 def myip [] {
   ifconfig
-    | lines
-    | where ($it | str contains "inet ")
-    | where { |line| not ($line | str contains "127.0.0.1") }
-    | each { |line| $line | str trim | split row ' ' | get 1 }
+  | lines
+  | where ($it | str contains "inet ")
+  | where {|line| not ($line | str contains "127.0.0.1") }
+  | each {|line| $line | str trim | split row ' ' | get 1 }
 }
 def daily [date?: string] {
   let notes_dir = $"($env.HOME)/Documents/notes/daily"
@@ -151,7 +151,7 @@ def cleanup-cache [] {
   print "This will cleanup cache older than 6 months. Are you sure? [y/N]"
   let response = input
 
-  if ($response | str downcase) in ["y", "yes"] {
+  if ($response | str downcase) in ["y" "yes"] {
     ^find ~/.cache/ -depth -type f -atime +182 -delete
     print "✓ Cache cleanup complete"
   } else {
@@ -162,7 +162,7 @@ def trash-empty [] {
   print "Empty Trash? [y/N]"
   let response = input
 
-  if ($response | str downcase) in ["y", "yes"] {
+  if ($response | str downcase) in ["y" "yes"] {
     ^osascript -e 'tell app "Finder" to empty'
     print "✓ Trash emptied"
   } else {

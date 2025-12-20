@@ -21,9 +21,9 @@ def gh-pr-select [prompt: string] {
   }
 
   let formatted = $prs | each {|pr|
-    let created = ($pr.createdAt | into datetime | format date "%Y-%m-%d %H:%M")
-    $"($pr.number) | ($pr.title) | ($pr.headRefName) | ($created)"
-  }
+      let created = ($pr.createdAt | into datetime | format date "%Y-%m-%d %H:%M")
+      $"($pr.number) | ($pr.title) | ($pr.headRefName) | ($created)"
+    }
 
   let selection = $formatted | str join "\n" | sk --prompt $prompt --header "id | title | branch | created at"
 
@@ -93,25 +93,25 @@ def gh-run-view [] {
   }
 
   let formatted = $runs | each {|run|
-    let elapsed = if ($run.startedAt | is-empty) {
-      "-"
-    } else {
-      let start = ($run.startedAt | into datetime)
-      let end = if ($run.conclusion | is-empty) { date now } else { $run.updatedAt | into datetime }
-      format-duration (($end - $start) / 1sec | into int)
+      let elapsed = if ($run.startedAt | is-empty) {
+        "-"
+      } else {
+        let start = ($run.startedAt | into datetime)
+        let end = if ($run.conclusion | is-empty) { date now } else { $run.updatedAt | into datetime }
+        format-duration (($end - $start) / 1sec | into int)
+      }
+
+      let age = if ($run.createdAt | is-empty) {
+        "-"
+      } else {
+        format-duration ((date now) - ($run.createdAt | into datetime) | / 1sec | into int)
+      }
+
+      let workflow = $run.workflowName | default "-"
+      let branch = $run.headBranch | default "-"
+
+      $"($run.status) | ($run.displayTitle) | ($workflow) | ($branch) | ($run.databaseId) | ($elapsed) | ($age)"
     }
-
-    let age = if ($run.createdAt | is-empty) {
-      "-"
-    } else {
-      format-duration ((date now) - ($run.createdAt | into datetime) | / 1sec | into int)
-    }
-
-    let workflow = $run.workflowName | default "-"
-    let branch = $run.headBranch | default "-"
-
-    $"($run.status) | ($run.displayTitle) | ($workflow) | ($branch) | ($run.databaseId) | ($elapsed) | ($age)"
-  }
 
   let selection = $formatted | str join "\n" | sk --prompt "runs> " --header "status | title | workflow | branch | id | elapsed | age"
 
