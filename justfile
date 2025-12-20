@@ -19,7 +19,7 @@ format-nix:
 
 # Format nvim lua files
 format-nvim:
-    just -f configs/home/neovim/nvim/justfile format
+    just configs/home/neovim/nvim/format
 
 # Run all linters in parallel (format runs first)
 lint: format _lint-tasks
@@ -30,7 +30,7 @@ _lint-tasks: lint-nu lint-nvim
 
 # Lint nvim lua files
 lint-nvim:
-    just -f configs/home/neovim/nvim/justfile lint
+    just configs/home/neovim/nvim/lint
 
 # Lint all Nushell files
 lint-nu:
