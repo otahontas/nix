@@ -48,7 +48,7 @@ require("utils").add_package({
       local is_correct_formatter = formatter == client.name
       local supports_formatting = client:supports_method("textDocument/formatting")
       local needs_manual_trigger =
-          not client:supports_method("textDocument/willSaveWaitUntil")
+        not client:supports_method("textDocument/willSaveWaitUntil")
 
       if is_correct_formatter and supports_formatting and needs_manual_trigger then
         vim.api.nvim_create_autocmd("BufWritePre", {

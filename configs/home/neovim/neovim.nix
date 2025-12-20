@@ -28,6 +28,7 @@ in
       # LSP servers
       basedpyright
       bash-language-server
+      emmylua-ls
       nixd
       postgres-language-server
       typescript-language-server
@@ -43,10 +44,25 @@ in
     recursive = true;
   };
 
+  # Generate .luarc.json in source dir for emmylua_check (needs VIMRUNTIME path)
+  home.activation.generateLuarc = ''
+        cat > ~/.config/nix-darwin/configs/home/neovim/nvim/.luarc.json << 'EOF'
+    ${builtins.toJSON {
+      "$schema" =
+        "https://raw.githubusercontent.com/EmmyLuaLs/emmylua-analyzer-rust/refs/heads/main/crates/emmylua_code_analysis/resources/schema.json";
+      runtime.version = "LuaJIT";
+      workspace.library = [ "${pkgs.neovim-unwrapped}/share/nvim/runtime" ];
+    }}
+    EOF
+  '';
+
   # Expose select tools to shell (extraPackages only available inside nvim)
   home.packages = [
+    # emmylua format & lint (corresponding to emmylua-ls formatting & linting)
     codeformat
-    pkgs.emmylua-ls
+    pkgs.emmylua-check
+
+    # python
     pkgs.ruff
   ];
 }

@@ -103,7 +103,7 @@ TodoLine.__index = TodoLine
 function TodoLine.parse(line)
   local trimmed = vim.trim(line)
   local tokens = (trimmed == "") and {} or
-      vim.split(trimmed, "%s+", { trimempty = true, })
+    vim.split(trimmed, "%s+", { trimempty = true, })
 
   local obj = {
     raw = line,

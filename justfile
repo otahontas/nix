@@ -11,18 +11,26 @@ check-flake:
 
 # Run all formatters in parallel
 [parallel]
-format: format-nix
+format: format-nix format-nvim
 
 # Format Nix files
 format-nix:
     fd -e nix -x nixfmt
+
+# Format nvim lua files
+format-nvim:
+    just -f configs/home/neovim/nvim/justfile format
 
 # Run all linters in parallel (format runs first)
 lint: format _lint-tasks
 
 [parallel]
 [private]
-_lint-tasks: lint-nu
+_lint-tasks: lint-nu lint-nvim
+
+# Lint nvim lua files
+lint-nvim:
+    just -f configs/home/neovim/nvim/justfile lint
 
 # Lint all Nushell files
 lint-nu:

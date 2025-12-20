@@ -30,7 +30,7 @@ end
 M.disable_hard_wrap_for_buffer = function()
   vim.opt_local.linebreak = true
   vim.opt_local.textwidth = 0
-  vim.keymap.set("n", "j", "gj", { buffer = true })
+  vim.keymap.set("n", "j", "gj", { buffer = true, })
   vim.keymap.set("n", "k", "gk", { buffer = true, })
 end
 
