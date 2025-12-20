@@ -91,9 +91,10 @@ require("utils").add_package({ "https://github.com/nvim-mini/mini.nvim", },
           local lines = vim.api.nvim_buf_get_lines(0, 1, -1, false)
           local width = vim.iter(lines):fold(-1, function(acc, ln)
             local stat = string.match(ln, "^%S+ %b()")
-            return math.max(acc, vim.fn.strwidth(stat))
+            return math.max(acc, vim.fn.strwidth(stat or ""))
           end)
-          width = width + vim.fn.getwininfo(win)[1].textoff
+          local wininfo = vim.fn.getwininfo(win)[1]
+          width = width + ((wininfo and wininfo.textoff) or 0)
           vim.api.nvim_win_set_width(win, width)
         end
         -- Highlight

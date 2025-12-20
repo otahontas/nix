@@ -28,8 +28,8 @@ local languages = {
   },
   lua = {
     treesitter = "lua",
-    lsp = { "lua_ls", },
-    formatter = "lua_ls",
+    lsp = { "emmylua_ls", },
+    formatter = "emmylua_ls",
   },
   make = { treesitter = "make", },
   markdown = {

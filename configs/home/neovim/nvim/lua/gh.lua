@@ -3,21 +3,21 @@ local utils = require("utils")
 local NS = { namespace = "gh", }
 local NS_ALLOW_EMPTY = { namespace = "gh", allow_empty = true, }
 
-local function get_relative_path (file)
+local function get_relative_path(file)
   return utils.run_cmd({ "git", "ls-files", "--full-name", file, }, NS)
 end
 
-local function file_is_dirty (rel_path)
+local function file_is_dirty(rel_path)
   local out = utils.run_cmd({ "git", "status", "--porcelain", "--", rel_path, },
     NS_ALLOW_EMPTY)
   return out ~= ""
 end
 
-local function get_commit ()
+local function get_commit()
   return utils.run_cmd({ "git", "rev-parse", "HEAD", }, NS)
 end
 
-local function is_commit_pushed (commit)
+local function is_commit_pushed(commit)
   local upstream = utils.run_cmd({
     "git", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}",
   }, NS)
@@ -25,7 +25,7 @@ local function is_commit_pushed (commit)
     NS_ALLOW_EMPTY) ~= nil
 end
 
-local function get_repo_url ()
+local function get_repo_url()
   return utils.run_cmd({ "gh", "repo", "view", "--json", "url", "--jq", ".url", }, NS)
 end
 

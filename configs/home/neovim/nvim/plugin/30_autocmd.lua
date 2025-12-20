@@ -21,7 +21,7 @@ autocmd("FileType", {
 
 -- Run post-install tasks for packages. Packages can define a task function in their
 -- spec.data.task that runs after install/update (but not delete).
-vim.api.nvim_create_autocmd("PackChanged", {
+autocmd("PackChanged", {
   callback = function(event)
     local event_data = event.data
     local task = (event_data.spec.data or {}).task

@@ -8,7 +8,7 @@ local set = vim.keymap.set
 utils.add_package({ "https://github.com/ibhagwan/fzf-lua", },
   function()
     -- Get project root using LSP workspace, fallback to .git
-    local function get_project_root ()
+    local function get_project_root()
       local workspace_folders = vim.lsp.buf.list_workspace_folders()
       if workspace_folders and #workspace_folders > 0 then
         return workspace_folders[1]
@@ -20,7 +20,7 @@ utils.add_package({ "https://github.com/ibhagwan/fzf-lua", },
     local fzf = require("fzf-lua")
 
     -- custom extension to diff current branch
-    local function git_diff_default_branch ()
+    local function git_diff_default_branch()
       local default_branch = utils.run_cmd({ "git", "default-branch-name", },
         { namespace = "fzf-lua", })
 

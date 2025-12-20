@@ -1,6 +1,6 @@
--- TypeScript LSP configuration with inlay hints
 local inlay_hints = {
-  includeInlayParameterNameHints = "all", -- 'none' | 'literals' | 'all'
+
+  includeInlayParameterNameHints = "all",
   includeInlayParameterNameHintsWhenArgumentMatchesName = true,
   includeInlayFunctionParameterTypeHints = true,
   includeInlayVariableTypeHints = true,

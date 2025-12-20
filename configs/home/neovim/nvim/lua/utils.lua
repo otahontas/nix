@@ -11,13 +11,14 @@ M.run_cmd = function(cmd, opts)
 
   local result = vim.system(cmd, { text = true, }):wait()
   if result.code ~= 0 then
-    vim.notify(namespace .. ": `" .. cmd_str .. "` failed: " .. vim.trim(result.stderr),
+    local err = (result.stderr and vim.trim(result.stderr)) or "Unknown error"
+    vim.notify(namespace .. ": `" .. cmd_str .. "` failed: " .. err,
       vim.log.levels.WARN)
     return nil
   end
 
-  local out = vim.trim(result.stdout)
-  if out == "" and not opts.allow_empty then
+  local out = result.stdout
+  if (out and vim.trim(out) == "") and not opts.allow_empty then
     vim.notify(namespace .. ": `" .. cmd_str .. "` returned empty", vim.log.levels.WARN)
     return nil
   end
@@ -26,12 +27,11 @@ M.run_cmd = function(cmd, opts)
 end
 
 -- Disable hard wrap and move withing soft wrapped lines with j and k
----@param bufnr number the buffer to disable hard wrap for. 0 is the current buffer
-M.disable_hard_wrap_for_buffer = function(bufnr)
+M.disable_hard_wrap_for_buffer = function()
   vim.opt_local.linebreak = true
   vim.opt_local.textwidth = 0
-  vim.keymap.set("n", "j", "gj", { buffer = bufnr, })
-  vim.keymap.set("n", "k", "gk", { buffer = bufnr, })
+  vim.keymap.set("n", "j", "gj", { buffer = true })
+  vim.keymap.set("n", "k", "gk", { buffer = true, })
 end
 
 -- Get current directory, falling back cwd when current directory is not available
@@ -63,9 +63,8 @@ M.get_closest_ancestor_directory_that_has_file = function(filename)
 end
 
 -- Setup buffer for prose editing (soft wrap, markdown link surround)
----@param bufnr number the buffer to setup. 0 is the current buffer
-M.setup_prose_buffer = function(bufnr)
-  M.disable_hard_wrap_for_buffer(bufnr)
+M.setup_prose_buffer = function()
+  M.disable_hard_wrap_for_buffer()
   vim.opt_local.wrap = true -- enable soft wrap
   vim.b.minisurround_config = {
     custom_surroundings = {

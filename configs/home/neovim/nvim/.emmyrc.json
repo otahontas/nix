@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EmmyLuaLs/emmylua-analyzer-rust/main/emmyrc.schema.json",
+  "runtime": {
+    "version": "LuaJIT"
+  },
+  "format": {
+    "indent_style": "space",
+    "indent_size": 2,
+    "max_line_length": 88,
+    "quote_style": "double",
+    "trailing_table_separator": "always",
+    "continuation_indent": 2,
+    "call_arg_parentheses": "keep",
+    "space_before_function_open_parenthesis": true
+  }
+}

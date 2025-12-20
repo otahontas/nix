@@ -13,7 +13,7 @@ require("utils").add_package({
   vim.lsp.enable(languages.lsps)
 
   -- Setup auto-formatting on save for filetypes that use LSP formatters
-  local function setup_format_on_save (bufnr, client_id)
+  local function setup_format_on_save(bufnr, client_id)
     return function()
       vim.lsp.buf.format({ bufnr = bufnr, id = client_id, timeout_ms = 500, })
     end
@@ -33,7 +33,7 @@ require("utils").add_package({
       end
 
       -- Setup inlay hints toggle if server supports them
-      if client.server_capabilities.inlayHintProvider then
+      if client.server_capabilities and client.server_capabilities.inlayHintProvider then
         -- Enable inlay hints by default for this buffer
         vim.lsp.inlay_hint.enable(true, { bufnr = bufnr, })
         -- Create a keymap to toggle inlay hints
@@ -48,7 +48,7 @@ require("utils").add_package({
       local is_correct_formatter = formatter == client.name
       local supports_formatting = client:supports_method("textDocument/formatting")
       local needs_manual_trigger =
-        not client:supports_method("textDocument/willSaveWaitUntil")
+          not client:supports_method("textDocument/willSaveWaitUntil")
 
       if is_correct_formatter and supports_formatting and needs_manual_trigger then
         vim.api.nvim_create_autocmd("BufWritePre", {

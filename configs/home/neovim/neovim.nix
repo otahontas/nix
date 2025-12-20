@@ -11,7 +11,7 @@
       # LSP servers
       basedpyright
       bash-language-server
-      lua-language-server
+      emmylua-ls
       nixd
       postgres-language-server
       ruff

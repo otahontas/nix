@@ -1,5 +1,5 @@
 local utils = require("utils")
-utils.setup_prose_buffer(0)
+utils.setup_prose_buffer()
 
 -- toggle done with commentstring
 vim.bo.commentstring = "x %s"
@@ -21,7 +21,7 @@ local today = os.date("%Y-%m-%d")
 local due_match_id = nil
 local threshold_match_id = nil
 
-local function highlight_dates ()
+local function highlight_dates()
   -- Clear existing highlights
   if due_match_id then
     pcall(vim.fn.matchdelete, due_match_id)
@@ -69,29 +69,29 @@ end
 -- Token classifiers
 
 -- Formatting helpers
-local function is_iso_date (token)
+local function is_iso_date(token)
   return token:match("^%d%d%d%d%-%d%d%-%d%d$") ~= nil
 end
 
-local function is_priority_token (token)
+local function is_priority_token(token)
   return token:match("^%([A-Z]%)$") ~= nil
 end
 
-local function is_context_token (token)
+local function is_context_token(token)
   return token:match("^@%S+$") ~= nil
 end
 
-local function is_project_token (token)
+local function is_project_token(token)
   return token:match("^%+%S+$") ~= nil
 end
 
-local function is_key_value_token (token)
+local function is_key_value_token(token)
   if not token:match("^[^%s:]+:[^%s]+$") then return false end
   if token:match("://") then return false end
   return true
 end
 
-local function extend (into, values)
+local function extend(into, values)
   for _, value in ipairs(values) do
     table.insert(into, value)
   end
@@ -100,10 +100,10 @@ end
 local TodoLine = {}
 TodoLine.__index = TodoLine
 
-function TodoLine.parse (line)
+function TodoLine.parse(line)
   local trimmed = vim.trim(line)
   local tokens = (trimmed == "") and {} or
-    vim.split(trimmed, "%s+", { trimempty = true, })
+      vim.split(trimmed, "%s+", { trimempty = true, })
 
   local obj = {
     raw = line,
@@ -155,13 +155,13 @@ function TodoLine.parse (line)
   return obj
 end
 
-function TodoLine:get_meta_value (key)
+function TodoLine:get_meta_value(key)
   local bucket = self.meta[key]
   if not bucket or not bucket[1] then return nil end
   return bucket[1]:match(":(%S+)$")
 end
 
-function TodoLine:set_meta_value (key, date_str)
+function TodoLine:set_meta_value(key, date_str)
   local bucket = self.meta[key]
   if not bucket then
     bucket = {}
@@ -175,7 +175,7 @@ function TodoLine:set_meta_value (key, date_str)
   end
 end
 
-function TodoLine:render ()
+function TodoLine:render()
   if #self.tokens == 0 then return self.raw end
 
   local reordered = {}
@@ -193,7 +193,7 @@ function TodoLine:render ()
   return self.leading .. rebuilt .. self.trailing
 end
 
-local function format_buffer ()
+local function format_buffer()
   local buf = 0
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
   local changed = false
@@ -213,7 +213,7 @@ local function format_buffer ()
   highlight_dates()
 end
 
-local function adjust_meta_date (meta_key, delta)
+local function adjust_meta_date(meta_key, delta)
   local row = vim.api.nvim_win_get_cursor(0)[1]
   local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1] or ""
   if line == "" then return end
@@ -239,15 +239,15 @@ local function adjust_meta_date (meta_key, delta)
   highlight_dates()
 end
 
-local function adjust_due_date (delta)
+local function adjust_due_date(delta)
   adjust_meta_date("due", delta)
 end
 
-local function adjust_threshold_date (delta)
+local function adjust_threshold_date(delta)
   adjust_meta_date("t", delta)
 end
 
-local function map_date_delta (lhs, delta, fn, desc)
+local function map_date_delta(lhs, delta, fn, desc)
   vim.keymap.set("n", lhs, function()
     fn(delta)
   end, { buffer = 0, desc = desc, })
@@ -259,7 +259,7 @@ map_date_delta("<space>tm", -1, adjust_threshold_date, "Decrease threshold date 
 map_date_delta("<space>tp", 1, adjust_threshold_date, "Increase threshold date by 1 day")
 
 -- Sort todo.txt by various criteria
-local function tsort (sort_spec)
+local function tsort(sort_spec)
   -- Parse sort specification (e.g., "due,threshold" or just "due")
   local parts = vim.split(sort_spec, ",", { plain = true, })
   local primary = vim.trim(parts[1])
@@ -282,7 +282,7 @@ local function tsort (sort_spec)
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   local indexed_lines = {}
 
-  local function extract_value (todo, sort_type)
+  local function extract_value(todo, sort_type)
     if sort_type == "due" then return todo:get_meta_value("due") or "" end
     if sort_type == "threshold" then return todo:get_meta_value("t") or "" end
     if sort_type == "project" then
@@ -306,7 +306,7 @@ local function tsort (sort_spec)
   end
 
   -- Helper to compare values (empty values go last)
-  local function compare_values (a, b)
+  local function compare_values(a, b)
     if a == "" and b == "" then return false end
     if a == "" then return false end
     if b == "" then return true end

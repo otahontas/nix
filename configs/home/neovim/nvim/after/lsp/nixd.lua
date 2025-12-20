@@ -3,7 +3,8 @@ return {
     nixd = {
       options = {
         ["home-manager"] = {
-          expr = '(builtins.getFlake "/Users/otahontas/.config/nix-darwin").darwinConfigurations."otabook-work".options.home-manager.users.type.getSubOptions []',
+          expr =
+          '(builtins.getFlake "/Users/otahontas/.config/nix-darwin").darwinConfigurations."otabook-work".options.home-manager.users.type.getSubOptions []',
         },
       },
     },
