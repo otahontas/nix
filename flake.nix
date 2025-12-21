@@ -20,7 +20,6 @@
       self,
       catppuccin,
       home-manager,
-      neovim-nightly-overlay,
       nix-darwin,
       ...
     }:

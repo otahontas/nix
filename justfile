@@ -18,7 +18,10 @@ lint: format _lint-tasks # hack: run format sequentially before running all lint
 
 [parallel]
 [private]
-_lint-tasks: lint-nu lint-nvim
+_lint-tasks: lint-nix lint-nu lint-nvim
+
+lint-nix:
+    nixf-diagnose ...(glob **/*.nix)
 
 lint-nu:
     glob configs/home/**/*.nu | each { |f| nu -c $"source ($f)" } | ignore

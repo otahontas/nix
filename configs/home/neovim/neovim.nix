@@ -63,6 +63,7 @@ in
     pkgs.emmylua-check
 
     # nix
+    pkgs.nixf-diagnose
     pkgs.nixfmt-rfc-style
 
     # python
