@@ -11,90 +11,54 @@ local PATTERNS = {
   completed = "^x %d%d%d%d%-%d%d%-%d%d",
 }
 
--- Valid sort types
-local VALID_SORT_TYPES = { due = true, threshold = true, project = true, context = true, }
-
 -- Cache today's date
 local today = os.date("%Y-%m-%d")
 
 -- Highlight overdue and active threshold dates
-local due_match_id = nil
-local threshold_match_id = nil
+---@type table<string, integer>
+local match_ids = {}
 
 local function highlight_dates()
   -- Clear existing highlights
-  if due_match_id then
-    pcall(vim.fn.matchdelete, due_match_id)
-    due_match_id = nil
-  end
-  if threshold_match_id then
-    pcall(vim.fn.matchdelete, threshold_match_id)
-    threshold_match_id = nil
+  for key, id in pairs(match_ids) do
+    pcall(vim.fn.matchdelete, id)
+    match_ids[key] = nil
   end
 
-  today = os.date("%Y-%m-%d") -- Refresh cached date
+  today = os.date("%Y-%m-%d")
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-  local due_positions = {}
-  local threshold_positions = {}
+  local positions = { due = {}, threshold = {}, }
 
   for lnum, line in ipairs(lines) do
-    -- Skip completed tasks
-    if line:match(PATTERNS.completed) then
-      goto continue
+    if not line:match(PATTERNS.completed) then
+      for key, pattern in pairs({ due = PATTERNS.due, threshold = PATTERNS.threshold, }) do
+        local s, e, date = line:find(pattern)
+        if date and s and e and date <= today then
+          table.insert(positions[key], { lnum, s, e - s + 1, })
+        end
+      end
     end
+  end
 
-    -- Check for overdue tasks
-    local due_start, due_end, date = line:find(PATTERNS.due)
-    if date and date <= today then
-      table.insert(due_positions, { lnum, due_start, due_end - due_start + 1, })
+  local hl = { due = "ErrorMsg", threshold = "DiagnosticInfo", }
+  for key, pos in pairs(positions) do
+    if #pos > 0 then
+      match_ids[key] = vim.fn.matchaddpos(hl[key], pos, 10) --[[@as integer]]
     end
-
-    -- Check for active threshold dates
-    local t_start, t_end, date = line:find(PATTERNS.threshold)
-    if date and date <= today then
-      table.insert(threshold_positions, { lnum, t_start, t_end - t_start + 1, })
-    end
-
-    ::continue::
-  end
-
-  if #due_positions > 0 then
-    due_match_id = vim.fn.matchaddpos("ErrorMsg", due_positions, 10)
-  end
-  if #threshold_positions > 0 then
-    threshold_match_id = vim.fn.matchaddpos("DiagnosticInfo", threshold_positions, 10)
   end
 end
 
--- Token classifiers
+-- Token patterns
+local TOKEN = {
+  date = "^%d%d%d%d%-%d%d%-%d%d$",
+  priority = "^%([A-Z]%)$",
+  context = "^@%S+$",
+  project = "^%+%S+$",
+  key_value = "^[^%s:]+:[^%s]+$",
+}
 
--- Formatting helpers
-local function is_iso_date(token)
-  return token:match("^%d%d%d%d%-%d%d%-%d%d$") ~= nil
-end
-
-local function is_priority_token(token)
-  return token:match("^%([A-Z]%)$") ~= nil
-end
-
-local function is_context_token(token)
-  return token:match("^@%S+$") ~= nil
-end
-
-local function is_project_token(token)
-  return token:match("^%+%S+$") ~= nil
-end
-
-local function is_key_value_token(token)
-  if not token:match("^[^%s:]+:[^%s]+$") then return false end
-  if token:match("://") then return false end
-  return true
-end
-
-local function extend(into, values)
-  for _, value in ipairs(values) do
-    table.insert(into, value)
-  end
+local function is_key_value(token)
+  return token:match(TOKEN.key_value) and not token:match("://")
 end
 
 local TodoLine = {}
@@ -126,29 +90,25 @@ function TodoLine.parse(line)
   if tokens[idx] == "x" then
     table.insert(obj.prefix, tokens[idx])
     idx = idx + 1
-    while tokens[idx] and is_iso_date(tokens[idx]) do
+    while tokens[idx] and tokens[idx]:match(TOKEN.date) do
       table.insert(obj.prefix, tokens[idx])
       idx = idx + 1
     end
   end
 
-  for position = idx, #tokens do
-    local token = tokens[position]
-    if not obj.priority and is_priority_token(token) then
-      obj.priority = token
-    elseif is_context_token(token) then
-      table.insert(obj.contexts, token)
-    elseif is_project_token(token) then
-      table.insert(obj.projects, token)
-    elseif is_key_value_token(token) then
-      local key = token:match("^([^:]+):")
-      if obj.meta[key] then
-        table.insert(obj.meta[key], token)
-      else
-        table.insert(obj.meta.other, token)
-      end
+  for i = idx, #tokens do
+    local t = tokens[i] --[[@as string]]
+    if not obj.priority and t:match(TOKEN.priority) then
+      obj.priority = t
+    elseif t:match(TOKEN.context) then
+      table.insert(obj.contexts, t)
+    elseif t:match(TOKEN.project) then
+      table.insert(obj.projects, t)
+    elseif is_key_value(t) then
+      local key = t:match("^([^:]+):") --[[@as string]]
+      table.insert(obj.meta[key] or obj.meta.other, t)
     else
-      table.insert(obj.description, token)
+      table.insert(obj.description, t)
     end
   end
 
@@ -161,36 +121,24 @@ function TodoLine:get_meta_value(key)
   return bucket[1]:match(":(%S+)$")
 end
 
-function TodoLine:set_meta_value(key, date_str)
-  local bucket = self.meta[key]
-  if not bucket then
-    bucket = {}
-    self.meta[key] = bucket
-  end
-  local token = key .. ":" .. date_str
-  if bucket[1] then
-    bucket[1] = token
-  else
-    table.insert(bucket, token)
-  end
+function TodoLine:set_meta_value(key, value)
+  self.meta[key] = self.meta[key] or {}
+  self.meta[key][1] = key .. ":" .. value
 end
 
 function TodoLine:render()
   if #self.tokens == 0 then return self.raw end
 
-  local reordered = {}
-  extend(reordered, self.prefix)
-  if self.priority then table.insert(reordered, self.priority) end
-  extend(reordered, self.description)
-  extend(reordered, self.contexts)
-  extend(reordered, self.projects)
-  extend(reordered, self.meta.due)
-  extend(reordered, self.meta.t)
-  extend(reordered, self.meta.est)
-  extend(reordered, self.meta.other)
-
-  local rebuilt = table.concat(reordered, " ")
-  return self.leading .. rebuilt .. self.trailing
+  local r = {}
+  vim.list_extend(r, self.prefix)
+  if self.priority then r[#r + 1] = self.priority end
+  vim.list_extend(r, self.description)
+  vim.list_extend(r, self.contexts)
+  vim.list_extend(r, self.projects)
+  for _, key in ipairs({ "due", "t", "est", "other", }) do
+    vim.list_extend(r, self.meta[key])
+  end
+  return self.leading .. table.concat(r, " ") .. self.trailing
 end
 
 local function format_buffer()
@@ -227,151 +175,121 @@ local function adjust_meta_date(meta_key, delta)
   if not (year and month and day) then return end
 
   local timestamp = os.time({
-    year = tonumber(year),
-    month = tonumber(month),
-    day = tonumber(day),
+    year = tonumber(year) --[[@as integer]],
+    month = tonumber(month) --[[@as integer]],
+    day = tonumber(day) --[[@as integer]],
   })
-  timestamp = timestamp + delta * 24 * 60 * 60
-  local new_date = os.date("%Y-%m-%d", timestamp)
+  local adjusted = timestamp + delta * 24 * 60 * 60
+  local new_date = os.date("%Y-%m-%d", adjusted)
 
   todo:set_meta_value(meta_key, new_date)
   vim.api.nvim_buf_set_lines(0, row - 1, row, false, { todo:render(), })
   highlight_dates()
 end
 
-local function adjust_due_date(delta)
-  adjust_meta_date("due", delta)
+for _, m in ipairs({
+  { "<space>dm", "due", -1, "Decrease due date by 1 day", },
+  { "<space>dp", "due", 1,  "Increase due date by 1 day", },
+  { "<space>tm", "t",   -1, "Decrease threshold date by 1 day", },
+  { "<space>tp", "t",   1,  "Increase threshold date by 1 day", },
+}) do
+  vim.keymap.set("n", m[1], function() adjust_meta_date(m[2], m[3]) end,
+    { buffer = 0, desc = m[4], })
 end
 
-local function adjust_threshold_date(delta)
-  adjust_meta_date("t", delta)
-end
-
-local function map_date_delta(lhs, delta, fn, desc)
-  vim.keymap.set("n", lhs, function()
-    fn(delta)
-  end, { buffer = 0, desc = desc, })
-end
-
-map_date_delta("<space>dm", -1, adjust_due_date, "Decrease due date by 1 day")
-map_date_delta("<space>dp", 1, adjust_due_date, "Increase due date by 1 day")
-map_date_delta("<space>tm", -1, adjust_threshold_date, "Decrease threshold date by 1 day")
-map_date_delta("<space>tp", 1, adjust_threshold_date, "Increase threshold date by 1 day")
-
--- Sort todo.txt by various criteria
-local function tsort(sort_spec)
-  -- Parse sort specification (e.g., "due,threshold" or just "due")
-  local parts = vim.split(sort_spec, ",", { plain = true, })
-  local primary = vim.trim(parts[1])
-  local secondary = parts[2] and vim.trim(parts[2]) or nil
-
-  -- Validate sort types
-  if not VALID_SORT_TYPES[primary] then
-    vim.notify(
-      "Invalid primary sort type. Use 'due', 'threshold', 'project', or 'context'",
-      vim.log.levels.WARN)
-    return
-  end
-  if secondary and not VALID_SORT_TYPES[secondary] then
-    vim.notify(
-      "Invalid secondary sort type. Use 'due', 'threshold', 'project', or 'context'",
-      vim.log.levels.WARN)
-    return
-  end
-
+-- Sort todo.txt: due → threshold → context → alphabetical
+local function sort_buffer()
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   local indexed_lines = {}
 
-  local function extract_value(todo, sort_type)
-    if sort_type == "due" then return todo:get_meta_value("due") or "" end
-    if sort_type == "threshold" then return todo:get_meta_value("t") or "" end
-    if sort_type == "project" then
-      local first = todo.projects[1]
-      return first and first:sub(2) or ""
-    end
-    if sort_type == "context" then
-      local first = todo.contexts[1]
-      return first and first:sub(2) or ""
-    end
-    return ""
-  end
-
   for _, line in ipairs(lines) do
     local todo = TodoLine.parse(line)
+    local first_context = todo.contexts[1]
     table.insert(indexed_lines, {
       line = line,
-      primary = extract_value(todo, primary),
-      secondary = secondary and extract_value(todo, secondary) or nil,
+      due = todo:get_meta_value("due") or "",
+      threshold = todo:get_meta_value("t") or "",
+      context = first_context and first_context:sub(2) or "",
     })
   end
 
-  -- Helper to compare values (empty values go last)
-  local function compare_values(a, b)
-    if a == "" and b == "" then return false end
-    if a == "" then return false end
-    if b == "" then return true end
-    return a < b
-  end
-
-  -- Sort with optional secondary value
   table.sort(indexed_lines, function(a, b)
-    -- Primary sort
-    if a.primary ~= b.primary then
-      local result = compare_values(a.primary, b.primary)
-      if result ~= nil then return result end
+    -- Empty values go last in each tier
+    local function cmp(va, vb)
+      if va == "" and vb == "" then return nil end
+      if va == "" then return false end
+      if vb == "" then return true end
+      if va ~= vb then return va < vb end
+      return nil
     end
 
-    -- Secondary sort (if specified)
-    if secondary and a.secondary ~= b.secondary then
-      local result = compare_values(a.secondary, b.secondary)
-      if result ~= nil then return result end
-    end
+    local r = cmp(a.due, b.due)
+    if r ~= nil then return r end
 
-    -- Tertiary: alphabetical
+    r = cmp(a.threshold, b.threshold)
+    if r ~= nil then return r end
+
+    r = cmp(a.context, b.context)
+    if r ~= nil then return r end
+
     return a.line < b.line
   end)
 
-  -- Extract sorted lines
-  local sorted_lines = {}
-  for _, item in ipairs(indexed_lines) do
-    table.insert(sorted_lines, item.line)
-  end
-
+  local sorted_lines = vim.tbl_map(function(item) return item.line end, indexed_lines)
   vim.api.nvim_buf_set_lines(0, 0, -1, false, sorted_lines)
   highlight_dates()
 end
 
-vim.api.nvim_buf_create_user_command(0, "Sort", function(opts)
-  tsort(opts.args)
-end, {
-  nargs = 1,
-  complete = function()
-    return {
-      "due",
-      "due,threshold",
-      "threshold",
-      "threshold,due",
-      "project",
-      "project,due",
-      "context",
-      "context,due",
-    }
-  end,
-})
+vim.api.nvim_buf_create_user_command(0, "Sort", sort_buffer,
+  { desc = "Sort by due, threshold, context, then alphabetically", })
+vim.api.nvim_buf_create_user_command(0, "Format", format_buffer,
+  { desc = "Normalize todo.txt tokens", })
 
-vim.api.nvim_buf_create_user_command(0, "Format", function()
-  format_buffer()
-end, {
-  desc = "Normalize todo.txt tokens",
-})
+-- Diagnostics for missing priority/context
+local ns = vim.api.nvim_create_namespace("todotxt_diagnostics")
+
+local function update_diagnostics()
+  local diagnostics = {}
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+
+  for lnum, line in ipairs(lines) do
+    local todo = TodoLine.parse(line)
+    if #todo.tokens > 0 and todo.prefix[1] ~= "x" then
+      if not todo.priority then
+        table.insert(diagnostics, {
+          lnum = lnum - 1,
+          col = 0,
+          message = "Missing priority",
+          severity = vim.diagnostic.severity.ERROR,
+        })
+      end
+
+      if #todo.contexts == 0 then
+        table.insert(diagnostics, {
+          lnum = lnum - 1,
+          col = 0,
+          message = "Missing context",
+          severity = vim.diagnostic.severity.ERROR,
+        })
+      end
+    end
+  end
+
+  vim.diagnostic.set(ns, 0, diagnostics)
+end
 
 -- Set up autocommands to refresh highlights
 local augroup = vim.api.nvim_create_augroup("TodoTxtHighlight", { clear = true, })
-vim.api.nvim_create_autocmd({ "BufWinEnter", "InsertLeave", "TextChanged", }, {
-  group = augroup,
-  buffer = 0,
-  callback = highlight_dates,
-})
+vim.api.nvim_create_autocmd(
+  { "BufWinEnter", "InsertEnter", "InsertLeave", "TextChanged", }, {
+    group = augroup,
+    buffer = 0,
+    callback = function()
+      highlight_dates()
+      update_diagnostics()
+    end,
+  })
 
--- Initial highlight
+-- Initial highlight and diagnostics
 highlight_dates()
+update_diagnostics()
