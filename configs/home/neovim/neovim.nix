@@ -28,6 +28,7 @@ in
       # LSP servers
       basedpyright
       bash-language-server
+      efm-langserver
       emmylua-ls
       nixd
       postgres-language-server
@@ -54,6 +55,14 @@ in
       workspace.library = [ "${pkgs.neovim-unwrapped}/share/nvim/runtime" ];
     }}
     EOF
+  '';
+
+  # Editorconfig (neovim is main consumer via built-in editorconfig support)
+  home.file.".editorconfig".text = ''
+    root = true
+
+    [*]
+    trim_trailing_whitespace = true
   '';
 
   # Expose select tools to shell (extraPackages only available inside nvim)

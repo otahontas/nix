@@ -19,6 +19,8 @@ vim.b.minipairs_disable = true
 vim.b.miniindentscope_disable = true
 vim.b.minidiff_disable = true
 
+vim.b.format_on_save_disable = true
+
 vim.opt_local.swapfile = false
 vim.opt_local.foldmethod = "manual"
 vim.opt_local.foldenable = false

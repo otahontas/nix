@@ -1,6 +1,19 @@
 local augroup = vim.api.nvim_create_augroup
 local autocmd = vim.api.nvim_create_autocmd
 
+-- Format on save using LSP formatter if configured (editorconfig handles whitespace trimming)
+autocmd("BufWritePre", {
+  callback = function()
+    if vim.b.format_on_save_disable or not vim.b.format_on_save_fn then
+      return
+    end
+    vim.b.format_on_save_fn()
+  end,
+  desc = "Format on save using LSP formatter",
+  group = augroup("FormatOnSave", {}),
+  pattern = "*",
+})
+
 autocmd("TermOpen", {
   callback = function()
     vim.opt_local.spell = false

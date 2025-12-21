@@ -12,13 +12,6 @@ require("utils").add_package({
   -- Enable all LSP servers defined in languages.lua
   vim.lsp.enable(languages.lsps)
 
-  -- Setup auto-formatting on save for filetypes that use LSP formatters
-  local function setup_format_on_save(bufnr, client_id)
-    return function()
-      vim.lsp.buf.format({ bufnr = bufnr, id = client_id, timeout_ms = 500, })
-    end
-  end
-
   vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("EnableFeaturesBasedOnClientCapabilities", {}),
     callback = function(args)
@@ -51,13 +44,14 @@ require("utils").add_package({
         not client:supports_method("textDocument/willSaveWaitUntil")
 
       if is_correct_formatter and supports_formatting and needs_manual_trigger then
-        vim.api.nvim_create_autocmd("BufWritePre", {
-          group = vim.api.nvim_create_augroup(
-            "lsp_autoformat_" .. bufnr,
-            { clear = false, }
-          ),
+        vim.b[bufnr].format_on_save_fn = function()
+          vim.lsp.buf.format({ bufnr = bufnr, id = client.id, timeout_ms = 500, })
+        end
+        -- Disable editorconfig's trim_trailing_whitespace since LSP formatter handles it
+        pcall(vim.api.nvim_clear_autocmds, {
+          event = "BufWritePre",
+          group = "nvim.editorconfig",
           buffer = bufnr,
-          callback = setup_format_on_save(bufnr, client.id),
         })
       end
 

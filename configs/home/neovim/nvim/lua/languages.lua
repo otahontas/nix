@@ -43,7 +43,8 @@ local languages = {
   },
   nu = {
     treesitter = "nu",
-    lsp = { "nushell", },
+    lsp = { "nushell", "efm", },
+    formatter = "efm",
   },
   python = {
     treesitter = "python",
