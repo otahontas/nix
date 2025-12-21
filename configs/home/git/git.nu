@@ -97,6 +97,7 @@ def --env git-worktree-new [branch_name: string] {
   print "✓ Worktree created successfully"
 }
 
+# TODO: copy .local_scripts and lefthook.yml
 def --env git-worktree-pr [pr_number: int@pr-numbers] {
   $env.HUSKY = "0"
 

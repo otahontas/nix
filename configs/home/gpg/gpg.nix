@@ -11,8 +11,9 @@
   services.gpg-agent = {
     enable = true;
     enableSshSupport = false;
-    pinentry.package = pkgs.pinentry_mac;
+    pinentry.package = pkgs.pinentry_mac; # TODO: pinentry touch id
     defaultCacheTtl = 7200;
     maxCacheTtl = 7200;
+    # TODO: gpg subkeys for ssh
   };
 }

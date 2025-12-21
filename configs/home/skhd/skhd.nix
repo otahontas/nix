@@ -1,24 +1,13 @@
 { pkgs, config, ... }:
-let
-  homeDir = config.home.homeDirectory;
-  findApps = ''find -L /Applications /System/Applications -maxdepth 3 -name "*.app" 2>/dev/null; find -L ${homeDir}/Applications -maxdepth 3 -name "*.app" 2>/dev/null'';
-  formatApps = ''sed "s|.*/||;s|\.app\$||" | sort -u'';
-  launchApp = ''${pkgs.choose-gui}/bin/choose | xargs -I{} open -a "{}"'';
-in
 {
   home.packages = with pkgs; [
     skhd
     choose-gui
-    less
-    coreutils
   ];
-  home.file.".skhdrc".text = ''
-    # App launcher
-    cmd - space : sh -c '(${findApps}) | ${formatApps} | ${launchApp}'
-
-    # Screenshot area to clipboard
-    shift + ctrl + alt + cmd - p : screencapture -i -c
-  '';
+  home.file.".skhdrc".source = pkgs.replaceVars ./.skhdrc.in {
+    home_dir = config.home.homeDirectory;
+    choose_bin = "${pkgs.choose-gui}/bin/choose";
+  };
 
   launchd.agents.skhd = {
     enable = true;

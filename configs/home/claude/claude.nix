@@ -11,7 +11,6 @@ let
     map (
       filename:
       let
-        # Extract hook name from filename (e.g., "block-claude-attribution.md" -> "block-claude-attribution")
         hookName = builtins.replaceStrings [ ".md" ] [ "" ] filename;
       in
       {

@@ -8,6 +8,8 @@
       default_shell = "${pkgs.nushell}/bin/nu";
       show_startup_tips = false;
     };
+    # Extra config needs to be injected here to make sure XDG dirs are set for nushell
+    # All the other env vars are set through nushells own config files
     extraConfig = ''
       env {
         HOME "${config.home.homeDirectory}"

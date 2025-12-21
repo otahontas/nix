@@ -1,5 +1,6 @@
 { ... }:
 {
+  # TODO: check this through and especially remove 1passowrd setup
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;

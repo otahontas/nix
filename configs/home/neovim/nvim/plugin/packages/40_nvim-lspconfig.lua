@@ -37,7 +37,10 @@ require("utils").add_package({
         end, { buffer = bufnr, desc = "Toggle inlay hints", })
       end
 
+      -- TODO: on type formatting? https://www.reddit.com/r/neovim/comments/1n59kir/neovim_now_supports_lsp_ontype_formatting/
+
       -- Setup auto-formatting on save if the client is marked as the formatter for this filetype
+      -- TODO: check if this is what I actually want
       local is_correct_formatter = formatter == client.name
       local supports_formatting = client:supports_method("textDocument/formatting")
       local needs_manual_trigger =
@@ -63,22 +66,23 @@ require("utils").add_package({
       end
 
       -- Setup inline completion if supported
-      if client:supports_method(vim.lsp.protocol.Methods.textDocument_inlineCompletion, bufnr) then
-        vim.lsp.inline_completion.enable(true, { bufnr = bufnr, })
+      -- TODO: this is atm shitty compared to copilot.lua so keeping the copilot.lua still. should setup this in the future at some point
+      -- if client:supports_method(vim.lsp.protocol.Methods.textDocument_inlineCompletion, bufnr) then
+      -- vim.lsp.inline_completion.enable(true, { bufnr = bufnr, })
 
-        vim.keymap.set(
-          "i",
-          "<C-L>",
-          vim.lsp.inline_completion.get,
-          { desc = "LSP: accept inline completion", buffer = bufnr, }
-        )
-        vim.keymap.set(
-          "i",
-          "<C-B>",
-          vim.lsp.inline_completion.select,
-          { desc = "LSP: switch inline completion", buffer = bufnr, }
-        )
-      end
+      -- vim.keymap.set(
+      --   "i",
+      --   "<C-L>",
+      --   vim.lsp.inline_completion.get,
+      --   { desc = "LSP: accept inline completion", buffer = bufnr, }
+      -- )
+      -- vim.keymap.set(
+      --   "i",
+      --   "<C-B>",
+      --   vim.lsp.inline_completion.select,
+      --   { desc = "LSP: switch inline completion", buffer = bufnr, }
+      -- )
+      -- end
     end,
   })
 end)

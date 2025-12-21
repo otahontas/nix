@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-# Use full path to yabai for launchd compatibility
+# TODO: check why this doesn't work properly
 YABAI="@yabai_bin@"
 
 # Ignore specific apps

@@ -86,16 +86,12 @@ local extra_treesitters = {
   "query",
 }
 
--- LSPs that arent' directly tied to a spesific filetype
-local extra_lsps = {
-  "copilot",
-}
 
 -- Module exports
 local M = {}
 M.filetypes = vim.tbl_keys(languages)
 M.treesitters = vim.list_extend({}, extra_treesitters)
-M.lsps = vim.list_extend({}, extra_lsps)
+M.lsps = {}
 M.formatters = {}
 
 vim.iter(languages):each(function(filetype, config)

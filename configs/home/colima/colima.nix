@@ -9,6 +9,7 @@
     docker-client
     docker-credential-helpers
   ];
+  # TODO: replace with merging config from here (takes precendence) with current .docker/config.json
   home.activation.dockerConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     mkdir -p ~/.docker
     if [ ! -f ~/.docker/config.json ]; then

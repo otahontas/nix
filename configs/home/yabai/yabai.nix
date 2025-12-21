@@ -4,7 +4,7 @@
     yabai
   ];
   home.file.".yabairc" = {
-    source = pkgs.replaceVars ./yabairc.sh {
+    source = pkgs.replaceVars ./.yabairc.in {
       yabai_bin = "${pkgs.yabai}/bin/yabai";
     };
     executable = true;

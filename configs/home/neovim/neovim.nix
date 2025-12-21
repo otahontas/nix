@@ -45,6 +45,7 @@ in
     recursive = true;
   };
 
+  # TODO: replace with just replacing neovim-unwrapped pkg binary path + external .luarc.json.in file
   # Generate .luarc.json in source dir for emmylua_check (needs VIMRUNTIME path)
   home.activation.generateLuarc = ''
         cat > ~/.config/nix-darwin/configs/home/neovim/nvim/.luarc.json << 'EOF'
@@ -58,6 +59,7 @@ in
   '';
 
   # Editorconfig (neovim is main consumer via built-in editorconfig support)
+  # TODO: replace with .editorconfig.in from this folder
   home.file.".editorconfig".text = ''
     root = true
 
