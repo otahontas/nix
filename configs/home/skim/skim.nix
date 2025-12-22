@@ -6,4 +6,5 @@
     enableBashIntegration = false;
     enableZshIntegration = false;
   };
+  programs.nushell.extraConfig = builtins.readFile ./config.nu;
 }

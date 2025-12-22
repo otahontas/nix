@@ -4,8 +4,11 @@
     carapace
   ];
 
-  programs.nushell.environmentVariables = {
-    CARAPACE_BRIDGES = "zsh,fish,bash,inshellisense";
-    CARAPACE_MATCH = "1";
+  programs.nushell = {
+    extraConfig = builtins.readFile ./config.nu;
+    environmentVariables = {
+      CARAPACE_BRIDGES = "zsh,fish,bash,inshellisense";
+      CARAPACE_MATCH = "1";
+    };
   };
 }

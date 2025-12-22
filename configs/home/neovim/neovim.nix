@@ -88,8 +88,11 @@ in
     inputs.topiary-nushell.packages.aarch64-darwin.default
   ];
 
-  programs.nushell.environmentVariables = {
-    VISUAL = "nvim";
-    EDITOR = "nvim";
+  programs.nushell = {
+    extraConfig = builtins.readFile ./config.nu;
+    environmentVariables = {
+      VISUAL = "nvim";
+      EDITOR = "nvim";
+    };
   };
 }

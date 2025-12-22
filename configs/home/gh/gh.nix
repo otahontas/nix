@@ -13,4 +13,5 @@
       };
     };
   };
+  programs.nushell.extraConfig = builtins.readFile ./config.nu;
 }

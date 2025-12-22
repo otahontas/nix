@@ -27,4 +27,5 @@
       StandardErrorPath = "/tmp/generate-aws-config.err.log";
     };
   };
+  programs.nushell.extraConfig = builtins.readFile ./config.nu;
 }

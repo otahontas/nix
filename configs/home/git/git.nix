@@ -111,4 +111,5 @@
   xdg.configFile."commitlint/commitlint.config.mjs" = {
     source = ./commitlint.config.mjs;
   };
+  programs.nushell.extraConfig = builtins.readFile ./config.nu;
 }

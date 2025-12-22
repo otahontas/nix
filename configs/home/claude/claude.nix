@@ -31,4 +31,5 @@ in
     ".claude/commands/catch-up.md".source = ./commands/catch-up.md;
   }
   // hookMappings;
+  programs.nushell.extraConfig = builtins.readFile ./config.nu;
 }
