@@ -1,9 +1,1 @@
-env=~/.config/nix-darwin/envs/monorepo-3.0
-
-case "$PWD" in
-  */simple-client/*)
-    env=~/.config/nix-darwin/envs/monorepo-3.0/simple-client
-    ;;
-esac
-
-use flake "$env"
+use flake ~/.config/nix-darwin/envs/monorepo-3.0
