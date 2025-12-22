@@ -1,2 +1,9 @@
-source_up_if_exists
-use flake ~/.config/nix-darwin/envs/monorepo-3.0
+env=~/.config/nix-darwin/envs/monorepo-3.0
+
+case "$PWD" in
+  */simple-client/*)
+    env=~/.config/nix-darwin/envs/monorepo-3.0/simple-client
+    ;;
+esac
+
+use flake "$env"
