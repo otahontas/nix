@@ -1,5 +1,4 @@
 {
-  pkgs,
   lib,
   ...
 }:
@@ -20,11 +19,6 @@ let
   coreConfig = builtins.readFile ./nushell.nu;
 in
 {
-  home.packages = with pkgs; [
-    (llm.withPlugins {
-      llm-cmd = true;
-    })
-  ];
   catppuccin.nushell.enable = true;
   programs.nushell = {
     enable = true;
