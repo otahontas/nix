@@ -204,9 +204,3 @@ def --env git-worktree-cd [branch_name: string@worktree-names] {
 
   cd $worktree_path
 }
-
-alias gsw = git sw
-alias gwcd = git-worktree-cd
-alias gwnew = git-worktree-new
-alias gwpr = git-worktree-pr
-alias gwprune = git-worktree-prune

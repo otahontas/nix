@@ -49,27 +49,16 @@ in
     recursive = true;
   };
 
-  # TODO: replace with just replacing neovim-unwrapped pkg binary path + external .luarc.json.in file
-  # Generate .luarc.json in source dir for emmylua_check (needs VIMRUNTIME path)
-  home.activation.generateLuarc = ''
-        cat > ~/.config/nix-darwin/configs/home/neovim/nvim/.luarc.json << 'EOF'
-    ${builtins.toJSON {
-      "$schema" =
-        "https://raw.githubusercontent.com/EmmyLuaLs/emmylua-analyzer-rust/refs/heads/main/crates/emmylua_code_analysis/resources/schema.json";
-      runtime.version = "LuaJIT";
-      workspace.library = [ "${pkgs.neovim-unwrapped}/share/nvim/runtime" ];
-    }}
-    EOF
-  '';
+  # .luarc.json for emmylua_check (needs VIMRUNTIME path)
+  xdg.configFile."nix-darwin/configs/home/neovim/nvim/.luarc.json".source =
+    pkgs.replaceVars ./.luarc.json.in
+      {
+        nvim_runtime = "${pkgs.neovim-unwrapped}/share/nvim/runtime";
+      };
 
   # Editorconfig (neovim is main consumer via built-in editorconfig support)
-  # TODO: replace with .editorconfig.in from this folder
-  home.file.".editorconfig".text = ''
-    root = true
-
-    [*]
-    trim_trailing_whitespace = true
-  '';
+  # using .editorconfig.in, the file shouldn't be considered as editorconfig in this folder by tools
+  home.file.".editorconfig".source = ./.editorconfig.in;
 
   # Expose select tools to shell (extraPackages only available inside nvim)
   home.packages = [
@@ -89,10 +78,12 @@ in
   ];
 
   programs.nushell = {
-    extraConfig = builtins.readFile ./config.nu;
     environmentVariables = {
       VISUAL = "nvim";
       EDITOR = "nvim";
+    };
+    shellAliases = {
+      todo = "nvim ~/Documents/todo/todo.txt";
     };
   };
 }

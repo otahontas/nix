@@ -23,6 +23,7 @@ Nix-darwin system configuration with Nushell shell.
 ## Template interpolation
 - Files needing nix values: `filename.in` with `@variable@` syntax
 - Use `pkgs.replaceVars ./file.in { var = value; }`
+- `.in` suffix also useful to prevent tools from detecting config files in source tree
 - Example: `configs/home/vivid/vivid.nix`
 
 ## Launchd agents

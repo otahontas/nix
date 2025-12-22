@@ -10,18 +10,7 @@
     docker-client
     docker-credential-helpers
   ];
-  # TODO: replace with merging config from here (takes precendence) with current .docker/config.json
-  home.activation.dockerConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    mkdir -p ~/.docker
-    if [ ! -f ~/.docker/config.json ]; then
-      echo '${
-        builtins.toJSON {
-          credsStore = "pass";
-          currentContext = "colima";
-        }
-      }' > ~/.docker/config.json
-    fi
-  '';
+  home.file.".docker/config.json".source = ./docker-config.json;
   launchd.agents.colima = {
     enable = true;
     config = {

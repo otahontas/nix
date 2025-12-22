@@ -31,5 +31,15 @@ in
     ".claude/commands/catch-up.md".source = ./commands/catch-up.md;
   }
   // hookMappings;
-  programs.nushell.extraConfig = builtins.readFile ./config.nu;
+  programs.nushell = {
+    extraConfig = builtins.readFile ./config.nu;
+    shellAliases = {
+      c = "claude";
+      cc = "claude -c";
+      cr = "claude -r";
+      colo = "claude --dangerously-skip-permissions";
+      ccolo = "claude -c --dangerously-skip-permissions";
+      crolo = "claude -r --dangerously-skip-permissions";
+    };
+  };
 }

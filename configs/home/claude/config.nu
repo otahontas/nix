@@ -1,10 +1,3 @@
-alias c = claude
-alias cc = claude -c
-alias cr = claude -r
-alias colo = claude --dangerously-skip-permissions
-alias ccolo = claude -c --dangerously-skip-permissions
-alias crolo = claude -r --dangerously-skip-permissions
-
 # Helper to call OpenAI API
 def ai-call [messages: list]: nothing -> string {
   let api_key = (^pass show api/openai-shell-ai | lines | first)

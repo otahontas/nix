@@ -12,6 +12,13 @@
     environmentVariables = {
       SHELL = lib.getExe pkgs.nushell;
     };
+    shellAliases = {
+      la = "ls -a";
+      ll = "ls -l";
+      lla = "ls -la";
+      "..." = "cd ../..";
+      "...." = "cd ../../..";
+    };
     settings = {
       show_banner = false;
       edit_mode = "vi";

@@ -111,5 +111,14 @@
   xdg.configFile."commitlint/commitlint.config.mjs" = {
     source = ./commitlint.config.mjs;
   };
-  programs.nushell.extraConfig = builtins.readFile ./config.nu;
+  programs.nushell = {
+    extraConfig = builtins.readFile ./config.nu;
+    shellAliases = {
+      gsw = "git sw";
+      gwcd = "git-worktree-cd";
+      gwnew = "git-worktree-new";
+      gwpr = "git-worktree-pr";
+      gwprune = "git-worktree-prune";
+    };
+  };
 }
