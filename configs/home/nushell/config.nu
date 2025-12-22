@@ -1,3 +1,13 @@
+# Zoxide custom completer
+def zoxide-completions [] {
+  zoxide query -l | lines | where {|line| $line != "" }
+}
+
+# Override z command to use custom completer
+def --env --wrapped z [...rest: string@zoxide-completions] {
+  __zoxide_z ...$rest
+}
+
 $env.config.keybindings ++= [
   {
     name: completion_menu

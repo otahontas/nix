@@ -32,5 +32,8 @@
   programs.nushell.environmentVariables = {
     DOCKER_HOST = "unix://${config.home.homeDirectory}/.colima/default/docker.sock";
     TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE = "/var/run/docker.sock";
+    NODE_OPTIONS = "--dns-result-order=ipv4first";
   };
+
+  programs.ssh.includes = [ "~/.colima/ssh_config" ];
 }

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   home.packages = with pkgs; [
     git-crypt
@@ -9,17 +9,13 @@
   programs.git = {
     enable = true;
     signing = {
-      key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNqZN/gQy2WDb5T4f9dLpmNQ1YhJDfq3eB12lZDvX8J";
+      key = "B4104CD4A4D2C973";
       signByDefault = true;
     };
     settings = {
       user = {
         name = "Otto Ahoniemi";
         email = "otto@ottoahoniemi.fi";
-      };
-      gpg = {
-        format = "ssh";
-        ssh.program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
       };
       push = {
         default = "matching";
@@ -41,6 +37,7 @@
       difftool.nvim_difftool.cmd = ''nvim -c "packadd nvim.difftool" -c "DiffTool $LOCAL $REMOTE"'';
       tag.gpgsign = true;
       commit.gpgsign = true;
+      gpg.ssh.allowedSignersFile = "${config.home.homeDirectory}/.ssh/allowed_signers";
       init.defaultBranch = "main";
       rerere = {
         enabled = true;
@@ -74,6 +71,7 @@
         hist = "log --pretty=format:'%h %aD | %s%d [%an]' --graph --date=short";
         ignore = "!gi() { curl -sL https://www.toptal.com/developers/gitignore/api/$@ ;}; gi";
         last = "log -1 HEAD";
+        logs = "log --show-signature";
         mt = "mergetool";
         poh = "push origin HEAD";
         pohf = "push --force origin HEAD";
@@ -108,6 +106,7 @@
   xdg.configFile."git/lefthook.yml" = {
     source = ./lefthook.yml;
   };
+  home.file.".ssh/allowed_signers".source = ./allowed_signers;
   xdg.configFile."commitlint/commitlint.config.mjs" = {
     source = ./commitlint.config.mjs;
   };
