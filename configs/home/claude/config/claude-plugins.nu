@@ -1,3 +1,4 @@
+# TODO: exctract as script, run through justfile when updating everything in nix
 def claude-update-all [] {
   print "Updating marketplaces..."
   ^claude plugin marketplace update

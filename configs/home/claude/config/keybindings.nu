@@ -1,4 +1,5 @@
 # Keybindings for AI command generation
+# TODO: move to ai setup
 $env.config.keybindings ++= [
   {
     name: ai_command_generate
