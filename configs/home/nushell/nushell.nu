@@ -7,25 +7,6 @@ $env.PATH = (
   | uniq
 )
 
-$env.config.show_banner = false
-$env.config.completions = {
-  case_sensitive: false
-  algorithm: "fuzzy"
-  quick: true
-  partial: true
-  use_ls_colors: true
-}
-$env.config.history = {
-  max_size: 10000
-  sync_on_enter: true
-  file_format: "sqlite"
-  isolation: false
-}
-$env.config.edit_mode = "vi"
-$env.config.cursor_shape = {
-  vi_insert: line
-  vi_normal: block
-}
 $env.config.keybindings ++= [
   {
     name: completion_menu
