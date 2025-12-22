@@ -1,4 +1,10 @@
 # Helper to call OpenAI API
+# TODO: a lot betterments needed:
+# - regen iterative approach doesn't work well: what's better ux here? some sort of
+# loop, piping to another command dunno?
+# - should save the original prompt somehow to nushell history too
+#
+# also should split the file into smaller pieces (modules, nushell has support)
 def ai-call [messages: list]: nothing -> string {
   let api_key = (^pass show api/openai-shell-ai | lines | first)
 
@@ -90,12 +96,18 @@ def ai-fix-last []: nothing -> string {
   let last_cmd = (history | last 1 | get command | first)
   let context = (ai-context)
 
+  # Re-run the command to capture the actual error message
+  let result = (do { nu -c $last_cmd } | complete)
+  let error = $result.stderr
+
   let user_prompt = $"CONTEXT:
 - Shell: ($context.shell)
 - OS: ($context.os)
 - Current directory: ($context.cwd)
 
 The following command failed:($last_cmd)
+
+Error message:($error)
 
 Please provide a corrected version. Output ONLY the fixed command, no explanations."
 
