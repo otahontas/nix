@@ -1,0 +1,2 @@
+# override global .envrc ignore. .envrc:s should be git added here since those are part of the config
+!.envrc
