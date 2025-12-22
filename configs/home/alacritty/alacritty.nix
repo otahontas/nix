@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   catppuccin.alacritty.enable = true;
   programs.alacritty = {
@@ -20,7 +20,7 @@
         size = 14;
       };
       terminal.shell = {
-        program = "${pkgs.zellij}/bin/zellij";
+        program = lib.getExe pkgs.zellij;
         args = [
           "-l"
           "welcome"

@@ -1,11 +1,16 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 {
   catppuccin.zellij.enable = true;
 
   programs.zellij = {
     enable = true;
     settings = {
-      default_shell = "${pkgs.nushell}/bin/nu";
+      default_shell = lib.getExe pkgs.nushell;
       show_startup_tips = false;
     };
     # Extra config needs to be injected here to make sure XDG dirs are set for nushell

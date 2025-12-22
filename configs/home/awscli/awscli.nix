@@ -1,5 +1,6 @@
 {
   pkgs,
+  lib,
   config,
   ...
 }:
@@ -13,9 +14,9 @@
     enable = true;
     config = {
       ProgramArguments = [
-        "${pkgs.nushell}/bin/nu"
+        (lib.getExe pkgs.nushell)
         "${config.home.homeDirectory}/.local/bin/generate-aws-config"
-        "${pkgs.pass}/bin/pass"
+        (lib.getExe pkgs.pass)
       ];
       EnvironmentVariables = {
         PASSWORD_STORE_DIR = "${config.home.homeDirectory}/.local/share/password-store";

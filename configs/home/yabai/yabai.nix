@@ -1,18 +1,18 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   home.packages = with pkgs; [
     yabai
   ];
   home.file.".yabairc" = {
     source = pkgs.replaceVars ./.yabairc.in {
-      yabai_bin = "${pkgs.yabai}/bin/yabai";
+      yabai_bin = lib.getExe pkgs.yabai;
     };
     executable = true;
   };
   launchd.agents.yabai = {
     enable = true;
     config = {
-      ProgramArguments = [ "${pkgs.yabai}/bin/yabai" ];
+      ProgramArguments = [ (lib.getExe pkgs.yabai) ];
       EnvironmentVariables = {
         PATH = "${pkgs.yabai}/bin:/run/current-system/sw/bin:/usr/bin:/bin";
       };
