@@ -1,0 +1,13 @@
+set fallback
+
+default:
+
+format:
+    CodeFormat format -w nvim/ -c nvim/.editorconfig
+
+lint:
+    emmylua_check nvim/
+
+update-codeformat:
+    nu update-codeformat.nu
+

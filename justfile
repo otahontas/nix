@@ -37,3 +37,11 @@ verify: lint check-flake
 
 apply: verify
     sudo darwin-rebuild switch --flake ~/.config/nix-darwin
+
+update-codeformat:
+    just configs/home/neovim/nvim/update-codeformat
+
+update-flake:
+    nix flake update
+
+update: update-codeformat update-flake

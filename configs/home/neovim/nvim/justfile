@@ -1,9 +1,0 @@
-set fallback
-
-default:
-
-format:
-    CodeFormat format -w . -c .editorconfig
-
-lint:
-    emmylua_check .
