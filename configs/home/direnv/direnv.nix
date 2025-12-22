@@ -12,9 +12,11 @@ let
     let
       targetFile = envsDir + "/${name}/target";
       targetPath = builtins.replaceStrings [ "\n" "\r" ] [ "" "" ] (builtins.readFile targetFile);
+      # Use .envrc.in to avoid direnv triggering in source tree
+      envrcFile = envsDir + "/${name}/.envrc.in";
     in
     {
-      "${targetPath}/.envrc".source = envsDir + "/${name}/.envrc";
+      "${targetPath}/.envrc".source = envrcFile;
     };
 
   envSymlinks = builtins.foldl' (acc: name: acc // (mkEnvSymlink name)) { } envNames;
