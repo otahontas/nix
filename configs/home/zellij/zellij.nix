@@ -10,6 +10,7 @@
     enable = true;
     settings = {
       default_shell = lib.getExe pkgs.nushell;
+      default_mode = "locked";
       show_startup_tips = false;
       env = {
         # Extra config needs to be injected here to make sure XDG dirs are set for nushell,
@@ -22,5 +23,19 @@
         XDG_BIN_HOME = "${config.home.homeDirectory}/.local/bin"; # not standard, but useful
       };
     };
+    extraConfig = ''
+      keybinds {
+        locked {
+          unbind "Ctrl g"
+          bind "Alt ;" { SwitchToMode "Normal"; }
+          bind "Alt [" { MoveFocusOrTab "Left"; }
+          bind "Alt ]" { MoveFocusOrTab "Right"; }
+        }
+        shared_except "locked" {
+          unbind "Ctrl g"
+          bind "Alt ;" { SwitchToMode "Locked"; }
+        }
+      }
+    '';
   };
 }
