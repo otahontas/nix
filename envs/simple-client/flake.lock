@@ -1,5 +1,20 @@
 {
   "nodes": {
+    "dev-env": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1,
+        "narHash": "sha256-rsTkHpeplQ9H6PzHankxWH2TJ4gKeqB2wNUBKOSAghI=",
+        "path": "../../lib/dev-env",
+        "type": "path"
+      },
+      "original": {
+        "path": "../../lib/dev-env",
+        "type": "path"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1766309749,
@@ -18,7 +33,7 @@
     },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs"
+        "dev-env": "dev-env"
       }
     }
   },
