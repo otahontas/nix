@@ -34,7 +34,7 @@
 ## Multi-step task workflow:
 - For complex tasks only: write plan in markdown file first. Use your judgment to determine if a task is "complex"—if it involves multiple steps, file modifications, or research, it's better to plan first.
 - Work incrementally: complete one step, then explicitly run verification commands (e.g., build, lint, test).
-- After verification passes, commit the changes. This ensures that automated pre-commit hooks (see Git Hooks section) will also pass.
+- After verification passes, commit the changes. This ensures that automated pre-commit hooks will also pass.
 - Only commit when a step is fully working.
 - Don't create plans/markdown for simple single-step tasks
 
