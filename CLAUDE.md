@@ -19,6 +19,22 @@ Nix-darwin system configuration with Nushell shell.
 - Config files: `xdg.configFile` or `home.file` with `.source`, not inline `text`
 - Directories: add `recursive = true`
 - Merging attrs: use `//` operator
+- Path preference: `config.xdg.*` > `config.home.homeDirectory` > hardcoded paths
+- Executable scripts: use `home.file.<path>.executable = true`
+
+## Theming
+- Check for catppuccin support when adding new tools: `catppuccin.<tool>.enable = true`
+- Example: `configs/home/delta/delta.nix`
+
+## Runtime wrappers
+Tools needing isolated runtimes (node, python) use wrapper scripts:
+```nix
+pkgs.writeShellScriptBin "toolname" ''
+  export PATH="${pkgs.nodejs_24}/bin:$PATH"
+  exec ${lib.getExe pkgs.actual-tool} "$@"
+''
+```
+- Example: `configs/home/claude/claude.nix`
 
 ## Template interpolation
 - Files needing nix values: `filename.in` with `@variable@` syntax
@@ -30,7 +46,3 @@ Nix-darwin system configuration with Nushell shell.
 For services needing user environment (secrets, GPG, password-store):
 - Use `RunAtLoad = true` (runs after login with full env access)
 - Examples: `configs/home/awscli/awscli.nix`, `configs/home/colima/colima.nix`
-
-## Activation scripts
-For one-time setup after files are written, use `lib.hm.dag.entryAfter [ "writeBoundary" ]`
-- Example: `configs/home/colima/colima.nix`

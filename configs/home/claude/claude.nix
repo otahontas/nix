@@ -32,7 +32,11 @@ in
   }
   // hookMappings;
   programs.nushell = {
-    extraConfig = builtins.readFile ./config.nu;
+    extraConfig = builtins.concatStringsSep "\n" [
+      (builtins.readFile ./config/ai-helpers.nu)
+      (builtins.readFile ./config/keybindings.nu)
+      (builtins.readFile ./config/claude-plugins.nu)
+    ];
     shellAliases = {
       c = "claude";
       cc = "claude -c";
