@@ -12,8 +12,9 @@
     enable = true;
     enableSshSupport = false;
     pinentry.package = pkgs.pinentry_mac; # TODO: pinentry touch id
-    defaultCacheTtl = 7200;
-    maxCacheTtl = 7200;
+    defaultCacheTtl = 300;
+    maxCacheTtl = 900;
+    extraConfig = "no-allow-external-cache";
     # TODO: gpg subkeys for ssh
   };
 }
