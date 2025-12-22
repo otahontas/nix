@@ -2,7 +2,7 @@
 name: block-secret-tools
 enabled: true
 event: bash
-pattern: (^|\s)(pass|op|gpg\s+(--decrypt|-d))(\s|$)
+pattern: (^|\s)(pass|gpg\s+(--decrypt|-d|--export-secret-keys|--export-secret-subkeys|--list-secret-keys|-K))(\s|$)
 action: block
 ---
 
@@ -10,8 +10,9 @@ action: block
 
 You've configured Claude Code to never run commands that could expose secrets:
 - `pass` (password-store)
-- `op` (1Password CLI)
 - `gpg --decrypt` / `gpg -d` (GPG decryption)
+- `gpg --export-secret-keys` / `gpg --export-secret-subkeys` (private key export)
+- `gpg --list-secret-keys` / `gpg -K` (secret key listing)
 
 **Why this is blocked:**
 Running these commands would expose your secrets in the conversation context, which is a security risk.
