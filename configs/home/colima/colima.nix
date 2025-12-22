@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  config,
   ...
 }:
 {
@@ -37,5 +38,10 @@
       StandardOutPath = "/tmp/colima.out.log";
       StandardErrorPath = "/tmp/colima.err.log";
     };
+  };
+
+  programs.nushell.environmentVariables = {
+    DOCKER_HOST = "unix://${config.home.homeDirectory}/.colima/default/docker.sock";
+    TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE = "/var/run/docker.sock";
   };
 }

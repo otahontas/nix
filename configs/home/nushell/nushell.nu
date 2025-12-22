@@ -1,5 +1,3 @@
-$env.SHELL = (which nu).path.0
-
 $env.PATH = (
   $env.PATH | split row (char esep)
   | prepend $"($env.HOME)/.local/bin"
@@ -8,15 +6,6 @@ $env.PATH = (
   | prepend "/nix/var/nix/profiles/default/bin"
   | uniq
 )
-
-# TODO: move to neovim.nu or neovim.nix
-$env.VISUAL = "nvim"
-$env.EDITOR = "nvim"
-
-# TODO; move to colima.nu or colima.nix
-$env.DOCKER_HOST = $"unix://($env.HOME)/.colima/default/docker.sock"
-$env.TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE = "/var/run/docker.sock"
-$env.NODE_OPTIONS = "--dns-result-order=ipv4first"
 
 $env.config.show_banner = false
 $env.config.completions = {

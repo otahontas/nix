@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   programs.password-store = {
     enable = true;
@@ -8,7 +8,7 @@
     };
   };
 
-  programs.nushell.extraEnv = ''
-    $env.PASSWORD_STORE_DIR = $"($env.HOME)/.local/share/password-store"
-  '';
+  programs.nushell.environmentVariables = {
+    PASSWORD_STORE_DIR = "${config.home.homeDirectory}/.local/share/password-store";
+  };
 }

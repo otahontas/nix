@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   ...
 }:
 let
@@ -23,5 +24,8 @@ in
   programs.nushell = {
     enable = true;
     extraConfig = coreConfig + "\n" + allIntegrations;
+    environmentVariables = {
+      SHELL = lib.getExe pkgs.nushell;
+    };
   };
 }

@@ -1,4 +1,8 @@
-{ pkgs, inputs, ... }:
+{
+  pkgs,
+  inputs,
+  ...
+}:
 let
   codeformat = pkgs.stdenv.mkDerivation rec {
     pname = "codeformat";
@@ -83,4 +87,9 @@ in
     # nushell
     inputs.topiary-nushell.packages.aarch64-darwin.default
   ];
+
+  programs.nushell.environmentVariables = {
+    VISUAL = "nvim";
+    EDITOR = "nvim";
+  };
 }
