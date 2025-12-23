@@ -5,6 +5,26 @@ let
     exec ${lib.getExe pkgs.claude-code} "$@"
   '';
 
+  starshipConfig = ./starship-claude.toml;
+
+  statuslineScript = pkgs.writeShellScript "claude-statusline" ''
+    input=$(cat)
+    cwd=$(echo "$input" | ${lib.getExe pkgs.jq} -r '.workspace.current_dir')
+    model=$(echo "$input" | ${lib.getExe pkgs.jq} -r '.model.display_name')
+
+    # Run starship with claude-specific config
+    prompt=$(STARSHIP_CONFIG="${starshipConfig}" ${lib.getExe pkgs.starship} prompt -p "$cwd" 2>/dev/null | tr -d '\n')
+
+    # Append model name in subtext color
+    printf '%s \033[38;2;108;111;133m%s\033[0m' "$prompt" "$model"
+  '';
+
+  settingsJson = pkgs.runCommand "claude-settings.json" { } ''
+    ${lib.getExe pkgs.jq} --arg cmd "${statuslineScript}" \
+      '.statusLine.command = $cmd' \
+      ${./settings.json} > $out
+  '';
+
   hooksDir = ./hooks;
   hookFiles = builtins.attrNames (builtins.readDir hooksDir);
   hookMappings = builtins.listToAttrs (
@@ -27,7 +47,7 @@ in
 
   home.file = {
     ".claude/CLAUDE.md".source = ./CLAUDE.md;
-    ".claude/settings.json".source = ./settings.json;
+    ".claude/settings.json".source = settingsJson;
     ".claude/commands/catch-up.md".source = ./commands/catch-up.md;
   }
   // hookMappings;

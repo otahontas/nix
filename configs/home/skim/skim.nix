@@ -6,5 +6,6 @@
     enableBashIntegration = false;
     enableZshIntegration = false;
   };
-  programs.nushell.extraConfig = builtins.readFile ./config.nu;
+  # Keybindings replaced by television - see configs/home/television/
+  # programs.nushell.extraConfig = builtins.readFile ./config.nu;
 }

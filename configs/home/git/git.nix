@@ -9,7 +9,7 @@
   programs.git = {
     enable = true;
     signing = {
-      key = "B4104CD4A4D2C973";
+      key = "26E61F9D378C7358";
       signByDefault = true;
     };
     settings = {

@@ -1,7 +1,7 @@
 {
   "statusLine": {
     "type": "command",
-    "command": "input=$(cat); cwd=$(echo \"$input\" | jq -r '.workspace.current_dir'); model=$(echo \"$input\" | jq -r '.model.display_name'); dir=\"${cwd/#$HOME/~}\"; git_info=\"\"; if git -C \"$cwd\" rev-parse --git-dir >/dev/null 2>&1; then branch=$(git -C \"$cwd\" branch --show-current 2>/dev/null || echo \"detached\"); if git -C \"$cwd\" -c core.useBuiltinFSMonitor=false diff --quiet 2>/dev/null && git -C \"$cwd\" -c core.useBuiltinFSMonitor=false diff --cached --quiet 2>/dev/null; then git_info=$(printf ' \\033[38;2;64;160;43m✓ %s\\033[0m' \"$branch\"); else git_info=$(printf ' \\033[38;2;210;15;57m✗ %s\\033[0m' \"$branch\"); fi; fi; printf '\\033[38;2;30;102;245m%s\\033[0m%s \\033[38;2;108;111;133m%s\\033[0m' \"$dir\" \"$git_info\" \"$model\""
+    "command": "STATUSLINE_SCRIPT"
   },
   "enabledPlugins": {
     "superpowers@superpowers-marketplace": true,

@@ -1,0 +1,62 @@
+# Starship config for Claude Code statusline
+# Only includes modules that work without shell context
+
+format = """
+$directory\
+$git_branch\
+$git_status\
+"""
+
+palette = "catppuccin_latte"
+
+[directory]
+format = "[$path]($style) "
+style = "blue"
+truncation_length = 3
+truncate_to_repo = false
+
+[git_branch]
+format = "[$branch]($style) "
+style = "green"
+
+[git_status]
+format = "[$all_status$ahead_behind]($style)"
+style = "red"
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?"
+stashed = "$"
+modified = "!"
+staged = "+"
+renamed = "»"
+deleted = "✘"
+
+[palettes.catppuccin_latte]
+base = "#eff1f5"
+blue = "#1e66f5"
+crust = "#dce0e8"
+flamingo = "#dd7878"
+green = "#40a02b"
+lavender = "#7287fd"
+mantle = "#e6e9ef"
+maroon = "#e64553"
+mauve = "#8839ef"
+overlay0 = "#9ca0b0"
+overlay1 = "#8c8fa1"
+overlay2 = "#7c7f93"
+peach = "#fe640b"
+pink = "#ea76cb"
+red = "#d20f39"
+rosewater = "#dc8a78"
+sapphire = "#209fb5"
+sky = "#04a5e5"
+subtext0 = "#6c6f85"
+subtext1 = "#5c5f77"
+surface0 = "#ccd0da"
+surface1 = "#bcc0cc"
+surface2 = "#acb0be"
+teal = "#179299"
+text = "#4c4f69"
+yellow = "#df8e1d"
