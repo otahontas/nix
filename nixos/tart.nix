@@ -10,6 +10,12 @@
     "${modulesPath}/profiles/qemu-guest.nix"
   ];
 
+  # Enable flakes for nixos-rebuild
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
+
   # Bootloader - GRUB with EFI (required by Apple Virtualization)
   boot.loader.grub = {
     enable = true;
@@ -53,11 +59,14 @@
   # Networking
   networking.hostName = "nixos-tart";
 
-  # Admin user with password login
-  users.users.admin = {
+  # Main user
+  users.users.otahontas = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
-    initialPassword = "admin";
+    initialPassword = "nixos";
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNqZN/gQy2WDb5T4f9dLpmNQ1YhJDfq3eB12lZDvX8J"
+    ];
   };
 
   # Allow wheel group to sudo without password (convenient for VMs)
@@ -72,12 +81,20 @@
     };
   };
 
-  # Minimal packages
+  # Dev tools for iterating on config
   environment.systemPackages = with pkgs; [
-    vim
+    neovim
+    git
     htop
     curl
+    wget
+    ripgrep
+    fd
+    tree
   ];
+
+  # Set neovim as default editor
+  environment.variables.EDITOR = "nvim";
 
   system.stateVersion = "24.11";
 }
