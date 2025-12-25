@@ -62,7 +62,10 @@
   # Main user
   users.users.otahontas = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ];
+    extraGroups = [
+      "wheel"
+      "video" # for Sway/Wayland
+    ];
     initialPassword = "nixos";
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNqZN/gQy2WDb5T4f9dLpmNQ1YhJDfq3eB12lZDvX8J"
@@ -81,6 +84,40 @@
     };
   };
 
+  # Sway window manager
+  programs.sway = {
+    enable = true;
+    wrapperFeatures.gtk = true;
+    extraOptions = [
+      "--unsupported-gpu" # Required for virtio-gpu
+    ];
+  };
+
+  # greetd display manager - auto-login to Sway
+  services.greetd = {
+    enable = true;
+    settings = {
+      default_session = {
+        command = "${pkgs.sway}/bin/sway";
+        user = "otahontas";
+      };
+    };
+  };
+
+  # XDG portal for Wayland
+  xdg.portal = {
+    enable = true;
+    wlr.enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  };
+
+  # Fonts
+  fonts.packages = with pkgs; [
+    (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+    noto-fonts
+    noto-fonts-emoji
+  ];
+
   # Dev tools for iterating on config
   environment.systemPackages = with pkgs; [
     neovim
@@ -91,10 +128,26 @@
     ripgrep
     fd
     tree
+
+    # Sway essentials
+    foot # terminal
+    wmenu # launcher (dmenu for wayland)
+    swaylock
+    swayidle
+    grim # screenshots
+    slurp # region selection
+    wl-clipboard
+    mako # notifications
   ];
 
   # Set neovim as default editor
   environment.variables.EDITOR = "nvim";
+
+  # Environment for Sway in VM
+  environment.sessionVariables = {
+    WLR_RENDERER = "pixman"; # Software rendering for virtio-gpu
+    WLR_NO_HARDWARE_CURSORS = "1";
+  };
 
   system.stateVersion = "24.11";
 }
