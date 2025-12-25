@@ -19,14 +19,17 @@
       linuxSystem = "aarch64-linux";
     in
     {
-      # NixOS image for Tart
-      packages.${linuxSystem}.nixos-image = nixos-generators.nixosGenerate {
-        system = linuxSystem;
-        format = "raw-efi";
-        modules = [ ./tart.nix ];
-      };
-
-      # Convenience alias
-      packages.${linuxSystem}.default = self.packages.${linuxSystem}.nixos-image;
+      packages.${linuxSystem} =
+        let
+          nixos-image = nixos-generators.nixosGenerate {
+            system = linuxSystem;
+            format = "raw-efi";
+            modules = [ ./tart.nix ];
+          };
+        in
+        {
+          inherit nixos-image;
+          default = nixos-image;
+        };
     };
 }
