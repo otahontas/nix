@@ -3,21 +3,3 @@ cmd - space : sh -c '(find -L /Applications /System/Applications -maxdepth 3 -na
 
 # Screenshot area to clipboard
 shift + ctrl + alt + cmd - p : screencapture -i -c
-
-# Focus space (alt + shift + cmd + H/L/1-5)
-shift + alt + cmd - h : @yabai_bin@ -m space --focus prev
-shift + alt + cmd - l : @yabai_bin@ -m space --focus next
-shift + alt + cmd - 1 : @yabai_bin@ -m space --focus 1
-shift + alt + cmd - 2 : @yabai_bin@ -m space --focus 2
-shift + alt + cmd - 3 : @yabai_bin@ -m space --focus 3
-shift + alt + cmd - 4 : @yabai_bin@ -m space --focus 4
-shift + alt + cmd - 5 : @yabai_bin@ -m space --focus 5
-
-# Move window to space (alt + shift + cmd + ctrl + H/L/1-5)
-shift + ctrl + alt + cmd - h : @yabai_bin@ -m window --space prev
-shift + ctrl + alt + cmd - l : @yabai_bin@ -m window --space next
-shift + ctrl + alt + cmd - 1 : @yabai_bin@ -m window --space 1
-shift + ctrl + alt + cmd - 2 : @yabai_bin@ -m window --space 2
-shift + ctrl + alt + cmd - 3 : @yabai_bin@ -m window --space 3
-shift + ctrl + alt + cmd - 4 : @yabai_bin@ -m window --space 4
-shift + ctrl + alt + cmd - 5 : @yabai_bin@ -m window --space 5

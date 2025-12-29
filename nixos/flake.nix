@@ -11,7 +11,6 @@
 
   outputs =
     {
-      self,
       nixos-generators,
       ...
     }:

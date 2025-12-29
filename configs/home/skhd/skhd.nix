@@ -12,7 +12,6 @@
   home.file.".skhdrc".source = pkgs.replaceVars ./.skhdrc.in {
     home_dir = config.home.homeDirectory;
     choose_bin = lib.getExe' pkgs.choose-gui "choose";
-    yabai_bin = lib.getExe pkgs.yabai;
   };
 
   launchd.agents.skhd = {
