@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+exec volta run --node 25.0.0 node "$@"

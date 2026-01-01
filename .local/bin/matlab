@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+MATLAB_APPS=$(ls /Applications | grep MATLAB_R | sort)
+
+if [ -z "$MATLAB_APPS" ]; then
+    echo "Warning: No MATLAB installation found in /Applications." >&2
+    exit 1
+fi
+
+if [ $(echo "$MATLAB_APPS" | wc -l) -gt 1 ]; then
+    echo "Warning: Multiple MATLAB installations found. Using the latest one." >&2
+fi
+
+LATEST_MATLAB=$(echo "$MATLAB_APPS" | tail -n 1)
+MATLAB_PATH="/Applications/$LATEST_MATLAB/bin/matlab"
+
+if [ -x "$MATLAB_PATH" ]; then
+    exec "$MATLAB_PATH" "$@"
+else
+    echo "Error: MATLAB executable not found at $MATLAB_PATH" >&2
+    exit 1
+fi

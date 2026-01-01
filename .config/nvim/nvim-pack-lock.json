@@ -1,0 +1,83 @@
+{
+  "plugins": {
+    "blink.cmp": {
+      "rev": "327fff9",
+      "src": "https://github.com/Saghen/blink.cmp",
+      "version": "'v1.7.0'"
+    },
+    "catppuccin": {
+      "rev": "af58927",
+      "src": "https://github.com/catppuccin/nvim"
+    },
+    "copilot.lua": {
+      "rev": "3123983",
+      "src": "https://github.com/zbirenbaum/copilot.lua"
+    },
+    "friendly-snippets": {
+      "rev": "572f566",
+      "src": "https://github.com/rafamadriz/friendly-snippets"
+    },
+    "fzf-lua": {
+      "rev": "9244bd4",
+      "src": "https://github.com/ibhagwan/fzf-lua"
+    },
+    "hardtime.nvim": {
+      "rev": "b4e4319",
+      "src": "https://github.com/m4xshen/hardtime.nvim"
+    },
+    "markview.nvim": {
+      "rev": "c93ea99",
+      "src": "https://github.com/OXY2DEV/markview.nvim"
+    },
+    "mason.nvim": {
+      "rev": "ad7146a",
+      "src": "https://github.com/mason-org/mason.nvim"
+    },
+    "mini.nvim": {
+      "rev": "cf32454",
+      "src": "https://github.com/nvim-mini/mini.nvim"
+    },
+    "nvim-lspconfig": {
+      "rev": "52a8932",
+      "src": "https://github.com/neovim/nvim-lspconfig"
+    },
+    "nvim-treesitter": {
+      "rev": "30c466ad",
+      "src": "https://github.com/nvim-treesitter/nvim-treesitter",
+      "version": "'main'"
+    },
+    "nvim-treesitter-textobjects": {
+      "rev": "1b2d85d",
+      "src": "https://github.com/nvim-treesitter/nvim-treesitter-textobjects",
+      "version": "'main'"
+    },
+    "octo.nvim": {
+      "rev": "d4e2d99",
+      "src": "https://github.com/pwntester/octo.nvim"
+    },
+    "plenary.nvim": {
+      "rev": "b9fd522",
+      "src": "https://github.com/nvim-lua/plenary.nvim"
+    },
+    "sidekick.nvim": {
+      "rev": "bd1f79a",
+      "src": "https://github.com/folke/sidekick.nvim"
+    },
+    "ts-error-translator.nvim": {
+      "rev": "17ec46d9827e39ee5fab23ad6346ac7ab0fff9e4",
+      "src": "https://github.com/dmmulroy/ts-error-translator.nvim"
+    },
+    "twoslash-queries.nvim": {
+      "rev": "1262c20cad5abd6e89995dc4bc0eaab0e2e4e0b9",
+      "src": "https://github.com/marilari88/twoslash-queries.nvim"
+    },
+    "unnest.nvim": {
+      "rev": "62790c8",
+      "src": "https://github.com/brianhuster/unnest.nvim"
+    },
+    "yazi.nvim": {
+      "rev": "b0ebdcf",
+      "src": "https://github.com/mikavilpas/yazi.nvim"
+    }
+  }
+}
