@@ -45,3 +45,7 @@ update-flake:
     nix flake update
 
 update: update-codeformat update-flake
+
+# Clean up unused Nix packages and old generations
+clean:
+    nix-collect-garbage -d
