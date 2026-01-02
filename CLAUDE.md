@@ -3,6 +3,7 @@ Nix-darwin system configuration with Nushell shell.
 ## Package management
 - NEVER install anything through Homebrew
 - All packages must be managed through Nix (nix-darwin or home-manager)
+- Prefer home-manager over other nix solutions
 
 ## Testing changes
 1. `git add .` - stage changes (required for flake to see them)

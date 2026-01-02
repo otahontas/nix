@@ -10,4 +10,3 @@ lint:
 
 update-codeformat:
     nu update-codeformat.nu
-
