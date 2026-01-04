@@ -1,5 +1,0 @@
-# App launcher
-cmd - space : sh -c '(find -L /Applications /System/Applications -maxdepth 3 -name "*.app" 2>/dev/null; find -L @home_dir@/Applications -maxdepth 3 -name "*.app" 2>/dev/null) | sed "s|.*/||;s|\.app$||" | sort -u | @choose_bin@ | xargs -I{} open -a "{}"'
-
-# Screenshot area to clipboard
-shift + ctrl + alt + cmd - p : screencapture -i -c
