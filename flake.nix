@@ -70,7 +70,7 @@
                 inherit inputs username homeDirectory;
               };
               sharedModules = [ catppuccin.homeModules.catppuccin ];
-              users.${username} = import ./home-configuration.nix;
+              users.${username}.imports = [ ./home-configuration.nix ];
             };
           }
         ];
