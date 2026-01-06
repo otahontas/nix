@@ -1,5 +1,13 @@
 Nix-darwin system configuration with Nushell shell.
 
+## Configuration Structure
+See [CONFIGURATION.md](CONFIGURATION.md) for detailed information about the modular configuration structure.
+
+Quick overview:
+- `darwin-configuration.nix` - nix-darwin system config (imports `configs/system/`)
+- `home-configuration.nix` - home-manager user config (imports `configs/home/`)
+- `flake.nix` - orchestrates both configurations
+
 ## Package management
 - NEVER install anything through Homebrew
 - All packages must be managed through Nix (nix-darwin or home-manager)

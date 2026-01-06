@@ -21,6 +21,7 @@
       catppuccin,
       home-manager,
       nix-darwin,
+      nixpkgs,
       ...
     }:
     let
@@ -28,52 +29,54 @@
       homeDirectory = "/Users/${username}";
     in
     {
+      # Standalone home-manager configuration
+      homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
+        pkgs = import inputs.nixpkgs {
+          system = "aarch64-darwin";
+          overlays = [ inputs.neovim-nightly-overlay.overlays.default ];
+          config.allowUnfreePredicate =
+            pkg:
+            builtins.elem (nixpkgs.lib.getName pkg) [
+              "claude-code"
+            ];
+        };
+        extraSpecialArgs = { inherit inputs; };
+        modules = [
+          ./home-configuration.nix
+          catppuccin.homeModules.catppuccin
+          {
+            home.username = username;
+            home.homeDirectory = homeDirectory;
+          }
+        ];
+      };
+
+      # nix-darwin configuration with integrated home-manager
       darwinConfigurations."otabook-work" = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
         specialArgs = { inherit inputs; };
         modules = [
-          (
-            { lib, ... }:
-            let
-              systemConfigFiles = lib.filter (path: lib.hasSuffix ".nix" path) (
-                lib.filesystem.listFilesRecursive ./configs/system
-              );
-            in
-            {
-              imports = systemConfigFiles;
-
-              system.configurationRevision = self.rev or self.dirtyRev or null;
-              system.stateVersion = 6;
-              system.primaryUser = username;
-              users.users.${username}.home = homeDirectory;
-            }
-          )
+          ./darwin-configuration.nix
+          {
+            system.configurationRevision = self.rev or self.dirtyRev or null;
+            system.primaryUser = username;
+            users.users.${username}.home = homeDirectory;
+          }
           home-manager.darwinModules.home-manager
-          (
-            { lib, ... }:
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                backupFileExtension = "backup";
-                extraSpecialArgs = { inherit inputs; };
-                sharedModules = [ catppuccin.homeModules.catppuccin ];
-                users.${username} =
-                  let
-                    homeConfigFiles = lib.filter (path: lib.hasSuffix ".nix" path) (
-                      lib.filesystem.listFilesRecursive ./configs/home
-                    );
-                  in
-                  {
-                    imports = homeConfigFiles;
-                    home.username = username;
-                    home.homeDirectory = homeDirectory;
-                    home.stateVersion = "25.05";
-                    xdg.enable = true;
-                  };
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              backupFileExtension = "backup";
+              extraSpecialArgs = { inherit inputs; };
+              sharedModules = [ catppuccin.homeModules.catppuccin ];
+              users.${username} = {
+                imports = [ ./home-configuration.nix ];
+                home.username = username;
+                home.homeDirectory = homeDirectory;
               };
-            }
-          )
+            };
+          }
         ];
       };
     };
