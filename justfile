@@ -31,8 +31,7 @@ lint-nvim:
 
 # Check both flakes
 check-flake:
-    nix flake check
-    cd home-manager && nix flake check
+    nix flake check && cd home-manager && nix flake check
 
 # System-level verification and application (requires sudo)
 verify-darwin: lint
@@ -46,7 +45,8 @@ apply-home:
     cd home-manager && home-manager switch --flake .#otahontas
 
 # Apply both (system then user)
-apply: apply-darwin apply-home
+apply:
+    just apply-darwin && just apply-home
 
 update-codeformat:
     just home-manager/configs/home/neovim/nvim/update-codeformat
