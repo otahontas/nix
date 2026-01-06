@@ -1,12 +1,15 @@
 Nix-darwin system configuration with Nushell shell.
 
 ## Configuration Structure
-See [CONFIGURATION.md](CONFIGURATION.md) for detailed information about the modular configuration structure.
+See [CONFIGURATION.md](CONFIGURATION.md) for detailed information about the two separate flakes.
 
 Quick overview:
-- `darwin-configuration.nix` - nix-darwin system config (imports `configs/system/`)
-- `home-configuration.nix` - home-manager user config (imports `configs/home/`)
-- `flake.nix` - orchestrates both configurations
+- `home/` - Standalone home-manager flake (no sudo, portable)
+  - `flake.nix` - Home-manager flake
+  - `modules/` - User config (42 tools)
+- `darwin/` - Standalone nix-darwin flake (requires sudo, macOS-specific)
+  - `flake.nix` - nix-darwin flake
+  - `modules/` - System config
 
 ## Package management
 - NEVER install anything through Homebrew
@@ -15,10 +18,12 @@ Quick overview:
 
 ## Testing changes
 1. `git add .` - stage changes (required for flake to see them)
-2. `just apply` - apply configuration
+2. For home-manager: `just apply-home` (no sudo)
+3. For nix-darwin: `just apply` (requires sudo)
 
 ## Code structure
-- Tools go in `configs/home/[toolname]/[toolname].nix`
+- User tools go in `home/modules/[toolname]/[toolname].nix`
+- System settings go in `darwin/modules/[name].nix`
 - Nushell configs:
   - Simple env vars: `programs.nushell.environmentVariables`
   - Complex env/config: separate `.nu` files read via `builtins.readFile`
@@ -33,7 +38,7 @@ Quick overview:
 
 ## Theming
 - Check for catppuccin support when adding new tools: `catppuccin.<tool>.enable = true`
-- Example: `configs/home/delta/delta.nix`
+- Example: `home/modules/delta/delta.nix`
 
 ## Runtime wrappers
 Tools needing isolated runtimes (node, python) use wrapper scripts:
@@ -43,15 +48,15 @@ pkgs.writeShellScriptBin "toolname" ''
   exec ${lib.getExe pkgs.actual-tool} "$@"
 ''
 ```
-- Example: `configs/home/claude/claude.nix`
+- Example: `home/modules/claude/claude.nix`
 
 ## Template interpolation
 - Files needing nix values: `filename.in` with `@variable@` syntax
 - Use `pkgs.replaceVars ./file.in { var = value; }`
 - `.in` suffix also useful to prevent tools from detecting config files in source tree
-- Example: `configs/home/vivid/vivid.nix`
+- Example: `home/modules/vivid/vivid.nix`
 
 ## Launchd agents
 For services needing user environment (secrets, GPG, password-store):
 - Use `RunAtLoad = true` (runs after login with full env access)
-- Examples: `configs/home/awscli/awscli.nix`, `configs/home/colima/colima.nix`
+- Examples: `home/modules/awscli/awscli.nix`, `home/modules/colima/colima.nix`

@@ -1,94 +1,152 @@
 # Configuration Structure
 
-This repository uses a modular approach to separate nix-darwin and home-manager configurations.
+This repository uses completely separate flakes for home-manager (user config) and nix-darwin (system config).
 
 ## File Structure
 
 ```
 .
-├── flake.nix                    # Main flake orchestrator
-├── darwin-configuration.nix     # nix-darwin system configuration module
-├── home-configuration.nix       # home-manager user configuration module
-├── configs/
-│   ├── system/                  # nix-darwin specific settings
-│   │   ├── defaults.nix         # macOS system defaults
-│   │   ├── nix-settings.nix     # Nix daemon settings
-│   │   ├── nixpkgs.nix          # nixpkgs overlays and config
-│   │   └── security.nix         # Security settings (TouchID, etc.)
-│   └── home/                    # home-manager user configs
-│       └── [tool]/[tool].nix    # Per-tool configurations
+├── home/                        # Home-manager flake (no sudo required)
+│   ├── flake.nix                # Standalone home-manager flake
+│   ├── flake.lock
+│   ├── home-configuration.nix   # Home-manager module
+│   └── modules/                 # User-level tool configurations
+│       └── [tool]/[tool].nix    # Per-tool configurations (42 tools)
+│
+├── darwin/                      # nix-darwin flake (requires sudo)
+│   ├── flake.nix                # Standalone nix-darwin flake
+│   ├── flake.lock
+│   ├── darwin-configuration.nix # System configuration module
+│   └── modules/                 # System-level settings
+│       ├── defaults.nix         # macOS system defaults
+│       ├── nix-settings.nix     # Nix daemon settings
+│       ├── nixpkgs.nix          # nixpkgs overlays and config
+│       └── security.nix         # Security settings (TouchID, etc.)
+│
+├── justfile                     # Commands for both configurations
+└── [other files]
 ```
 
 ## Configurations
 
-### 1. Standalone Home-Manager (Linux, other macOS systems)
+### 1. Home-Manager (User Configuration - No Sudo)
 
-Use the standalone home-manager configuration:
+Apply user-level configuration without sudo:
 
 ```bash
-home-manager switch --flake .#otahontas
+# From repository root
+home-manager switch --flake ./home
+
+# Or using justfile
+just apply-home
 ```
 
 This configuration:
-- Is system-agnostic (works on Linux, other macOS, etc.)
-- Includes all user-level tools and settings from `configs/home/`
-- Does not require nix-darwin
-- Good for non-macOS systems or when you don't need system-level management
+- **No sudo required** - runs as your user
+- System-agnostic (portable to Linux, other macOS systems, etc.)
+- Manages all user-level tools and dotfiles from `home/modules/`
+- Independent flake that can be used anywhere
+- Perfect for non-admin scenarios or multi-system setups
 
-### 2. nix-darwin with Integrated Home-Manager (Primary macOS)
+### 2. nix-darwin (System Configuration - Requires Sudo)
 
-Use the full system configuration (default):
+Apply system-level configuration with sudo:
 
 ```bash
-darwin-rebuild switch --flake .#otabook-work
-# or
+# From repository root
+sudo darwin-rebuild switch --flake ./darwin
+
+# Or using justfile (recommended - includes verification)
 just apply
 ```
 
 This configuration:
-- Manages macOS system settings via nix-darwin
-- Includes home-manager as a darwinModule
-- Provides both system and user configuration
-- Primary setup for `otabook-work` machine
+- **Requires sudo** - modifies system settings
+- macOS-specific system management
+- Manages system settings from `darwin/modules/`
+- Integrates home-manager using the home flake
+- Full control of macOS system preferences
+
+## Justfile Commands
+
+```bash
+# Home-manager only
+just apply-home          # Apply home config (no sudo)
+just check-home          # Check home flake
+just update-home         # Update home flake
+
+# nix-darwin (includes verification)
+just apply               # Build, verify, and apply darwin config (sudo)
+just verify              # Lint and build darwin config
+just check-darwin        # Check darwin flake
+just update-darwin       # Update darwin flake
+
+# Both
+just check-flake         # Check both flakes
+just update-flake        # Update both flakes
+just lint                # Lint all nix files
+just format              # Format all nix files
+```
 
 ## Benefits of This Structure
 
-1. **Clear Separation**: System config (darwin-configuration.nix) vs user config (home-configuration.nix)
-2. **Reusability**: home-manager config can be used standalone on other systems
-3. **Maintainability**: Each module is self-contained with clear responsibilities
-4. **Flexibility**: Choose between standalone home-manager or integrated nix-darwin setup
+1. **Complete Separation**: Two independent flakes, truly separate concerns
+2. **Sudo Independence**: home-manager works without any privileges
+3. **Portability**: home-manager flake works on any system (Linux, macOS, etc.)
+4. **Flexibility**: Use just home-manager without nix-darwin, or both together
+5. **Clear Ownership**: System stuff in `darwin/`, user stuff in `home/`
+6. **Independent Updates**: Update home and darwin flakes separately
 
 ## Module Details
 
-### darwin-configuration.nix
+### home/home-configuration.nix
 
-Imports all files from `configs/system/` and sets:
-- System state version
-- Automatically discovers and imports all `.nix` files in `configs/system/`
-
-Contains:
-- macOS system defaults
-- Nix daemon configuration
-- Security settings
-- nixpkgs overlays and config
-
-### home-configuration.nix
-
-Imports all files from `configs/home/` and sets:
+Imports all files from `home/modules/` and sets:
 - Home-manager state version
 - XDG base directory support
-- Automatically discovers and imports all `.nix` files in `configs/home/`
+- Automatically discovers and imports all `.nix` files in `home/modules/`
 
-Contains:
-- All user-level tool configurations
-- Shell configurations
-- Editor settings
+Contains 42 user-level tool configurations including:
+- Shell (nushell, starship)
+- Editor (neovim)
+- Git, SSH, GPG
 - Development tools
+- Terminal UI tools
+- And more...
+
+### darwin/darwin-configuration.nix
+
+Imports all files from `darwin/modules/` and sets:
+- System state version
+- Automatically discovers and imports all `.nix` files in `darwin/modules/`
+
+Contains system-level settings:
+- macOS system defaults and preferences
+- Nix daemon configuration
+- Security settings (TouchID for sudo)
+- nixpkgs overlays and unfree packages
 
 ## Adding New Configurations
 
-### System-level (macOS only)
-Add `.nix` files to `configs/system/` - they will be auto-imported by `darwin-configuration.nix`
+### User-level (Portable)
+Add `.nix` files to `home/modules/[toolname]/[toolname].nix` - auto-imported by home-configuration.nix
 
-### User-level (portable)
-Add tool configs to `configs/home/[toolname]/[toolname].nix` - they will be auto-imported by `home-configuration.nix`
+### System-level (macOS only)
+Add `.nix` files to `darwin/modules/` - auto-imported by darwin-configuration.nix
+
+## Workflow Examples
+
+### Typical Development Workflow
+1. Make changes to tool configs in `home/modules/`
+2. Test: `just apply-home` (fast, no sudo)
+3. Iterate until satisfied
+
+### System Configuration Changes
+1. Make changes in `darwin/modules/`
+2. Verify: `just verify` (builds without applying)
+3. Apply: `just apply` (requires sudo)
+
+### Multi-System Setup
+1. Clone repo on new system (e.g., Linux)
+2. Only use: `home-manager switch --flake ./home`
+3. Get all your tools and configs without system management

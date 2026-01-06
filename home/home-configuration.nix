@@ -1,7 +1,7 @@
 { lib, inputs, ... }:
 let
   homeConfigFiles = lib.filter (path: lib.hasSuffix ".nix" path) (
-    lib.filesystem.listFilesRecursive ./configs/home
+    lib.filesystem.listFilesRecursive ./modules
   );
 in
 {

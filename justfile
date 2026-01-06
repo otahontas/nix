@@ -12,7 +12,7 @@ format-nu:
   topiary-nushell format ...(glob **/*.nu)
 
 format-nvim:
-  just configs/home/neovim/nvim/format
+  just home/modules/neovim/nvim/format
 
 lint: format _lint-tasks # hack: run format sequentially before running all linters in parallel
 
@@ -24,25 +24,45 @@ lint-nix:
     nixf-diagnose ...(glob **/*.nix)
 
 lint-nu:
-    glob configs/home/**/*.nu | each { |f| nu -c $"source ($f)" } | ignore
+    glob home/modules/**/*.nu | each { |f| nu -c $"source ($f)" } | ignore
 
 lint-nvim:
-    just configs/home/neovim/nvim/lint
+    just home/modules/neovim/nvim/lint
 
-check-flake:
-    nix flake check
+# Check home-manager flake
+check-home:
+    cd home && nix flake check
 
+# Check nix-darwin flake  
+check-darwin:
+    cd darwin && nix flake check
+
+check-flake: check-home check-darwin
+
+# Apply home-manager configuration (no sudo)
+apply-home:
+    home-manager switch --flake ./home
+
+# Build nix-darwin configuration
 verify: lint check-flake
-    darwin-rebuild build --flake ~/.config/nix-darwin
+    darwin-rebuild build --flake ./darwin
 
+# Apply nix-darwin configuration (requires sudo)
 apply: verify
-    sudo darwin-rebuild switch --flake ~/.config/nix-darwin
+    sudo darwin-rebuild switch --flake ./darwin
 
 update-codeformat:
-    just configs/home/neovim/nvim/update-codeformat
+    just home/modules/neovim/nvim/update-codeformat
 
-update-flake:
-    nix flake update
+# Update home-manager flake
+update-home:
+    cd home && nix flake update
+
+# Update nix-darwin flake
+update-darwin:
+    cd darwin && nix flake update
+
+update-flake: update-home update-darwin
 
 update: update-codeformat update-flake
 
