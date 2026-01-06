@@ -1,0 +1,28 @@
+# Best quality video + audio
+--format bestvideo+bestaudio/best
+
+# Merge into single file
+--merge-output-format mkv
+
+# Prefer free formats over proprietary
+--prefer-free-formats
+
+# Add metadata
+--add-metadata
+--embed-thumbnail
+--embed-subs
+--embed-chapters
+
+# Download subtitles
+--write-auto-subs
+--sub-langs en,en-US
+
+# Continue downloads
+--continue
+
+# Don't overwrite files
+--no-overwrites
+
+# Use aria2 for faster downloads if available
+--external-downloader aria2c
+--external-downloader-args "-x 16 -s 16 -k 1M"

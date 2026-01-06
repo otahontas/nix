@@ -6,16 +6,22 @@ Nix-darwin system configuration with Nushell shell.
 - Prefer home-manager over other nix solutions
 
 ## Configuration structure
-- `flake.nix` - Main flake with both nix-darwin and standalone home-manager outputs
-- `darwin-configuration.nix` - nix-darwin system-level settings (macOS)
-- `home-configuration.nix` - home-manager user-level settings (can be used standalone)
+- Root `flake.nix` - nix-darwin system-level config (requires sudo)
+- `home-manager/flake.nix` - home-manager user-level config (no sudo required)
+- `darwin-configuration.nix` - nix-darwin system module
 - `configs/system/` - System-level configuration modules (nix-darwin)
-- `configs/home/` - User-level configuration modules (home-manager)
+- `home-manager/configs/home/` - User-level configuration modules (home-manager)
 
 ## Testing changes
+
+### System-level (nix-darwin)
 1. `git add .` - stage changes (required for flake to see them)
-2. `just apply` - apply nix-darwin configuration (includes home-manager)
-3. Alternatively, for home-manager only: `home-manager switch --flake .#otahontas`
+2. `sudo darwin-rebuild switch --flake /path/to/repo`
+
+### User-level (home-manager)
+1. `cd home-manager`
+2. `git add .` - stage changes (required for flake to see them)
+3. `home-manager switch --flake .#otahontas` (no sudo needed)
 
 ## Code structure
 - Tools go in `configs/home/[toolname]/[toolname].nix`

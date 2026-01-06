@@ -1,67 +1,85 @@
 # Nix Configuration
 
-This repository contains my personal nix-darwin and home-manager configuration for macOS with Nushell.
+This repository contains my personal nix-darwin and home-manager configurations for macOS with Nushell.
 
 ## Structure
 
-The configuration is split into separate concerns:
+The configuration is split into **two completely separate flakes**:
 
 ```
 .
-├── flake.nix                    # Main flake with both nix-darwin and home-manager outputs
-├── darwin-configuration.nix     # nix-darwin system-level configuration
-├── home-configuration.nix       # home-manager user-level configuration (standalone-capable)
+├── flake.nix                    # nix-darwin system-level configuration (requires sudo)
+├── darwin-configuration.nix     # System-level module
 ├── configs/
 │   ├── system/                  # System-level modules (nix-darwin)
 │   │   ├── defaults.nix         # macOS system defaults
 │   │   ├── nix-settings.nix     # Nix daemon settings
 │   │   ├── nixpkgs.nix          # Nixpkgs overlays and config
 │   │   └── security.nix         # Security settings (Touch ID, etc.)
-│   └── home/                    # User-level modules (home-manager)
-│       └── [tool]/[tool].nix    # Individual tool configurations
+│   └── home/                    # User-level modules (kept for reference)
+└── home-manager/                # Separate home-manager configuration
+    ├── flake.nix                # home-manager user-level configuration (no sudo)
+    └── configs/
+        └── home/                # User-level modules (home-manager)
+            └── [tool]/[tool].nix
 ```
+
+## Why Two Separate Flakes?
+
+1. **Clear separation**: System and user concerns are completely independent
+2. **No sudo for user config**: Home-manager can be applied without root privileges
+3. **Independent updates**: Update user environment without system rebuild
+4. **Better isolation**: System changes don't trigger user config rebuilds
+5. **Flexibility**: Run home-manager on any machine without nix-darwin
 
 ## Usage
 
-### Full system configuration (nix-darwin + home-manager)
+### System Configuration (nix-darwin)
+
+Requires sudo, manages macOS system settings:
 
 ```bash
-git add .  # Required for flake to see uncommitted changes
-just apply
+# From repository root
+cd /path/to/repo
+git add .
+sudo darwin-rebuild switch --flake .
 ```
 
-Or manually:
-```bash
-darwin-rebuild switch --flake ~/.config/nix-darwin
-```
+### User Configuration (home-manager)
 
-### Standalone home-manager
-
-The home-manager configuration can also be used independently without nix-darwin:
+No sudo required, manages user packages and dotfiles:
 
 ```bash
+# From home-manager directory
+cd /path/to/repo/home-manager
+git add .
 home-manager switch --flake .#otahontas
 ```
 
-This is useful for:
-- Testing home-manager changes without affecting system config
-- Using the same home configuration on non-Darwin systems
-- Sharing configurations across different machines
+### Recommended Workflow
 
-## Benefits of this separation
+1. Apply system changes (when needed):
+   ```bash
+   cd /path/to/repo
+   git add .
+   sudo darwin-rebuild switch --flake .
+   ```
 
-1. **Modularity**: System and user configurations are clearly separated
-2. **Reusability**: Home configuration can be used standalone or integrated with nix-darwin
-3. **Clarity**: Easier to understand what changes affect system vs user level
-4. **Flexibility**: Can test home-manager changes independently
-5. **Portability**: Home configuration could be adapted for non-Darwin systems (Linux, NixOS)
+2. Apply user changes (more frequent):
+   ```bash
+   cd /path/to/repo/home-manager
+   git add .
+   home-manager switch --flake .#otahontas
+   ```
 
 ## Package Management
 
 - All packages are managed through Nix (nix-darwin or home-manager)
-- Prefer home-manager for user-level packages
+- User packages go in home-manager configuration
+- System-level services go in nix-darwin configuration
 - Never use Homebrew
 
 ## Development
 
 See [CLAUDE.md](CLAUDE.md) and [AGENTS.md](AGENTS.md) for detailed conventions and guidelines.
+

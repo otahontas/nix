@@ -1,0 +1,40 @@
+[metadata]
+name = "gh-runs"
+description = "List GitHub Actions workflow runs for the current repo"
+requirements = ["gh", "nu"]
+
+[source]
+command = '''nu -c 'gh run list --limit 50 --json status,conclusion,displayTitle,workflowName,headBranch,databaseId | from json | each {|r| [$r.status, ($r.conclusion? | default "-"), $r.displayTitle, $r.workflowName, $r.headBranch, $r.databaseId] | str join "|"} | str join (char newline)' '''
+output = "{split:|:5}"
+
+[ui]
+header = "status | result | title | workflow | branch | id"
+
+[preview]
+command = "gh run view '{split:|:5}'"
+
+[keybindings]
+enter = "actions:view"
+ctrl-o = "actions:open"
+ctrl-r = "actions:rerun"
+ctrl-l = "actions:logs"
+
+[actions.view]
+description = "View in nvim"
+command = "gh run view '{split:|:5}' | nvim -R -"
+mode = "fork"
+
+[actions.open]
+description = "Open in browser"
+command = "gh run view '{split:|:5}' --web"
+mode = "fork"
+
+[actions.rerun]
+description = "Rerun workflow"
+command = "gh run rerun '{split:|:5}'"
+mode = "fork"
+
+[actions.logs]
+description = "Open logs in nvim"
+command = "gh run view '{split:|:5}' --log | nvim -R -"
+mode = "fork"
