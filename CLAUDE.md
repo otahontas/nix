@@ -5,9 +5,17 @@ Nix-darwin system configuration with Nushell shell.
 - All packages must be managed through Nix (nix-darwin or home-manager)
 - Prefer home-manager over other nix solutions
 
+## Configuration structure
+- `flake.nix` - Main flake with both nix-darwin and standalone home-manager outputs
+- `darwin-configuration.nix` - nix-darwin system-level settings (macOS)
+- `home-configuration.nix` - home-manager user-level settings (can be used standalone)
+- `configs/system/` - System-level configuration modules (nix-darwin)
+- `configs/home/` - User-level configuration modules (home-manager)
+
 ## Testing changes
 1. `git add .` - stage changes (required for flake to see them)
-2. `just apply` - apply configuration
+2. `just apply` - apply nix-darwin configuration (includes home-manager)
+3. Alternatively, for home-manager only: `home-manager switch --flake .#otahontas`
 
 ## Code structure
 - Tools go in `configs/home/[toolname]/[toolname].nix`
