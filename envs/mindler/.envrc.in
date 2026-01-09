@@ -1,2 +1,0 @@
-export NPM_TOKEN=$(pass mindler/npm/token)
-export JIRA_API_TOKEN=$(pass mindler/jira)

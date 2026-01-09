@@ -1,2 +1,0 @@
--- TODO: https://github.com/olimorris/codecompanion.nvim
--- TODO: https://github.com/Davidyz/VectorCode

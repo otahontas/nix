@@ -1,0 +1,7 @@
+set fallback := true
+
+apply:
+    home-manager switch --flake .
+
+update:
+    nix flake update
