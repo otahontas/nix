@@ -1,48 +1,34 @@
-## Communication style:
+# Pi coding agent nix configuration
 
-- Headers: always use sentence case ("Next steps" not "Next Steps", "Plan overview" not "Plan Overview")
-- Write simply and directly - everyday language, get to the point, remove unnecessary words
-- Break complex explanations into one issue at a time
-- Show what to do, not why - practical examples over theory
-- Write like a person: no corporate jargon, no AI phrases
-- Prefer bullet points over paragraphs
-- If uncertain, say so immediately - don't guess
-- Always clarify unless request is completely clear
+This folder manages pi setup through nix home-manager.
 
-## Coding specific guidelines:
+## Structure
 
-- KISS, YAGNI - prefer duplication over wrong abstraction, keep it simple
-- Prefer unix tools for single task scripts
-- Use project scripts (package.json, Makefile, mise, uv, cargo.toml) for linting/formatting, not global tools
-- Node/Deno/Bun: prefer package.json scripts, then node_modules/.bin/, over npx/bunx
-- Always use lockfiles (npm ci, yarn install --frozen-lockfile)
-- Only fix what's asked - no bonus improvements, refactoring, or extra comments unless requested
+- `default.nix` - Main config that symlinks everything to `~/.pi/agent/`
+- `sources/GLOBAL_AGENTS.md` - Source for global `~/.pi/agent/AGENTS.md`
+- `skills/*/SKILL.md` - Pi skills (symlinked to `~/.pi/agent/skills/`)
+- `extensions/*.ts` - Pi extensions (symlinked to `~/.pi/agent/extensions/`)
 
-## Git commit conventions:
+## Adding new skills
 
-- Always use conventional commits format: `type(optional-scope): description`
-- Valid types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
-- Examples:
-  - feat: add dark mode toggle
-  - fix(auth): handle expired tokens correctly
-  - docs: update API documentation
-- When creating commits:
-  - Use imperative mood ("add" not "added")
-  - Keep title under 72 characters
-  - No period at end of title
-  - No AI attribution (no co-author, no "Generated with Claude")
+1. Create skill in `skills/skillname/SKILL.md`
+2. Add to `default.nix` under `home.file`:
+   ```nix
+   ".pi/agent/skills/skillname/SKILL.md".source = ./skills/skillname/SKILL.md;
+   ```
+3. Run `just apply` to activate
 
-## Multi-step task workflow:
+Skills with dependencies (like brave-search) need a `buildNpmPackage` derivation in `default.nix`.
 
-- For complex tasks only: write plan in markdown file first. Use your judgment to determine if a task is "complex"—if it involves multiple steps, file modifications, or research, it's better to plan first.
-- Work incrementally: complete one step, then explicitly run verification commands (e.g., build, lint, test).
-- After verification passes, commit the changes. This ensures that automated pre-commit hooks will also pass.
-- Only commit when a step is fully working.
-- Don't create plans/markdown for simple single-step tasks
+## Adding extensions
 
-## Local development scripts:
+1. Create extension in `extensions/name.ts`
+2. Add to `default.nix`:
+   ```nix
+   ".pi/agent/extensions/name.ts".source = ./extensions/name.ts;
+   ```
+3. Run `just apply`
 
-- Use `.local_scripts/` for temporary verification scripts that shouldn't be committed
-- Examples: version update checks, one-off validation scripts, personal dev utilities
-- Scripts can be messy and repo-specific
-- Never add .local_scripts/ to .gitignore file in project. Always rely on the fact that .local_scripts/ is ignored globally.
+## Modifying global AGENTS.md
+
+Edit `sources/GLOBAL_AGENTS.md`, then run `just apply`.

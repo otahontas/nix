@@ -37,7 +37,7 @@ in
     ];
 
     file = {
-      ".pi/agent/AGENTS.md".source = ./AGENTS.md;
+      ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
 
       # Extensions
       ".pi/agent/extensions/notify.ts".source = ./extensions/notify.ts;
@@ -47,6 +47,7 @@ in
       ".pi/agent/skills/brave-search".source = brave-search-skill;
       ".pi/agent/skills/catch-up/SKILL.md".source = ./skills/catch-up/SKILL.md;
       ".pi/agent/skills/context-hunter/SKILL.md".source = ./skills/context-hunter/SKILL.md;
+      ".pi/agent/skills/git-commit/SKILL.md".source = ./skills/git-commit/SKILL.md;
     };
   };
 
