@@ -8,8 +8,6 @@
 - Prefer bullet points over paragraphs
 - If uncertain, say so immediately - don't guess
 - Always clarify unless request is completely clear
-- For docs/READMEs: personal voice ("I built this because...") not corporate ("This provides...")
-- Web search current events without asking first
 
 ## Coding specific guidelines:
 
@@ -48,9 +46,3 @@
 - Examples: version update checks, one-off validation scripts, personal dev utilities
 - Scripts can be messy and repo-specific
 - Never add .local_scripts/ to .gitignore file in project. Always rely on the fact that .local_scripts/ is ignored globally.
-
-## Git worktrees:
-
-- Always use shell functions: `git-worktree-new`, `git-worktree-pr`, `git-worktree-prune`
-- Never use manual `git worktree add` commands
-- Don't install dependencies or run tests after creating worktree - I handle setup when needed
