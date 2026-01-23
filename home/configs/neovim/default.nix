@@ -132,7 +132,7 @@ in
 
       # Nix
       nixf-diagnose
-      nixfmt-rfc-style
+      pkgs.nixfmt
 
       # Python
       ruff
