@@ -14,8 +14,8 @@ vim.iter({
 	colorcolumn = "+1",
 	-- Prompt to save on quit if there are unsaved changes
 	confirm = true,
-	-- Highlight the line where cursor is located
-	cursorline = true,
+	-- Highlight the line where cursor is located (disabled globally, enabled per-window via autocmd)
+	cursorline = false,
 	-- Highlight screen line and line number (not entire wrapped line)
 	cursorlineopt = "screenline,number",
 	-- Use spaces instead of tab characters

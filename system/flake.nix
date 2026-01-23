@@ -83,7 +83,6 @@
                 "google-chrome"
                 "lulu"
                 "macwhisper"
-                "ollama"
                 "orbstack"
                 "orion"
                 "pareto-security"
