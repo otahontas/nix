@@ -12,6 +12,8 @@ Don't commit unless asked.
 
 ## Configuration patterns
 
+**Home manager preferred:** Always use `programs` or `services` through home-manager, fallback to `pkgs`.
+
 **Auto-import**: All `.nix` files in `./configs/` are automatically imported via `lib.filesystem.listFilesRecursive` - no manual module listing needed.
 
 **One tool per directory**: Each `configs/` subdirectory manages one tool with `default.nix` as main config. Additional files (scripts, configs) placed alongside and referenced from default.nix.
