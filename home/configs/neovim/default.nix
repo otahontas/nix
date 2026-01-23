@@ -77,6 +77,9 @@ in
         postgres-language-server
         typescript-language-server
         vscode-langservers-extracted # eslint, jsonls
+
+        # AI assistance
+        copilot-node-server
       ];
       plugins = with pkgs.vimPlugins; [
         # Completion & snippets
