@@ -14,6 +14,20 @@ local cache_keys = {}
 -- Setup Copilot first time InsertEnter is triggered
 vim.api.nvim_create_autocmd("InsertEnter", {
 	callback = function()
+		-- Find copilot-node-server and node in PATH
+		local copilot_cmd = vim.fn.exepath("copilot-node-server")
+		local node_cmd = vim.fn.exepath("node")
+
+		if copilot_cmd == "" then
+			vim.notify("copilot-node-server not found in PATH", vim.log.levels.ERROR)
+			return
+		end
+
+		if node_cmd == "" then
+			vim.notify("node not found in PATH", vim.log.levels.ERROR)
+			return
+		end
+
 		require("copilot").setup({
 			-- Do not attach to sensitive files
 			should_attach = function(_, bufname)
@@ -59,13 +73,15 @@ vim.api.nvim_create_autocmd("InsertEnter", {
 			suggestion = {
 				auto_trigger = true, -- always emit suggestions
 			},
+			copilot_node_command = node_cmd,
 			server = {
 				type = "binary",
+				custom_server_filepath = copilot_cmd,
+			},
+			server_opts_overrides = {
+				trace = "verbose",
 			},
 			panel = {
-				enabled = false,
-			},
-			nes = {
 				enabled = false,
 			},
 		})
