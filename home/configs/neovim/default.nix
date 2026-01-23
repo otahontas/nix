@@ -34,11 +34,6 @@ in
     "nvim/lua".source = treesitterLuaDir;
     "nvim/plugin".source = ./nvim/plugin;
     "nvim/after".source = ./nvim/after;
-
-    # .luarc.json for emmylua_ls (needs VIMRUNTIME path)
-    "nvim/.luarc.json".source = pkgs.replaceVars ./.luarc.json.in {
-      nvim_runtime = "${pkgs.neovim-unwrapped}/share/nvim/runtime";
-    };
   };
 
   programs = {
