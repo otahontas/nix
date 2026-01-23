@@ -38,6 +38,7 @@ in
 
     file = {
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
+      ".pi/agent/models.json".source = ./sources/models.json;
 
       # Extensions
       ".pi/agent/extensions/notify.ts".source = ./extensions/notify.ts;
