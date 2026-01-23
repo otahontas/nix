@@ -5,6 +5,10 @@ home-manager user-level config for macOS, includes:
 - Catppuccin theme (macchiato flavor, blue accent)
 
 Applied per-user, no admin privileges needed.
+When applying use just recipes.
+If you add new files to configuration, you need to stage them before applying.
+Don't stage modified files, just new ones.
+Don't commit unless asked.
 
 ## Configuration patterns
 
