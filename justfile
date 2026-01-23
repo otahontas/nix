@@ -9,8 +9,10 @@ apply-home:
 apply-system:
     just system/apply
 
-update:
+update-home:
     just home/update
+
+update-system:
     just system/update
 
 format:
