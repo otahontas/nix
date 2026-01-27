@@ -4,31 +4,35 @@ This folder manages pi setup through nix home-manager.
 
 ## Structure
 
-- `default.nix` - Main config that symlinks everything to `~/.pi/agent/`
+- `default.nix` - Main config with auto-discovery logic
 - `sources/GLOBAL_AGENTS.md` - Source for global `~/.pi/agent/AGENTS.md`
-- `skills/*/SKILL.md` - Pi skills (symlinked to `~/.pi/agent/skills/`)
-- `extensions/*.ts` - Pi extensions (symlinked to `~/.pi/agent/extensions/`)
+- `skills/` - Simple skills (auto-discovered, symlinked to `~/.pi/agent/skills/`)
+- `skills-with-deps/` - Skills with npm dependencies (need `buildNpmPackage`)
+- `extensions/` - Extensions (auto-discovered `.ts` files)
 
 ## Adding new skills
 
-1. Create skill in `skills/skillname/SKILL.md`
-2. Add to `default.nix` under `home.file`:
-   ```nix
-   ".pi/agent/skills/skillname/SKILL.md".source = ./skills/skillname/SKILL.md;
-   ```
-3. Run `just apply` to activate
+**Simple skills (no npm deps):**
 
-Skills with dependencies (like brave-search) need a `buildNpmPackage` derivation in `default.nix`.
+1. Create `skills/skillname/SKILL.md`
+2. Stage: `git add skills/skillname/`
+3. Run `just apply-home`
+
+**Skills with dependencies:**
+
+1. Create `skills-with-deps/skillname/` with `package.json` and `SKILL.md`
+2. Add `buildNpmPackage` derivation in `default.nix`
+3. Add symlink: `".pi/agent/skills/skillname".source = skillname-skill;`
+4. Stage and run `just apply-home`
 
 ## Adding extensions
 
-1. Create extension in `extensions/name.ts`
-2. Add to `default.nix`:
-   ```nix
-   ".pi/agent/extensions/name.ts".source = ./extensions/name.ts;
-   ```
-3. Run `just apply`
+1. Create `extensions/name.ts`
+2. Stage: `git add extensions/name.ts`
+3. Run `just apply-home`
+
+Extensions are auto-discovered - no need to edit `default.nix`.
 
 ## Modifying global AGENTS.md
 
-Edit `sources/GLOBAL_AGENTS.md`, then run `just apply`.
+Edit `sources/GLOBAL_AGENTS.md`, then run `just apply-home`.

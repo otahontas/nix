@@ -1,11 +1,12 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 let
+  # Skills with npm dependencies need to be built
   brave-search-skill = pkgs.buildNpmPackage {
     pname = "brave-search-skill";
     version = "1.0.0";
 
-    src = ./skills/brave-search;
+    src = ./skills-with-deps/brave-search;
 
     npmDepsHash = "sha256-BQM1qKFB/CcCyyQqUnnCx3V2ZxDhC392nB4G2ZnjicQ=";
 
@@ -18,6 +19,30 @@ let
       runHook postInstall
     '';
   };
+
+  # Auto-discover extensions (.ts files)
+  extensionFiles = builtins.filter (name: lib.hasSuffix ".ts" name) (
+    builtins.attrNames (builtins.readDir ./extensions)
+  );
+  extensionSymlinks = builtins.listToAttrs (
+    map (name: {
+      name = ".pi/agent/extensions/${name}";
+      value = {
+        source = ./extensions/${name};
+      };
+    }) extensionFiles
+  );
+
+  # Auto-discover simple skills (no deps) - symlink SKILL.md files
+  skillDirs = builtins.attrNames (builtins.readDir ./skills);
+  skillSymlinks = builtins.listToAttrs (
+    map (name: {
+      name = ".pi/agent/skills/${name}/SKILL.md";
+      value = {
+        source = ./skills/${name}/SKILL.md;
+      };
+    }) skillDirs
+  );
 in
 
 {
@@ -38,18 +63,12 @@ in
 
     file = {
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
-      ".pi/agent/models.json".source = ./sources/models.json;
 
-      # Extensions
-      ".pi/agent/extensions/notify.ts".source = ./extensions/notify.ts;
-      ".pi/agent/extensions/rainbow-editor.ts".source = ./extensions/rainbow-editor.ts;
-
-      # Skills
+      # Skills with deps - built separately
       ".pi/agent/skills/brave-search".source = brave-search-skill;
-      ".pi/agent/skills/catch-up/SKILL.md".source = ./skills/catch-up/SKILL.md;
-      ".pi/agent/skills/context-hunter/SKILL.md".source = ./skills/context-hunter/SKILL.md;
-      ".pi/agent/skills/git-commit/SKILL.md".source = ./skills/git-commit/SKILL.md;
-    };
+    }
+    // extensionSymlinks
+    // skillSymlinks;
   };
 
   programs.fish.shellAliases = {
