@@ -69,10 +69,21 @@ in
     }
     // extensionSymlinks
     // skillSymlinks;
+
+    # Activation script to merge enabledModels into settings.json
+    # This preserves all other settings managed by pi itself
+    activation = {
+      mergeEnabledModels = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run ${pkgs.bash}/bin/bash ${./merge-enabled-models.sh} ${./enabled-models.json}
+      '';
+    };
   };
 
   programs.fish.shellAliases = {
     pic = "pi -c";
     pir = "pi -r";
   };
+
+  # Catppuccin theme (follows global catppuccin.flavor)
+  programs.pi.catppuccin.enable = true;
 }
