@@ -86,7 +86,6 @@
                 "orbstack"
                 "orion"
                 "pareto-security"
-                "zed"
                 "tonisives/tap/ovim"
               ];
               masApps = {

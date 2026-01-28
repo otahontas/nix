@@ -7,12 +7,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     catppuccin.url = "github:catppuccin/nix";
+    pi-catppuccin.url = "github:otahontas/pi-coding-agent-catppuccin";
   };
   outputs =
     {
       nixpkgs,
       home-manager,
       catppuccin,
+      pi-catppuccin,
       ...
     }:
     let
@@ -27,6 +29,7 @@
         };
         modules = [
           catppuccin.homeModules.catppuccin
+          pi-catppuccin.homeManagerModules.default
           (
             { lib, ... }:
             let
