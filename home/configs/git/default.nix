@@ -122,6 +122,7 @@
         ".localized"
         "**/.worktrees/**"
         "**/.local_scripts/**"
+        "*.review"
       ];
     };
     fish = {

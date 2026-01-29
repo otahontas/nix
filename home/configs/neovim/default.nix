@@ -98,6 +98,7 @@ in
         fzf-lua
 
         # Git integration
+        diffview-nvim
         octo-nvim
 
         # AI assistance
