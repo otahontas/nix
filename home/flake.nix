@@ -8,6 +8,7 @@
     };
     catppuccin.url = "github:catppuccin/nix";
     pi-catppuccin.url = "github:otahontas/pi-coding-agent-catppuccin";
+    pi-piception.url = "github:otahontas/piception";
   };
   outputs =
     {
@@ -15,6 +16,7 @@
       home-manager,
       catppuccin,
       pi-catppuccin,
+      pi-piception,
       ...
     }:
     let
@@ -30,6 +32,7 @@
         modules = [
           catppuccin.homeModules.catppuccin
           pi-catppuccin.homeManagerModules.default
+          pi-piception.homeManagerModules.default
           (
             { lib, ... }:
             let

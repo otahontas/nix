@@ -79,11 +79,14 @@ in
     };
   };
 
-  programs.fish.shellAliases = {
-    pic = "pi -c";
-    pir = "pi -r";
-  };
+  programs = {
+    fish.shellAliases = {
+      pic = "pi -c";
+      pir = "pi -r";
+    };
 
-  # Catppuccin theme (follows global catppuccin.flavor)
-  programs.pi.catppuccin.enable = true;
+    # Catppuccin theme (follows global catppuccin.flavor)
+    pi.catppuccin.enable = true;
+    pi.piception.enable = true;
+  };
 }
