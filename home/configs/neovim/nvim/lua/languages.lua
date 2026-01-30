@@ -74,35 +74,18 @@ local languages = {
 	},
 }
 
--- Treesitter that aren't directly tied to a specific filetype
-local extra_treesitters = {
-	"comment",
-	"ecma",
-	"gosum",
-	"html_tags",
-	"luadoc",
-	"luap",
-	"markdown_inline",
-	"query",
-}
-
 -- Module exports
 local M = {}
-M.filetypes = vim.tbl_keys(languages)
-M.treesitters = vim.list_extend({}, extra_treesitters)
 M.lsps = {}
 M.formatters = {}
 
 vim.iter(languages):each(function(filetype, config)
-	vim.list_extend(M.treesitters, config.treesitter and { config.treesitter } or {})
 	vim.list_extend(M.lsps, config.lsp or {})
 	if config.formatter then
 		M.formatters[filetype] = config.formatter
 	end
 end)
 
-table.sort(M.filetypes)
-table.sort(M.treesitters)
 table.sort(M.lsps)
 
 return M

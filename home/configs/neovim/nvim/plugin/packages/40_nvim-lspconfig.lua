@@ -55,23 +55,5 @@ vim.api.nvim_create_autocmd("LspAttach", {
 			vim.wo.foldmethod = "expr"
 			vim.wo[win][0].foldexpr = "v:lua.vim.lsp.foldexpr()"
 		end
-
-		-- Setup inline completion if supported
-		-- if client:supports_method(vim.lsp.protocol.Methods.textDocument_inlineCompletion, bufnr) then
-		-- vim.lsp.inline_completion.enable(true, { bufnr = bufnr, })
-
-		-- vim.keymap.set(
-		--   "i",
-		--   "<C-L>",
-		--   vim.lsp.inline_completion.get,
-		--   { desc = "LSP: accept inline completion", buffer = bufnr, }
-		-- )
-		-- vim.keymap.set(
-		--   "i",
-		--   "<C-B>",
-		--   vim.lsp.inline_completion.select,
-		--   { desc = "LSP: switch inline completion", buffer = bufnr, }
-		-- )
-		-- end
 	end,
 })

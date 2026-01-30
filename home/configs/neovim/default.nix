@@ -61,7 +61,7 @@ in
       vimdiffAlias = true;
       withNodeJs = true;
       autowrapRuntimeDeps = true;
-      extraLuaConfig = builtins.readFile ./nvim/init.lua;
+      initLua = builtins.readFile ./nvim/init.lua;
       extraPackages = with pkgs; [
         # LSP servers
         basedpyright
@@ -112,11 +112,8 @@ in
     };
   };
 
-  # Editorconfig (neovim is main consumer via built-in editorconfig support)
-  # using .editorconfig.in, the file shouldn't be considered as editorconfig in this folder by tools
   # Language tools (formatters, linters, diagnostics)
   home = {
-    file.".editorconfig".source = ./.editorconfig.in;
     packages = with pkgs; [
       # Lua
       stylua
