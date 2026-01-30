@@ -78,18 +78,4 @@ M.setup_prose_buffer = function()
 	}
 end
 
--- Adds package with default settings and runs the setup callback
--- (setup doesn't call package.setup, it's just an arbitrary callback)
----@param specs any specs that should be installed
----@param setup? function setup callback that will be triggered after adding the package
-M.add_package = function(specs, setup)
-	vim.pack.add(specs, {
-		load = true,
-		confirm = false,
-	})
-	if setup then
-		setup()
-	end
-end
-
 return M

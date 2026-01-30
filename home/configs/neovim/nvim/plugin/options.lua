@@ -189,9 +189,3 @@ vim.cmd("filetype plugin indent on")
 if vim.fn.exists("syntax_on") ~= 1 then
 	vim.cmd("syntax enable")
 end
-
--- Enable couple of nice plugins, but don't block on startup
-vim.defer_fn(function()
-	vim.cmd("packadd nvim.difftool")
-	vim.cmd("packadd nvim.undotree")
-end, 0)

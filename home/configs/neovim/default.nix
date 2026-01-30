@@ -108,10 +108,6 @@ in
         markview-nvim
 
         # Note: catppuccin is auto-installed, so not included here
-        # Note: The following plugins are not available in nixpkgs:
-        #   - unnest-nvim (brianhuster/unnest.nvim)
-        #   - ts-error-translator-nvim (dmmulroy/ts-error-translator.nvim)
-        #   - twoslash-queries-nvim (marilari88/twoslash-queries.nvim)
       ];
     };
   };

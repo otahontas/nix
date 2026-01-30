@@ -1,13 +1,10 @@
-local treesitter = require("nvim-treesitter")
-local languages = require("languages")
-
-treesitter.install(languages.treesitters)
+local treesitter_filetypes = require("treesitter_filetypes")
 
 vim.treesitter.language.register("yaml", "yaml.docker-compose")
 vim.treesitter.language.register("yaml", "yaml.github-action")
 
 vim.api.nvim_create_autocmd("FileType", {
-	pattern = languages.filetypes,
+	pattern = treesitter_filetypes,
 	callback = function()
 		vim.treesitter.start()
 		vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"

@@ -1,4 +1,0 @@
--- NOTE: unnest.nvim is not available in nixpkgs
--- Original config was: require("utils").add_package({ "https://github.com/brianhuster/unnest.nvim", })
--- This plugin would need to be packaged for nix or loaded via a different method
--- Keeping this file as a placeholder in case it becomes available in the future
