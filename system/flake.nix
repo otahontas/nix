@@ -78,12 +78,8 @@
               user = adminUser;
               casks = [
                 "blockblock"
-                "firefox@developer-edition"
-                "ghostty"
-                "google-chrome"
                 "lulu"
                 "macwhisper"
-                "orbstack"
                 "orion"
                 "pareto-security"
                 "tonisives/tap/ovim"

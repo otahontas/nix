@@ -1,0 +1,5 @@
+[default.extend-words]
+# Home Assistant abbreviation
+hass = "hass"
+# Universal Plug and Play
+Pn = "Pn"

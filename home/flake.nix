@@ -48,9 +48,9 @@
               };
               xdg.enable = true;
 
-              # don't link gui apps through home manager
+              # use copyApps for GUI apps (works with Spotlight)
               targets.darwin.linkApps.enable = false;
-              targets.darwin.copyApps.enable = false;
+              targets.darwin.copyApps.enable = true;
 
               # enable catppuccin globally
               catppuccin = {

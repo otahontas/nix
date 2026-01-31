@@ -21,9 +21,13 @@ let
   };
 
   # Auto-discover extensions (.ts files)
-  extensionFiles = builtins.filter (name: lib.hasSuffix ".ts" name) (
-    builtins.attrNames (builtins.readDir ./extensions)
-  );
+  # Extensions to keep source but not install
+  disabledExtensions = [
+    "agents-md-auto-revise.ts"
+  ];
+  extensionFiles = builtins.filter (
+    name: lib.hasSuffix ".ts" name && !builtins.elem name disabledExtensions
+  ) (builtins.attrNames (builtins.readDir ./extensions));
   extensionSymlinks = builtins.listToAttrs (
     map (name: {
       name = ".pi/agent/extensions/${name}";
@@ -34,7 +38,14 @@ let
   );
 
   # Auto-discover simple skills (no deps) - symlink SKILL.md files
-  skillDirs = builtins.attrNames (builtins.readDir ./skills);
+  # Skills to keep source but not install
+  disabledSkills = [
+    "agents-md-improver"
+    "sequential-agent-execution"
+  ];
+  skillDirs = builtins.filter (name: !builtins.elem name disabledSkills) (
+    builtins.attrNames (builtins.readDir ./skills)
+  );
   skillSymlinks = builtins.listToAttrs (
     map (name: {
       name = ".pi/agent/skills/${name}/SKILL.md";

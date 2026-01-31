@@ -1,11 +1,38 @@
 /**
  * AGENTS.md Auto-Revise Extension
  *
- * Automatically prompts to update AGENTS.md with session learnings after each
- * agent turn. Ported from claude-md-management's revise-claude-md command.
+ * Automatically prompts to update AGENTS.md with session learnings after
+ * substantial work. Only fires when:
+ * - AGENTS.md exists in cwd or parent directories
+ * - At least 10 user messages have been sent
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import { existsSync } from "fs";
+import { join, dirname, parse } from "path";
+
+const MIN_USER_MESSAGES = 10;
+
+/**
+ * Check if AGENTS.md exists in cwd or any parent directory
+ */
+function hasAgentsMdInPath(startDir: string): boolean {
+  let dir = startDir;
+
+  while (true) {
+    const agentsMdPath = join(dir, "AGENTS.md");
+    if (existsSync(agentsMdPath)) {
+      return true;
+    }
+
+    const parent = dirname(dir);
+    // Reached root
+    if (parent === dir || parse(dir).root === dir) {
+      return false;
+    }
+    dir = parent;
+  }
+}
 
 const REVISE_PROMPT = `Review this session for learnings about working in this codebase. Update AGENTS.md with context that would help future sessions be more effective.
 
@@ -58,10 +85,14 @@ Ask if the user wants to apply the changes. Only edit files they approve.`;
 export default function (pi: ExtensionAPI) {
   let lastInputSource: "interactive" | "rpc" | "extension" = "interactive";
   let skipNext = false;
+  let userMessageCount = 0;
 
-  // Track input source
+  // Track input source and count user messages
   pi.on("input", async (event) => {
     lastInputSource = event.source;
+    if (event.source === "interactive") {
+      userMessageCount++;
+    }
   });
 
   // On agent end, send follow-up prompt if appropriate
@@ -74,6 +105,16 @@ export default function (pi: ExtensionAPI) {
     // Skip if explicitly flagged
     if (skipNext) {
       skipNext = false;
+      return;
+    }
+
+    // Only fire after sufficient user interaction
+    if (userMessageCount < MIN_USER_MESSAGES) {
+      return;
+    }
+
+    // Only fire if AGENTS.md exists in cwd or parent directories
+    if (!hasAgentsMdInPath(process.cwd())) {
       return;
     }
 

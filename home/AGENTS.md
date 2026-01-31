@@ -24,13 +24,11 @@ Don't commit unless asked.
 - Interactive shell init → always via `builtins.readFile` from external file(s), never inline strings
 - Functions → always with `description` and `body` from external file
 
-**GUI apps**: Never installed through home-manager:
+**GUI apps**: Prefer home-manager when nixpkgs has darwin support with `.app` bundle:
 
-- `targets.darwin.linkApps.enable = false`
-- `targets.darwin.copyApps.enable = false`
-- All GUI apps installed via nix-darwin Homebrew setup
-
-**Hybrid package management**: For GUI apps that need home-manager config, use `package = null` to skip Nix package but keep home-manager settings (e.g., Ghostty).
+- `targets.darwin.copyApps.enable = true` (works with Spotlight)
+- Security/system apps stay in Homebrew (BlockBlock, LuLu, etc.)
+- Mac App Store apps stay in masApps
 
 **LaunchAgents**: Auto-start apps via `launchd.agents` module.
 

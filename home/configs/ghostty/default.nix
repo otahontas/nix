@@ -1,8 +1,8 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 {
   programs.ghostty = {
     enable = true;
-    package = null; # skip nix package on mac, use brew cask instead
+    package = pkgs.ghostty-bin;
     settings = {
       macos-option-as-alt = "left";
     };

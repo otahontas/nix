@@ -1,0 +1,19 @@
+# Deploy to otapi using deploy-rs
+deploy:
+    nix run github:serokell/deploy-rs -- .#otapi
+
+# Build configuration locally (check for errors)
+build:
+    nix build .#nixosConfigurations.otapi.config.system.build.toplevel
+
+# Deploy using nixos-rebuild (alternative to deploy-rs)
+deploy-rebuild:
+    nixos-rebuild switch --flake .#otapi --target-host otahontas@otapi --use-remote-sudo
+
+# SSH into otapi
+ssh:
+    ssh otahontas@otapi
+
+# Check flake
+check:
+    nix flake check
