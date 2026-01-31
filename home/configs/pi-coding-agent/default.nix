@@ -37,7 +37,7 @@ let
     }) extensionFiles
   );
 
-  # Auto-discover simple skills (no deps) - symlink SKILL.md files
+  # Auto-discover simple skills (no deps) - symlink entire directories
   # Skills to keep source but not install
   disabledSkills = [
     "agents-md-improver"
@@ -48,9 +48,9 @@ let
   );
   skillSymlinks = builtins.listToAttrs (
     map (name: {
-      name = ".pi/agent/skills/${name}/SKILL.md";
+      name = ".pi/agent/skills/${name}";
       value = {
-        source = ./skills/${name}/SKILL.md;
+        source = ./skills/${name};
       };
     }) skillDirs
   );
