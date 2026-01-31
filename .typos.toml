@@ -3,3 +3,5 @@
 hass = "hass"
 # Universal Plug and Play
 Pn = "Pn"
+# Proper name (sculptor in Browning's "My Last Duchess")
+Claus = "Claus"
