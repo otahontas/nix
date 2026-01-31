@@ -28,7 +28,7 @@ interface ContinuationJudgment {
 // Configuration
 const MAX_CONTINUATIONS = 3;
 const THROTTLE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
-const JUDGE_MODEL = process.env.DOUBLE_SHOT_LATTE_MODEL || "haiku";
+const HAIKU_MODEL = "claude-3-5-haiku-latest";
 
 export default function (pi: ExtensionAPI) {
   // Track continuation attempts per session
@@ -100,7 +100,7 @@ export default function (pi: ExtensionAPI) {
       .join("\n\n");
 
     // Evaluate continuation
-    const judgment = await evaluateContinuation(pi, ctx, contextText);
+    const judgment = await evaluateContinuation(ctx, contextText);
 
     if (judgment?.should_continue) {
       // Update throttle state
@@ -118,60 +118,64 @@ export default function (pi: ExtensionAPI) {
   });
 
   /**
-   * Use Claude to evaluate whether continuation is appropriate
+   * Use Haiku to evaluate whether continuation is appropriate
    */
   async function evaluateContinuation(
-    pi: ExtensionAPI,
     ctx: ExtensionContext,
     contextText: string,
   ): Promise<ContinuationJudgment | null> {
     isJudging = true;
 
     try {
-      const prompt = buildEvaluationPrompt(contextText);
+      // Get API key from model registry
+      const apiKey = ctx.modelRegistry.getApiKey("anthropic");
+      if (!apiKey) {
+        console.error("No Anthropic API key available");
+        return null;
+      }
 
-      // Use claude CLI to evaluate (separate instance, no recursion risk)
-      const result = await pi.exec(
-        "claude",
-        [
-          "--print",
-          "--model",
-          JUDGE_MODEL,
-          "--output-format",
-          "json",
-          "--json-schema",
-          JSON.stringify({
-            type: "object",
-            properties: {
-              should_continue: { type: "boolean" },
-              reasoning: { type: "string" },
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: HAIKU_MODEL,
+          max_tokens: 256,
+          system:
+            'You are a conversation state classifier. Analyze the conversation and determine if the assistant has more autonomous work to do. Respond with JSON only: {"should_continue": boolean, "reasoning": string}',
+          messages: [
+            {
+              role: "user",
+              content: buildEvaluationPrompt(contextText),
             },
-            required: ["should_continue", "reasoning"],
-          }),
-          "--system-prompt",
-          "You are a conversation state classifier. Your only job is to analyze conversation transcripts and determine if the assistant has more autonomous work to do. You output structured JSON. You do not write code or use tools.",
-          "--disallowedTools",
-          "*",
-          prompt,
-        ],
-        { timeout: 30000 },
-      );
+          ],
+        }),
+      });
 
-      if (result.code !== 0) {
-        console.error("Claude evaluation failed:", result.stderr);
+      if (!response.ok) {
+        console.error("Anthropic API error:", response.status);
         return null;
       }
 
-      // Parse the response
-      const response = JSON.parse(result.stdout);
-      const structuredOutput = response.structured_output;
+      const data = await response.json();
+      const text = data.content?.[0]?.text;
 
-      if (!structuredOutput) {
-        console.error("No structured output from Claude");
+      if (!text) {
+        console.error("No text in Anthropic response");
         return null;
       }
 
-      return structuredOutput as ContinuationJudgment;
+      // Parse JSON from response (handle markdown code blocks)
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        console.error("Could not parse JSON from response:", text);
+        return null;
+      }
+
+      return JSON.parse(jsonMatch[0]) as ContinuationJudgment;
     } catch (error) {
       console.error("Continuation evaluation error:", error);
       return null;
@@ -210,7 +214,9 @@ STOP (should_continue: false) in ALL other cases:
 
 KEY: If the assistant is WAITING for the user (whether after completing work OR asking a question), that means STOP. Waiting ≠ more autonomous work to do.
 
-Default to STOP when uncertain.`;
+Default to STOP when uncertain.
+
+Respond with JSON only.`;
 }
 
 function truncate(text: string, maxLen: number): string {
