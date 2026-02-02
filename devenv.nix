@@ -7,6 +7,7 @@ let
     settings.global.excludes = [
       "home/configs/git/allowed_signers"
       "home/configs/npm/.npmrc"
+      "home/configs/neovim/nvim/spell/en.utf-8.add"
       "system/keyboard/*.keylayout"
     ];
     programs = {

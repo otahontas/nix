@@ -1,9 +1,0 @@
-pre-commit:
-  commands:
-    gitleaks:
-      run: gitleaks protect --staged --verbose --no-banner
-
-commit-msg:
-  commands:
-    commitlint:
-      run: commitlint --config ~/.config/commitlint/commitlint.config.mjs --edit {1}

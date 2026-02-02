@@ -8,9 +8,9 @@ printf '\33c\e[3J'
 # List listening TCP ports, optionally filter by pattern
 function listening
     if test -n "$argv[1]"
-        sudo lsof -iTCP -sTCP:LISTEN -n -P | grep -i "$argv[1]"
+        lsof -iTCP -sTCP:LISTEN -n -P | grep -i "$argv[1]"
     else
-        sudo lsof -iTCP -sTCP:LISTEN -n -P
+        lsof -iTCP -sTCP:LISTEN -n -P
     end
 end
 

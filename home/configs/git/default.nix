@@ -1,14 +1,7 @@
-{ config, pkgs, ... }:
+{ config, ... }:
 {
   home = {
-    packages = [
-      pkgs.lefthook
-    ];
     file.".ssh/allowed_signers".source = ./allowed_signers;
-  };
-  xdg.configFile = {
-    "git/lefthook.yml".source = ./lefthook.yml;
-    "commitlint/commitlint.config.mjs".source = ./commitlint.config.mjs;
   };
   programs = {
     gh = {
@@ -126,8 +119,7 @@
       ];
     };
     fish = {
-      interactiveShellInit =
-        builtins.readFile ./lefthook.fish + builtins.readFile ./worktree.fish + builtins.readFile ./gh.fish;
+      interactiveShellInit = builtins.readFile ./worktree.fish + builtins.readFile ./gh.fish;
       shellAliases = {
         gsw = "git sw";
         gwcd = "git-worktree-cd";
