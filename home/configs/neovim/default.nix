@@ -63,17 +63,6 @@ in
       autowrapRuntimeDeps = true;
       initLua = builtins.readFile ./nvim/init.lua;
       extraPackages = with pkgs; [
-        # LSP servers
-        basedpyright
-        bash-language-server
-        efm-langserver
-        emmylua-ls
-        nixd
-        postgres-language-server
-        typescript-language-server
-        vscode-langservers-extracted # eslint, jsonls
-
-        # AI assistance
         copilot-node-server
       ];
       plugins = with pkgs.vimPlugins; [
@@ -97,10 +86,6 @@ in
         # Fuzzy finding
         fzf-lua
 
-        # Git integration
-        diffview-nvim
-        octo-nvim
-
         # AI assistance
         copilot-lua
 
@@ -111,21 +96,7 @@ in
       ];
     };
   };
-
-  # Language tools (formatters, linters, diagnostics)
   home = {
-    packages = with pkgs; [
-      # Lua
-      stylua
-      emmylua-check
-
-      # Nix
-      nixf-diagnose
-      pkgs.nixfmt
-
-      # Python
-      ruff
-    ];
     sessionVariables = {
       TODO_FILE_LOCATION = "$HOME/Documents/todo/todo.txt";
       DAILY_FOLDER_LOCATION = "$HOME/Documents/journal/daily";

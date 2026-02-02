@@ -33,6 +33,7 @@ fzf.register_extension("git_diff_default_branch", git_diff_default_branch)
 fzf.setup({
 	-- mini is needed for the icons
 	defaults = { git_icons = "true", file_icons = "mini" },
+	fzf_bin = "sk",
 })
 
 -- generic

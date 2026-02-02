@@ -13,13 +13,11 @@ end
 
 vim.opt_local.syntax = "off"
 
-vim.b.cmp_enabled = false
+vim.b.completion = false
 
 vim.b.minipairs_disable = true
 vim.b.miniindentscope_disable = true
 vim.b.minidiff_disable = true
-
-vim.b.format_on_save_disable = true
 
 vim.opt_local.swapfile = false
 vim.opt_local.foldmethod = "manual"

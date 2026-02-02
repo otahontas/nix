@@ -1,7 +1,6 @@
 vim.filetype.add({
 	pattern = {
-		-- yaml.github-action & yaml.docker-compose needed for proper treesitter, lsp and
-		-- formatter setups
+		-- yaml.github-action & yaml.docker-compose needed for proper treesitter and lsp setups
 		[".*/%.github/actions/.*"] = "yaml.github-action",
 		[".*/%.github/workflows/.*"] = "yaml.github-action",
 		["docker%-compose%..*"] = "yaml.docker-compose",

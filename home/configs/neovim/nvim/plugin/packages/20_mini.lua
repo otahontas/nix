@@ -39,7 +39,7 @@ vim.keymap.set("n", "<Leader>mmf", miniMap.toggle_focus)
 -- Open diff overlay
 vim.keymap.set("n", "<Leader>do", "<Cmd>lua MiniDiff.toggle_overlay()<CR>", { desc = "Toggle mini diff overlay" })
 
--- setup and mock exported functions of 'nvim-tree/nvim-web-devicons' (for octo that has no support for mini.icons yet)
+-- setup and mock exported functions of 'nvim-tree/nvim-web-devicons'
 local miniIcons = require("mini.icons")
 miniIcons.setup()
 miniIcons.mock_nvim_web_devicons()
