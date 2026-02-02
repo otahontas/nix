@@ -24,6 +24,8 @@ let
   # Extensions to keep source but not install
   disabledExtensions = [
     "agents-md-auto-revise.ts"
+    "double-shot-latte.ts"
+    "piception.ts"
   ];
   extensionFiles = builtins.filter (
     name: lib.hasSuffix ".ts" name && !builtins.elem name disabledExtensions
@@ -42,6 +44,10 @@ let
   disabledSkills = [
     "agents-md-improver"
     "sequential-agent-execution"
+    "address-reviews"
+    "branch-review"
+    "catch-up"
+    "context-hunter"
   ];
   skillDirs = builtins.filter (name: !builtins.elem name disabledSkills) (
     builtins.attrNames (builtins.readDir ./skills)
@@ -98,6 +104,6 @@ in
 
     # Catppuccin theme (follows global catppuccin.flavor)
     pi.catppuccin.enable = true;
-    pi.piception.enable = true;
+    pi.piception.enable = false;
   };
 }
