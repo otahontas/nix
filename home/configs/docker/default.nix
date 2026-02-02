@@ -1,11 +1,13 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }:
 {
   home = {
-    packages = [ pkgs.docker-credential-helpers ];
+    # lower priority so orbstack's docker-credential-osxkeychain wins
+    packages = [ (lib.lowPrio pkgs.docker-credential-helpers) ];
     file.".docker/config.json".source = ./config.json;
     # obrstack is installed through homebrew but needs to added to path anyways
     sessionPath = [ "$HOME/.orbstack/bin" ];
