@@ -73,6 +73,8 @@
               trusted-users = [ primaryUser ];
             };
 
+            security.pam.enableSudoTouchId = true;
+
             homebrew = {
               enable = true;
               user = adminUser;
@@ -82,7 +84,6 @@
                 "macwhisper"
                 "orion"
                 "pareto-security"
-                "tonisives/tap/ovim"
               ];
               masApps = {
                 "Logic Pro" = 634148309;
@@ -90,6 +91,7 @@
                 "MainStage" = 634159523;
                 "Paprika Recipe Manager 3" = 1303222628;
                 "Telegram" = 747648890;
+                "Slack" = 803453959;
                 "Velja" = 1607635845;
                 "WhatsApp Messenger" = 310633997;
                 "WireGuard" = 1451685025;

@@ -7,8 +7,9 @@
 ## Writing
 
 - Use sentence case: "Next steps" not "Next Steps", "Plan overview" not "Plan Overview"
-- Sacrifice grammar over being concise unless specifically asked to write clearly
-- When ask to write text for humans use skill "writing-clearly-and-concisely"
+- For answering directly, just sacrifice grammar over being concise unless specifically asked to write clearly
+- When actually editing or creating text to be read by humans use skill "writing-clearly-and-concisely".
+- Do not use extra skill
 - Prefer bullet points over paragraphs
 
 ## Coding specific guidelines:
