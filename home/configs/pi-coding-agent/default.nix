@@ -25,6 +25,7 @@ let
   disabledExtensions = [
     "agents-md-auto-revise.ts"
     "double-shot-latte.ts"
+    "nvim-bridge.ts"
     "piception.ts"
   ];
   extensionFiles = builtins.filter (
@@ -76,6 +77,18 @@ in
 
         exec npx @mariozechner/pi-coding-agent "$@"
       '')
+
+      # Opt-in pi instance that syncs with Neovim via the nvim bridge extension.
+      (pkgs.writeShellScriptBin "pinvim" ''
+        export PATH="${pkgs.nodejs_24}/bin:$PATH"
+
+        # Load Brave Search API key if available
+        if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
+          export BRAVE_API_KEY="$(${pkgs.pass}/bin/pass show api/brave-search 2>/dev/null || true)"
+        fi
+
+        exec npx @mariozechner/pi-coding-agent -e "$HOME/.pi/agent/extensions-opt/nvim-bridge.ts" "$@"
+      '')
     ];
 
     file = {
@@ -83,6 +96,9 @@ in
 
       # Skills with deps - built separately
       ".pi/agent/skills/brave-search".source = brave-search-skill;
+
+      # Opt-in extensions (not auto-discovered)
+      ".pi/agent/extensions-opt/nvim-bridge.ts".source = ./extensions/nvim-bridge.ts;
     }
     // extensionSymlinks
     // skillSymlinks;

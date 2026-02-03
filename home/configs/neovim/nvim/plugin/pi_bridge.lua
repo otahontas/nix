@@ -62,8 +62,17 @@ local function get_diagnostics(start_row, end_row)
 	return result
 end
 
-vim.api.nvim_create_user_command("PiSelection", function()
+vim.api.nvim_create_user_command("PiSelection", function(opts)
 	local selection, start_row, end_row = get_visual_selection()
+
+	-- When invoked from visual mode via `:` (which prefixes `'<,'>`), Neovim
+	-- passes a line range. Accept it and fall back to sending full lines.
+	if not selection and opts and opts.range and opts.range > 0 then
+		start_row, end_row = opts.line1, opts.line2
+		local lines = vim.api.nvim_buf_get_lines(0, start_row - 1, end_row, false)
+		selection = table.concat(lines, "\n")
+	end
+
 	if not selection then
 		vim.notify("No selection", vim.log.levels.WARN)
 		return
@@ -79,7 +88,7 @@ vim.api.nvim_create_user_command("PiSelection", function()
 		lsp = { diagnostics = get_diagnostics(start_row, end_row) },
 		task = task,
 	})
-end, { desc = "Send selection to pi" })
+end, { desc = "Send selection to pi", range = true })
 
 vim.api.nvim_create_user_command("PiCursor", function()
 	local row = vim.api.nvim_win_get_cursor(0)[1]
