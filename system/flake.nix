@@ -79,11 +79,7 @@
               enable = true;
               user = adminUser;
               casks = [
-                "blockblock"
-                "lulu"
-                "macwhisper"
                 "orion"
-                "pareto-security"
               ];
               masApps = {
                 "Logic Pro" = 634148309;

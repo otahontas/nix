@@ -27,7 +27,7 @@ Don't commit unless asked.
 **GUI apps**: Prefer home-manager when nixpkgs has darwin support with `.app` bundle:
 
 - `targets.darwin.copyApps.enable = true` (works with Spotlight)
-- Security/system apps stay in Homebrew (BlockBlock, LuLu, etc.)
+- Security/system apps can live here when packaged as `.app` bundles
 - Mac App Store apps stay in masApps
 
 **LaunchAgents**: Auto-start apps via `launchd.agents` module.
