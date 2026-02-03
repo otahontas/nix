@@ -12,7 +12,6 @@ let
     ];
     programs = {
       fish_indent.enable = true;
-      just.enable = true;
       nixfmt.enable = true;
       prettier.enable = true;
       shfmt.enable = true;
@@ -26,6 +25,30 @@ in
     treefmtEval.config.build.wrapper
     pkgs.commitlint
   ];
+
+  tasks = {
+    "home:apply" = {
+      exec = "home-manager switch --flake ./home";
+    };
+    "system:apply" = {
+      exec = "sudo darwin-rebuild switch --flake ./system#otabook";
+    };
+    "home:update" = {
+      exec = "nix flake update --flake ./home";
+    };
+    "system:update" = {
+      exec = "nix flake update --flake ./system";
+    };
+    "nix:update" = {
+      exec = ''
+        nix flake update --flake ./home
+        nix flake update --flake ./system
+      '';
+    };
+    "nix:format" = {
+      exec = "treefmt -v";
+    };
+  };
 
   git-hooks.hooks = {
     check-merge-conflicts.enable = true;

@@ -73,7 +73,7 @@
               trusted-users = [ primaryUser ];
             };
 
-            security.pam.enableSudoTouchId = true;
+            security.pam.services.sudo_local.touchIdAuth = true;
 
             homebrew = {
               enable = true;
@@ -101,7 +101,6 @@
             environment = {
               systemPackages = with inputs.nixpkgs.legacyPackages.aarch64-darwin; [
                 home-manager
-                just
                 mas
               ];
               shells = [ nixpkgs.legacyPackages.aarch64-darwin.fish ];

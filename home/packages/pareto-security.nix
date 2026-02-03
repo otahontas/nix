@@ -2,7 +2,6 @@
   lib,
   stdenvNoCC,
   fetchurl,
-  undmg,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "pareto-security";
@@ -16,7 +15,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   dontFixup = true;
   sourceRoot = ".";
 
-  nativeBuildInputs = [ undmg ];
+  unpackCmd = ''
+    echo "Creating temp directory"
+    mnt=$(TMPDIR=/tmp mktemp -d -t nix-XXXXXXXXXX)
+    function finish {
+      echo "Ejecting temp directory"
+      /usr/bin/hdiutil detach $mnt -force
+      rm -rf $mnt
+    }
+    trap finish EXIT
+    echo "Mounting DMG file into \"$mnt\""
+    /usr/bin/hdiutil attach -nobrowse -mountpoint $mnt $curSrc
+    echo 'Copying extracted content into "sourceRoot"'
+    cp -a "$mnt/Pareto Security.app" $PWD/
+  '';
 
   installPhase = ''
     runHook preInstall

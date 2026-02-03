@@ -1,7 +1,0 @@
-set fallback := true
-
-apply:
-    sudo darwin-rebuild switch --flake "path:$PWD#otabook"
-
-update:
-    nix flake update
