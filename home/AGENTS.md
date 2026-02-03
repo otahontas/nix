@@ -22,6 +22,7 @@ Don't commit unless asked.
 
 - Shell aliases → always use `shellAliases`
 - Interactive shell init → always via `builtins.readFile` from external file(s), never inline strings
+- Completions → add completions via `fish/conf.d/` using `xdg.configFile."fish/conf.d/<tool>.fish".text = builtins.readFile ./<tool>.fish;` (avoid `fish/completions/<cmd>.fish` unless you want to replace upstream/vendor completions; fish loads the first match on `$fish_complete_path`)
 - Functions → always with `description` and `body` from external file
 
 **GUI apps**: Prefer home-manager when nixpkgs has darwin support with `.app` bundle:
