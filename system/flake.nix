@@ -65,6 +65,8 @@
               };
             };
 
+            nix.linux-builder.enable = true;
+
             nix.settings = {
               experimental-features = [
                 "nix-command"
