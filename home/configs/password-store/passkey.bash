@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-VERSION="1.0.0"
+VERSION="1.0.1"
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/pass-passkey"
 CACHE_FILE="$CACHE_DIR/supported.json"
 CACHE_MAX_AGE=86400 # 24 hours in seconds
@@ -36,6 +36,8 @@ Usage: pass passkey [OPTIONS]
 
 Scan your password store for accounts that support passkey authentication.
 
+Mark entries with "passkey: enabled" to show passkey status.
+
 Options:
     --refresh, -r    Force refresh of the passkey directory cache
     --verbose, -v    Show additional details (passwordless/MFA support)
@@ -55,6 +57,16 @@ log_verbose() {
 
 sanitize_output() {
   printf '%s' "$1" | LC_ALL=C tr -d '[:cntrl:]'
+}
+
+entry_has_passkey_enabled() {
+  local entry="$1"
+
+  if pass show "$entry" 2>/dev/null | grep -qiE '^passkey:[[:space:]]*enabled([[:space:]]*$|[[:space:]]+)'; then
+    return 0
+  fi
+
+  return 1
 }
 
 # Extract the main domain from a path
@@ -266,6 +278,11 @@ main() {
       safe_entry=$(sanitize_output "$entry")
       safe_domain=$(sanitize_output "$domain")
 
+      local enabled_label=""
+      if entry_has_passkey_enabled "$entry"; then
+        enabled_label=" ${CYAN}(passkey enabled)${RESET}"
+      fi
+
       local details=""
       if [[ $VERBOSE -eq 1 ]]; then
         local safe_passwordless
@@ -284,7 +301,7 @@ main() {
         fi
       fi
 
-      matches+=("${GREEN}✓${RESET} ${BOLD}${safe_entry}${RESET} ${YELLOW}→${RESET} ${safe_domain}${details}")
+      matches+=("${GREEN}✓${RESET} ${BOLD}${safe_entry}${RESET} ${YELLOW}→${RESET} ${safe_domain}${enabled_label}${details}")
       ((found++))
     fi
   done

@@ -3,7 +3,7 @@ let
   appId = "com.github.browserpass.native";
   pass-passkey = pkgs.stdenvNoCC.mkDerivation {
     pname = "pass-extension-passkey";
-    version = "1.0.0";
+    version = "1.0.1";
     src = ./passkey.bash;
     dontUnpack = true;
     installPhase = ''
