@@ -2,6 +2,7 @@ home-manager user-level config for macOS, includes:
 
 - User environment settings
 - Tool configurations (in `./configs`) for shells, CLI tools, editor etc.
+- GUI apps
 - Catppuccin theme (macchiato flavor, blue accent)
 
 Applied per-user, no admin privileges needed.
@@ -30,6 +31,7 @@ Don't commit unless asked.
 - `targets.darwin.copyApps.enable = true` (works with Spotlight)
 - Security/system apps can live here when packaged as `.app` bundles
 - Mac App Store apps stay in masApps
+- If needed, package yourself
 
 **LaunchAgents**: Auto-start apps via `launchd.agents` module.
 
