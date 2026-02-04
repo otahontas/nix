@@ -16,19 +16,6 @@
       url = "github:nix-darwin/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
-    homebrew-core = {
-      url = "github:homebrew/homebrew-core";
-      flake = false;
-    };
-    homebrew-cask = {
-      url = "github:homebrew/homebrew-cask";
-      flake = false;
-    };
-    tonisives-tap = {
-      url = "github:tonisives/homebrew-tap";
-      flake = false;
-    };
   };
 
   outputs =
@@ -36,10 +23,6 @@
       self,
       nixpkgs,
       nix-darwin,
-      nix-homebrew,
-      homebrew-core,
-      homebrew-cask,
-      tonisives-tap,
       ...
     }:
     let
@@ -77,39 +60,25 @@
 
             security.pam.services.sudo_local.touchIdAuth = true;
 
-            homebrew = {
-              enable = true;
-              user = adminUser;
-              casks = [
-                "orion"
-              ];
-              masApps = {
-                "Logic Pro" = 634148309;
-                "Lungo" = 1263070803;
-                "MainStage" = 634159523;
-                "Paprika Recipe Manager 3" = 1303222628;
-                "Telegram" = 747648890;
-                "Slack" = 803453959;
-                "Velja" = 1607635845;
-                "WhatsApp Messenger" = 310633997;
-                "WireGuard" = 1451685025;
-                "iReal Pro" = 409035833;
-                "reMarkable desktop" = 1276493162;
-              };
-            };
-
             programs.fish.enable = true;
 
             environment = {
               systemPackages = with inputs.nixpkgs.legacyPackages.aarch64-darwin; [
                 home-manager
-                mas
               ];
               shells = [ nixpkgs.legacyPackages.aarch64-darwin.fish ];
             };
 
             users = {
-              knownUsers = [ primaryUser ];
+              knownUsers = [
+                adminUser
+                primaryUser
+              ];
+              users.${adminUser} = {
+                uid = 501;
+                home = "/Users/${adminUser}";
+                shell = nixpkgs.legacyPackages.aarch64-darwin.fish;
+              };
               users.${primaryUser} = {
                 uid = 502; # 501 is for the first user (admin)
                 home = "/Users/${primaryUser}";
@@ -126,20 +95,6 @@
                 allowSigned = true;
                 allowSignedApp = true;
               };
-            };
-          }
-          nix-homebrew.darwinModules.nix-homebrew
-          {
-            nix-homebrew = {
-              enable = true;
-              enableRosetta = false;
-              user = adminUser;
-              taps = {
-                "homebrew/homebrew-core" = homebrew-core;
-                "homebrew/homebrew-cask" = homebrew-cask;
-                "tonisives/tap" = tonisives-tap;
-              };
-              mutableTaps = true;
             };
           }
         ];

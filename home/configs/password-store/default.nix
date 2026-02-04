@@ -1,6 +1,16 @@
 { config, pkgs, ... }:
 let
   appId = "com.github.browserpass.native";
+  pass-passkey = pkgs.stdenvNoCC.mkDerivation {
+    pname = "pass-extension-passkey";
+    version = "1.0.0";
+    src = ./passkey.bash;
+    dontUnpack = true;
+    installPhase = ''
+      mkdir -p $out/lib/password-store/extensions
+      install -m755 $src $out/lib/password-store/extensions/passkey.bash
+    '';
+  };
 in
 {
   home.packages = [
@@ -18,7 +28,7 @@ in
       exts.pass-otp
       exts.pass-genphrase
       exts.pass-update
-      pkgs.passExtensions.pass-extension-passkey
+      pass-passkey
     ]);
     settings = {
       PASSWORD_STORE_DIR = "${config.xdg.dataHome}/password-store";

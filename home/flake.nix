@@ -8,7 +8,6 @@
     };
     catppuccin.url = "github:catppuccin/nix";
     pi-catppuccin.url = "github:otahontas/pi-coding-agent-catppuccin";
-    pass-passkey.url = "github:otahontas/pass-passkey-scanner";
   };
   outputs =
     {
@@ -16,7 +15,6 @@
       home-manager,
       catppuccin,
       pi-catppuccin,
-      pass-passkey,
       ...
     }:
     let
@@ -28,7 +26,6 @@
         pkgs = import nixpkgs {
           inherit system;
           config.allowUnfree = true;
-          overlays = [ pass-passkey.overlays.default ];
         };
         modules = [
           catppuccin.homeModules.catppuccin

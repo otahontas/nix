@@ -72,22 +72,6 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1769433173,
-        "narHash": "sha256-Gf1dFYgD344WZ3q0LPlRoWaNdNQq8kSBDLEWulRQSEs=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "13b0f9e6ac78abbbb736c635d87845c4f4bee51b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_4": {
-      "locked": {
         "lastModified": 1768886240,
         "narHash": "sha256-C2TjvwYZ2VDxYWeqvvJ5XPPp6U7H66zeJlRaErJKoEM=",
         "owner": "NixOS",
@@ -102,27 +86,9 @@
         "type": "github"
       }
     },
-    "pass-passkey": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_3"
-      },
-      "locked": {
-        "lastModified": 1770017766,
-        "narHash": "sha256-WNWqPedDVmg273iNhNw+KX85j5NCtKlIrvoysd8RNK8=",
-        "owner": "otahontas",
-        "repo": "pass-passkey-scanner",
-        "rev": "07fe99f715f1b29ce48af6ff149e66ca372baa18",
-        "type": "github"
-      },
-      "original": {
-        "owner": "otahontas",
-        "repo": "pass-passkey-scanner",
-        "type": "github"
-      }
-    },
     "pi-catppuccin": {
       "inputs": {
-        "nixpkgs": "nixpkgs_4"
+        "nixpkgs": "nixpkgs_3"
       },
       "locked": {
         "lastModified": 1769762077,
@@ -143,7 +109,6 @@
         "catppuccin": "catppuccin",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs_2",
-        "pass-passkey": "pass-passkey",
         "pi-catppuccin": "pi-catppuccin"
       }
     }
