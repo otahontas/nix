@@ -9,6 +9,8 @@ Nix setup for macOS with strict user separation:
   - Manages home-manager config in `home/` folder
   - Installs all CLI tools, graphical apps via home-manager
 
+All CLI and GUI apps are managed through home-manager.
+
 ## Development environment
 
 - Pre-commit hooks configured in `devenv.nix` via `git-hooks.hooks`

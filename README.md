@@ -6,8 +6,10 @@ main goodies: neovim, fish, pi-coding assistant, catppuccin, gpg based git & ssh
 
 configs can be found from:
 
-- **`home/`** - home-manager config for CLI tools (runs as primary user)
-- **`system/`** - nix-darwin config for system settings and GUI apps via Homebrew (runs as admin)
+- **`home/`** - home-manager config for CLI and GUI apps (runs as primary user)
+- **`system/`** - nix-darwin config for system settings (runs as admin)
+
+All CLI and GUI apps are managed through home-manager.
 
 dev setup is handled with devenv.
 
