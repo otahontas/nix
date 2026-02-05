@@ -6,6 +6,7 @@
 import type { AssistantMessage } from "@mariozechner/pi-ai";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@mariozechner/pi-tui";
+import { execSync } from "node:child_process";
 
 function formatTokens(count: number): string {
   if (count < 1000) return count.toString();
@@ -56,37 +57,64 @@ export default function (pi: ExtensionAPI) {
           const contextWindow = contextUsage?.contextWindow ?? 0;
           const contextPercent = contextPercentValue.toFixed(1);
 
-          // Working directory with ~ substitution
-          let pwdPlain = ctx.cwd;
-          const home = process.env.HOME || process.env.USERPROFILE;
-          if (home && pwdPlain.startsWith(home)) {
-            pwdPlain = `~${pwdPlain.slice(home.length)}`;
+          // Starship prompt as first footer line
+          let starshipLine: string;
+          try {
+            const raw = execSync(
+              "starship prompt --status=0 --cmd-duration=0 --jobs=0",
+              {
+                cwd: ctx.cwd,
+                encoding: "utf-8",
+                timeout: 500,
+                env: { ...process.env, TERM_PROGRAM: "ghostty" },
+              },
+            );
+            // Strip terminal control sequences (clear screen, cursor moves, etc.)
+            const cleaned = raw.replace(/\x1b\[[0-9]*[JKHG]/g, "");
+            // Take first line with visible content (skip empty lines and prompt char)
+            starshipLine =
+              cleaned.split("\n").find((l) => visibleWidth(l) > 2) ?? "";
+            // Strip leading/trailing whitespace but preserve ANSI
+            starshipLine = starshipLine.replace(/^\s+/, "").replace(/\s+$/, "");
+          } catch {
+            // Fallback to plain cwd if starship fails
+            let fallback = ctx.cwd;
+            const home = process.env.HOME || process.env.USERPROFILE;
+            if (home && fallback.startsWith(home)) {
+              fallback = `~${fallback.slice(home.length)}`;
+            }
+            starshipLine = theme.fg("dim", fallback);
           }
 
-          // Git branch
-          const branch = footerData.getGitBranch();
-          if (branch) {
-            pwdPlain = `${pwdPlain} (${branch})`;
-          }
-
-          // Session name
+          // Right-align session name on the starship line
           const sessionName = ctx.sessionManager.getSessionName();
+          const starshipWidth = visibleWidth(starshipLine);
           if (sessionName) {
-            pwdPlain = `${pwdPlain} • ${sessionName}`;
-          }
-
-          // Truncate path if too long
-          if (pwdPlain.length > width) {
-            const half = Math.floor(width / 2) - 2;
-            if (half > 1) {
-              pwdPlain = `${pwdPlain.slice(0, half)}...${pwdPlain.slice(-(half - 1))}`;
+            const sessionStr = theme.fg("dim", sessionName);
+            const sessionWidth = visibleWidth(sessionStr);
+            const minPad = 2;
+            if (starshipWidth + minPad + sessionWidth <= width) {
+              const padding = " ".repeat(width - starshipWidth - sessionWidth);
+              starshipLine = starshipLine + padding + sessionStr;
             } else {
-              pwdPlain = pwdPlain.slice(0, Math.max(1, width));
+              // Not enough room — truncate starship to make space
+              const available = width - minPad - sessionWidth;
+              if (available > 10) {
+                starshipLine =
+                  truncateToWidth(starshipLine, available) +
+                  " ".repeat(
+                    width -
+                      visibleWidth(truncateToWidth(starshipLine, available)) -
+                      sessionWidth,
+                  ) +
+                  sessionStr;
+              } else {
+                starshipLine = truncateToWidth(starshipLine, width);
+              }
             }
           }
 
-          // Color the pwd line — all dim, just like default
-          const pwdColored = truncateToWidth(theme.fg("dim", pwdPlain), width);
+          const pwdColored = truncateToWidth(starshipLine, width);
 
           // Build stats — muted by default
           const statsParts: string[] = [];
