@@ -20,6 +20,36 @@ let
     '';
   };
 
+  piSessionsBackup = pkgs.writeShellScriptBin "pi-sessions-backup" ''
+    set -euo pipefail
+
+    src_dir="''${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/sessions"
+    icloud_root="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
+    host_name="$(
+      /usr/sbin/scutil --get LocalHostName 2>/dev/null || ${pkgs.coreutils}/bin/hostname -s
+    )"
+    dest_dir="$icloud_root/pi-sessions/$host_name"
+
+    if [ ! -d "$icloud_root" ]; then
+      echo "iCloud Drive path not found: $icloud_root" >&2
+      exit 1
+    fi
+
+    if [ ! -d "$src_dir" ]; then
+      echo "pi sessions directory not found: $src_dir" >&2
+      exit 1
+    fi
+
+    ${pkgs.coreutils}/bin/mkdir -p "$dest_dir"
+
+    extra_flags=()
+    if [ "''${1:-}" = "--dry-run" ]; then
+      extra_flags+=(--dry-run)
+    fi
+
+    exec ${pkgs.rsync}/bin/rsync -a --exclude ".DS_Store" "''${extra_flags[@]}" "$src_dir/" "$dest_dir/"
+  '';
+
   # Auto-discover extensions (.ts files)
   # Extensions to keep source but not install
   disabledExtensions = [
@@ -89,6 +119,8 @@ in
 
         exec npx @mariozechner/pi-coding-agent -e "$HOME/.pi/agent/extensions-opt/nvim-bridge.ts" "$@"
       '')
+
+      piSessionsBackup
     ];
 
     file = {
@@ -109,6 +141,18 @@ in
       mergeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${pkgs.bash}/bin/bash ${./merge-settings.sh} ${./settings.json}
       '';
+    };
+  };
+
+  launchd.agents.pi-sessions-backup = {
+    enable = true;
+    config = {
+      Label = "com.otahontas.pi-sessions-backup";
+      ProgramArguments = [ "${piSessionsBackup}/bin/pi-sessions-backup" ];
+      StartInterval = 86400;
+      RunAtLoad = true;
+      StandardOutPath = "/Users/otahontas/Library/Logs/pi-sessions-backup.log";
+      StandardErrorPath = "/Users/otahontas/Library/Logs/pi-sessions-backup.log";
     };
   };
 

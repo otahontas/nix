@@ -1,10 +1,11 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { Buffer } from "node:buffer";
-import { readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
 // Anthropic OAuth usage API response format
 interface LimitWindow {
-  utilization: number; // 0-1 percentage
+  utilization: number; // Percent in range 0-100
   resets_at: string; // ISO timestamp
 }
 
@@ -69,18 +70,65 @@ interface GeminiCliQuotaResponse {
   buckets?: GeminiCliQuotaBucket[];
 }
 
-type Provider = "anthropic" | "openai-codex" | "google-gemini-cli" | string;
+// GitHub Copilot quota endpoint
+interface GitHubCopilotQuotaSnapshot {
+  entitlement?: number;
+  percent_remaining?: number;
+  remaining?: number;
+  unlimited?: boolean;
+  timestamp_utc?: string;
+}
+
+interface GitHubCopilotUserResponse {
+  quota_reset_date_utc?: string;
+  quota_snapshots?: {
+    premium_interactions?: GitHubCopilotQuotaSnapshot;
+    chat?: GitHubCopilotQuotaSnapshot;
+    completions?: GitHubCopilotQuotaSnapshot;
+  };
+}
+
+type Provider =
+  | "anthropic"
+  | "openai-codex"
+  | "google-gemini-cli"
+  | "google-antigravity"
+  | "github-copilot"
+  | string;
 
 type QuotaInfo = {
-  statusKey: string;
   statusText: string;
   notify?: { message: string; type: "info" | "warning" | "error" };
+};
+
+type ThemeColor = "muted" | "error" | "warning" | "success" | "dim";
+
+type ThemeLike = {
+  fg: (color: ThemeColor, text: string) => string;
 };
 
 const GEMINI_CODE_ASSIST_BASE_URL =
   "https://cloudcode-pa.googleapis.com/v1internal";
 const GEMINI_CODE_ASSIST_LOAD_URL = `${GEMINI_CODE_ASSIST_BASE_URL}:loadCodeAssist`;
 const GEMINI_CODE_ASSIST_QUOTA_URL = `${GEMINI_CODE_ASSIST_BASE_URL}:retrieveUserQuota`;
+
+const ANTIGRAVITY_BASE_URL =
+  "https://daily-cloudcode-pa.sandbox.googleapis.com";
+const ANTIGRAVITY_QUOTA_URL = `${ANTIGRAVITY_BASE_URL}/v1internal:retrieveUserQuota`;
+
+const ANTIGRAVITY_HEADERS = {
+  "User-Agent": "antigravity/1.15.8 darwin/arm64",
+  "X-Goog-Api-Client": "google-cloud-sdk vscode_cloudshelleditor/0.1",
+  "Client-Metadata": JSON.stringify({
+    ideType: "IDE_UNSPECIFIED",
+    platform: "PLATFORM_UNSPECIFIED",
+    pluginType: "GEMINI",
+  }),
+};
+
+const PI_AUTH_PATH = join(homedir(), ".pi", "agent", "auth.json");
+const FETCH_TIMEOUT_MS = 10_000;
+const MODEL_QUOTA_DEBUG = process.env.PI_MODEL_QUOTA_DEBUG === "1";
 
 export default function (pi: ExtensionAPI) {
   // Anthropic cache
@@ -91,57 +139,246 @@ export default function (pi: ExtensionAPI) {
   let cachedCodexUsage: CodexUsageResponse | null = null;
   let lastCodexFetched = 0;
 
+  // GitHub Copilot cache
+  let cachedGitHubCopilotUser: GitHubCopilotUserResponse | null = null;
+  let lastGitHubCopilotFetched = 0;
+
+  // Google Antigravity cache
+  let cachedAntigravityQuota: GeminiCliQuotaResponse | null = null;
+  let lastAntigravityFetched = 0;
+
   // Gemini CLI cache
   let cachedGeminiQuota: GeminiCliQuotaResponse | null = null;
   let lastGeminiFetched = 0;
   let cachedGeminiProjectId: string | null = null;
   let lastGeminiProjectFetched = 0;
 
-  pi.on("model_select", async (event, ctx) => {
+  // auth.json cache (shared by all providers)
+  let cachedAuthData: any | null = null;
+  let lastAuthFetched = 0;
+  let authFetchInFlight: Promise<any | null> | null = null;
+
+  function logDebug(...args: any[]) {
+    if (MODEL_QUOTA_DEBUG) console.error(...args);
+  }
+
+  const autoRefreshKey = Symbol.for(
+    "@otahontas/pi:model-quota:autoRefreshTimer",
+  );
+  const existingAutoRefreshTimer = (globalThis as any)[autoRefreshKey] as
+    | ReturnType<typeof setInterval>
+    | undefined;
+  if (existingAutoRefreshTimer) clearInterval(existingAutoRefreshTimer);
+  (globalThis as any)[autoRefreshKey] = undefined;
+
+  let autoRefreshTimer: ReturnType<typeof setInterval> | null = null;
+
+  let activeProvider: Provider | null = null;
+  let activeModelId: string | undefined;
+
+  let refreshSeq = 0;
+  let lastSuccessfulRefreshAt = 0;
+  let lastSuccessfulProvider: Provider | null = null;
+  let lastSuccessfulModelId: string | null = null;
+
+  function clearCachesForProvider(provider: Provider) {
+    if (provider === "anthropic") {
+      cachedAnthropicUsage = null;
+      lastAnthropicFetched = 0;
+      return;
+    }
+
+    if (provider === "openai-codex") {
+      cachedCodexUsage = null;
+      lastCodexFetched = 0;
+      return;
+    }
+
+    if (provider === "github-copilot") {
+      cachedGitHubCopilotUser = null;
+      lastGitHubCopilotFetched = 0;
+      return;
+    }
+
+    if (provider === "google-antigravity") {
+      cachedAntigravityQuota = null;
+      lastAntigravityFetched = 0;
+      return;
+    }
+
+    if (provider === "google-gemini-cli" || provider === "gemini-cli") {
+      cachedGeminiQuota = null;
+      lastGeminiFetched = 0;
+      return;
+    }
+  }
+
+  function providerSupportsQuota(provider: Provider): boolean {
+    return (
+      provider === "anthropic" ||
+      provider === "openai-codex" ||
+      provider === "github-copilot" ||
+      provider === "google-antigravity" ||
+      provider === "google-gemini-cli" ||
+      provider === "gemini-cli"
+    );
+  }
+
+  async function refreshQuotaForActiveModel(
+    ctx: any,
+    options: { force?: boolean; notify?: boolean } = {},
+  ) {
+    if (!ctx?.hasUI) return;
+    if (!activeProvider) return;
+
+    const seq = ++refreshSeq;
+
+    if (!providerSupportsQuota(activeProvider)) {
+      ctx.ui.setStatus(
+        "model-quota",
+        themed(ctx.ui.theme, "dim", "model quota not implemented"),
+      );
+      return;
+    }
+
+    if (options.force) {
+      clearCachesForProvider(activeProvider);
+    }
+
     const quota = await getQuotaForProvider(
-      event.model.provider,
+      activeProvider,
       ctx.ui.theme,
-      event.model.id,
+      activeModelId,
+      ctx,
     );
 
-    ctx.ui.setStatus("model-quota", undefined);
+    // Only apply the latest refresh.
+    if (seq !== refreshSeq) return;
 
-    if (!quota) return;
+    if (!quota) {
+      ctx.ui.setStatus("model-quota", undefined);
+      return;
+    }
 
-    ctx.ui.setStatus(quota.statusKey, quota.statusText);
-    if (quota.notify) {
+    ctx.ui.setStatus("model-quota", quota.statusText);
+
+    if (options.notify && quota.notify) {
       ctx.ui.notify(quota.notify.message, quota.notify.type);
     }
+
+    lastSuccessfulRefreshAt = Date.now();
+    lastSuccessfulProvider = activeProvider;
+    lastSuccessfulModelId = activeModelId ?? null;
+  }
+
+  function startAutoRefresh(ctx: any) {
+    if (autoRefreshTimer) return;
+
+    autoRefreshTimer = setInterval(
+      () => {
+        void refreshQuotaForActiveModel(ctx, { force: true, notify: false });
+      },
+      5 * 60 * 1000,
+    );
+
+    (globalThis as any)[autoRefreshKey] = autoRefreshTimer;
+  }
+
+  pi.on("session_shutdown", async (_event, _ctx) => {
+    if (autoRefreshTimer) {
+      clearInterval(autoRefreshTimer);
+      autoRefreshTimer = null;
+    }
+    (globalThis as any)[autoRefreshKey] = undefined;
+  });
+
+  pi.on("session_start", async (_event, ctx) => {
+    if (!ctx.hasUI) return;
+
+    // Refresh right away on startup.
+    if (ctx.model?.provider) {
+      activeProvider = ctx.model.provider;
+      activeModelId = ctx.model.id;
+      await refreshQuotaForActiveModel(ctx, { force: true, notify: false });
+    }
+
+    startAutoRefresh(ctx);
+  });
+
+  pi.on("model_select", async (event, ctx) => {
+    if (!ctx.hasUI) return;
+
+    activeProvider = event.model.provider;
+    activeModelId = event.model.id;
+
+    const alreadyRefreshedOnStartup =
+      event.source === "restore" &&
+      lastSuccessfulProvider === activeProvider &&
+      lastSuccessfulModelId === (activeModelId ?? null) &&
+      Date.now() - lastSuccessfulRefreshAt < 2000;
+
+    await refreshQuotaForActiveModel(ctx, {
+      force: !alreadyRefreshedOnStartup,
+      notify: true,
+    });
   });
 
   // Manual command
   pi.registerCommand("model-quota", {
     description:
-      "Show model quota for the current provider (Anthropic + OpenAI Codex + Gemini CLI supported)",
+      "Show model quota for the current provider (Anthropic + OpenAI Codex + GitHub Copilot + Gemini CLI + Google Antigravity supported)",
     handler: async (_args, ctx) => {
+      if (!ctx.hasUI) return;
+
       // Clear caches to get fresh data
       cachedAnthropicUsage = null;
       cachedCodexUsage = null;
+      cachedGitHubCopilotUser = null;
+      lastGitHubCopilotFetched = 0;
+      cachedAntigravityQuota = null;
+      lastAntigravityFetched = 0;
       cachedGeminiQuota = null;
       cachedGeminiProjectId = null;
+      cachedAuthData = null;
+      lastAuthFetched = 0;
+      authFetchInFlight = null;
 
       // pi extensions don't get direct access to the selected provider inside commands.
       // So we show all providers if available.
-      const [anthropic, codex, gemini] = await Promise.all([
-        getQuotaForProvider("anthropic", ctx.ui.theme),
-        getQuotaForProvider("openai-codex", ctx.ui.theme),
-        getQuotaForProvider("google-gemini-cli", ctx.ui.theme),
-      ]);
+      const [anthropic, codex, copilot, antigravity, gemini] =
+        await Promise.all([
+          getQuotaForProvider("anthropic", ctx.ui.theme, undefined, ctx),
+          getQuotaForProvider("openai-codex", ctx.ui.theme, undefined, ctx),
+          getQuotaForProvider("github-copilot", ctx.ui.theme, undefined, ctx),
+          getQuotaForProvider(
+            "google-antigravity",
+            ctx.ui.theme,
+            undefined,
+            ctx,
+          ),
+          getQuotaForProvider(
+            "google-gemini-cli",
+            ctx.ui.theme,
+            undefined,
+            ctx,
+          ),
+        ]);
 
       const lines: string[] = [];
       if (anthropic)
         lines.push(`Anthropic: ${stripAnsiLike(anthropic.statusText)}`);
       if (codex) lines.push(`OpenAI/Codex: ${stripAnsiLike(codex.statusText)}`);
+      if (copilot)
+        lines.push(`GitHub Copilot: ${stripAnsiLike(copilot.statusText)}`);
+      if (antigravity)
+        lines.push(
+          `Google Antigravity: ${stripAnsiLike(antigravity.statusText)}`,
+        );
       if (gemini) lines.push(`Gemini CLI: ${stripAnsiLike(gemini.statusText)}`);
 
       if (lines.length === 0) {
         ctx.ui.notify(
-          "No quota info available. Make sure you are logged in (OAuth) for Anthropic, ChatGPT (Codex), or Gemini CLI.",
+          "No quota info available. Make sure you are logged in (OAuth) for Anthropic, ChatGPT (Codex), GitHub Copilot, Gemini CLI, or Google Antigravity.",
           "info",
         );
         return;
@@ -153,45 +390,67 @@ export default function (pi: ExtensionAPI) {
 
   async function getQuotaForProvider(
     provider: Provider,
-    theme: any | undefined,
-    modelId?: string,
+    theme: ThemeLike | undefined,
+    modelId: string | undefined,
+    ctx: any,
   ): Promise<QuotaInfo | null> {
     if (provider === "anthropic") return getAnthropicQuota(theme);
     if (provider === "openai-codex") return getCodexQuota(theme);
+    if (provider === "github-copilot") return getGitHubCopilotQuota(theme);
+    if (provider === "google-antigravity") {
+      return getAntigravityQuota(theme, modelId, ctx);
+    }
     if (provider === "google-gemini-cli" || provider === "gemini-cli") {
       return getGeminiQuota(theme, modelId);
     }
     return null;
   }
 
+  function themed(
+    theme: ThemeLike | undefined,
+    color: ThemeColor,
+    text: string,
+  ): string {
+    return theme ? theme.fg(color, text) : text;
+  }
+
+  function formatUsedPercent(
+    theme: ThemeLike | undefined,
+    pct: number,
+  ): string {
+    const text = `${pct}%`;
+    if (!theme) return text;
+    if (pct >= 100) return theme.fg("error", text);
+    if (pct > 95) return theme.fg("error", text);
+    if (pct > 85) return theme.fg("warning", text);
+    return theme.fg("success", text);
+  }
+
+  function isZeroNumberString(text: string): boolean {
+    const n = Number(text);
+    return Number.isFinite(n) && n <= 0;
+  }
+
   async function getAnthropicQuota(
-    theme: any | undefined,
+    theme: ThemeLike | undefined,
   ): Promise<QuotaInfo | null> {
     const usage = await fetchAnthropicUsage();
     if (!usage) return null;
 
-    // NOTE: Anthropic returns utilization as 0-1, we display as percent.
+    // NOTE: Anthropic returns utilization as a percent in range 0-100.
     const sessionPercent = Math.round(usage.five_hour.utilization);
     const weeklyPercent = Math.round(usage.seven_day.utilization);
 
     const sessionReset = formatTimeUntilIso(usage.five_hour.resets_at);
     const weeklyReset = formatTimeUntilIso(usage.seven_day.resets_at);
-    const colorPercent = (pct: number) => {
-      if (pct >= 100) return theme?.fg("muted", `${pct}%`) || `${pct}%`;
-      if (pct > 95) return theme?.fg("error", `${pct}%`) || `${pct}%`;
-      if (pct > 85) return theme?.fg("warning", `${pct}%`) || `${pct}%`;
-      return theme?.fg("success", `${pct}%`) || `${pct}%`;
-    };
 
-    const sessionLabel = theme?.fg("muted", "session: ") || "session: ";
-    const weeklyLabel = theme?.fg("muted", "weekly: ") || "weekly: ";
-    const separator = theme?.fg("dim", " | ") || " | ";
-    const sessionTime =
-      theme?.fg("dim", ` (${sessionReset})`) || ` (${sessionReset})`;
-    const weeklyTime =
-      theme?.fg("dim", ` (${weeklyReset})`) || ` (${weeklyReset})`;
+    const sessionLabel = themed(theme, "muted", "session: ");
+    const weeklyLabel = themed(theme, "muted", "weekly: ");
+    const separator = themed(theme, "dim", " | ");
+    const sessionTime = themed(theme, "dim", ` (${sessionReset})`);
+    const weeklyTime = themed(theme, "dim", ` (${weeklyReset})`);
 
-    const status = `${sessionLabel}${colorPercent(sessionPercent)}${sessionTime}${separator}${weeklyLabel}${colorPercent(weeklyPercent)}${weeklyTime}`;
+    const status = `${sessionLabel}${formatUsedPercent(theme, sessionPercent)}${sessionTime}${separator}${weeklyLabel}${formatUsedPercent(theme, weeklyPercent)}${weeklyTime}`;
 
     let notify: QuotaInfo["notify"];
     if (sessionPercent >= 100 || weeklyPercent >= 100) {
@@ -203,14 +462,13 @@ export default function (pi: ExtensionAPI) {
     }
 
     return {
-      statusKey: "model-quota",
       statusText: status,
       notify,
     };
   }
 
   async function getCodexQuota(
-    theme: any | undefined,
+    theme: ThemeLike | undefined,
   ): Promise<QuotaInfo | null> {
     const usage = await fetchCodexUsage();
     if (!usage?.rate_limit) return null;
@@ -221,34 +479,25 @@ export default function (pi: ExtensionAPI) {
     const primaryLeft = formatTimeUntilUnixSeconds(primary.reset_at);
     const secondaryLeft = secondary
       ? formatTimeUntilUnixSeconds(secondary.reset_at)
-      : null;
+      : "";
 
-    const colorPercent = (pct: number) => {
-      if (pct >= 100) return theme?.fg("muted", `${pct}%`) || `${pct}%`;
-      if (pct > 95) return theme?.fg("error", `${pct}%`) || `${pct}%`;
-      if (pct > 85) return theme?.fg("warning", `${pct}%`) || `${pct}%`;
-      return theme?.fg("success", `${pct}%`) || `${pct}%`;
-    };
+    const sessionLabel = themed(theme, "muted", "session: ");
+    const weeklyLabel = themed(theme, "muted", "weekly: ");
+    const separator = themed(theme, "dim", " | ");
 
-    const sessionLabel = theme?.fg("muted", "session: ") || "session: ";
-    const weeklyLabel = theme?.fg("muted", "weekly: ") || "weekly: ";
-    const separator = theme?.fg("dim", " | ") || " | ";
-
-    const sessionTime =
-      theme?.fg("dim", ` (${primaryLeft})`) || ` (${primaryLeft})`;
+    const sessionTime = themed(theme, "dim", ` (${primaryLeft})`);
 
     const weeklyPart = secondary
-      ? `${separator}${weeklyLabel}${colorPercent(secondary.used_percent)}${
-          theme?.fg("dim", ` (${secondaryLeft})`) || ` (${secondaryLeft})`
-        }`
+      ? `${separator}${weeklyLabel}${formatUsedPercent(theme, secondary.used_percent)}${themed(theme, "dim", ` (${secondaryLeft})`)}`
       : "";
 
-    const credits = usage.credits?.balance
-      ? theme?.fg("dim", ` | credits: ${usage.credits.balance}`) ||
-        ` | credits: ${usage.credits.balance}`
-      : "";
+    const creditsBalance = usage.credits?.balance;
+    const credits =
+      creditsBalance && !isZeroNumberString(creditsBalance)
+        ? themed(theme, "dim", ` | credits: ${creditsBalance}`)
+        : "";
 
-    const status = `${sessionLabel}${colorPercent(primary.used_percent)}${sessionTime}${weeklyPart}${credits}`;
+    const status = `${sessionLabel}${formatUsedPercent(theme, primary.used_percent)}${sessionTime}${weeklyPart}${credits}`;
 
     let notify: QuotaInfo["notify"];
     if (
@@ -272,14 +521,108 @@ export default function (pi: ExtensionAPI) {
     }
 
     return {
-      statusKey: "model-quota",
+      statusText: status,
+      notify,
+    };
+  }
+
+  async function getGitHubCopilotQuota(
+    theme: ThemeLike | undefined,
+  ): Promise<QuotaInfo | null> {
+    const user = await fetchGitHubCopilotUser();
+    const premium = user?.quota_snapshots?.premium_interactions;
+    if (!user || !premium) return null;
+
+    const resetText = user.quota_reset_date_utc
+      ? formatTimeUntilIso(user.quota_reset_date_utc)
+      : null;
+
+    const monthlyLabel = themed(theme, "muted", "monthly: ");
+    const timePart = resetText ? themed(theme, "dim", ` (${resetText})`) : "";
+
+    if (premium.unlimited) {
+      return {
+        statusText: `${monthlyLabel}${themed(theme, "success", "unlimited")}${timePart}`,
+      };
+    }
+
+    let usedPercent: number | null = null;
+    if (typeof premium.percent_remaining === "number") {
+      usedPercent = Math.round(100 - premium.percent_remaining);
+    } else if (
+      typeof premium.entitlement === "number" &&
+      premium.entitlement > 0 &&
+      typeof premium.remaining === "number"
+    ) {
+      usedPercent = Math.round(
+        ((premium.entitlement - premium.remaining) / premium.entitlement) * 100,
+      );
+    }
+
+    if (usedPercent == null) return null;
+    usedPercent = Math.max(0, Math.min(100, usedPercent));
+
+    const status = `${monthlyLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
+
+    let notify: QuotaInfo["notify"];
+    if (usedPercent >= 100) {
+      // No notification if exhausted
+    } else if (usedPercent > 95) {
+      notify = {
+        message: "GitHub Copilot quota nearly exhausted!",
+        type: "error",
+      };
+    } else if (usedPercent > 85) {
+      notify = { message: "GitHub Copilot quota warning", type: "warning" };
+    }
+
+    return { statusText: status, notify };
+  }
+
+  async function getAntigravityQuota(
+    theme: ThemeLike | undefined,
+    modelId: string | undefined,
+    ctx: any,
+  ): Promise<QuotaInfo | null> {
+    const quota = await fetchAntigravityQuota(ctx);
+    if (!quota?.buckets?.length) return null;
+
+    const bucket = selectAntigravityQuotaBucket(quota.buckets, modelId);
+    if (!bucket || bucket.remainingFraction == null) return null;
+
+    const usedPercent = Math.max(
+      0,
+      Math.min(100, Math.round((1 - bucket.remainingFraction) * 100)),
+    );
+    const resetText = bucket.resetTime
+      ? formatTimeUntilIso(bucket.resetTime)
+      : null;
+
+    const weeklyLabel = themed(theme, "muted", "weekly: ");
+    const timePart = resetText ? themed(theme, "dim", ` (${resetText})`) : "";
+
+    const status = `${weeklyLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
+
+    let notify: QuotaInfo["notify"];
+    if (usedPercent >= 100) {
+      // No notification if exhausted
+    } else if (usedPercent > 95) {
+      notify = {
+        message: "Google Antigravity quota nearly exhausted!",
+        type: "error",
+      };
+    } else if (usedPercent > 85) {
+      notify = { message: "Google Antigravity quota warning", type: "warning" };
+    }
+
+    return {
       statusText: status,
       notify,
     };
   }
 
   async function getGeminiQuota(
-    theme: any | undefined,
+    theme: ThemeLike | undefined,
     modelId?: string,
   ): Promise<QuotaInfo | null> {
     const quota = await fetchGeminiQuota();
@@ -288,39 +631,65 @@ export default function (pi: ExtensionAPI) {
     const bucket = selectGeminiQuotaBucket(quota.buckets, modelId);
     if (!bucket || bucket.remainingFraction == null) return null;
 
-    const remainingPercent = Math.round(bucket.remainingFraction * 100);
+    const usedPercent = Math.max(
+      0,
+      Math.min(100, Math.round((1 - bucket.remainingFraction) * 100)),
+    );
     const resetText = bucket.resetTime
       ? formatTimeUntilIso(bucket.resetTime)
       : null;
 
-    const colorPercent = (pct: number) => {
-      if (pct <= 0) return theme?.fg("muted", `${pct}%`) || `${pct}%`;
-      if (pct < 5) return theme?.fg("error", `${pct}%`) || `${pct}%`;
-      if (pct < 15) return theme?.fg("warning", `${pct}%`) || `${pct}%`;
-      return theme?.fg("success", `${pct}%`) || `${pct}%`;
-    };
+    const dailyLabel = themed(theme, "muted", "daily: ");
+    const timePart = resetText ? themed(theme, "dim", ` (${resetText})`) : "";
 
-    const label = theme?.fg("muted", "usage left: ") || "usage left: ";
-    const timePart = resetText
-      ? theme?.fg("dim", ` (${resetText})`) || ` (${resetText})`
-      : "";
-
-    const status = `${label}${colorPercent(remainingPercent)}${timePart}`;
+    const status = `${dailyLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
 
     let notify: QuotaInfo["notify"];
-    if (remainingPercent <= 0) {
+    if (usedPercent >= 100) {
       // No notification if exhausted
-    } else if (remainingPercent < 5) {
+    } else if (usedPercent > 95) {
       notify = { message: "Gemini CLI quota nearly exhausted!", type: "error" };
-    } else if (remainingPercent < 15) {
+    } else if (usedPercent > 85) {
       notify = { message: "Gemini CLI quota warning", type: "warning" };
     }
 
     return {
-      statusKey: "model-quota",
       statusText: status,
       notify,
     };
+  }
+
+  function selectAntigravityQuotaBucket(
+    buckets: GeminiCliQuotaBucket[],
+    modelId?: string,
+  ): GeminiCliQuotaBucket | null {
+    const usable = buckets.filter((bucket) => bucket.remainingFraction != null);
+    if (usable.length === 0) return null;
+
+    if (modelId) {
+      const normalizedModelId = normalizeAntigravityModelId(modelId);
+      const match = usable.find(
+        (bucket) =>
+          bucket.modelId &&
+          normalizeAntigravityModelId(bucket.modelId) === normalizedModelId,
+      );
+      if (match) return match;
+    }
+
+    return usable.reduce((lowest, bucket) =>
+      (bucket.remainingFraction ?? 1) < (lowest.remainingFraction ?? 1)
+        ? bucket
+        : lowest,
+    );
+  }
+
+  function normalizeAntigravityModelId(modelId: string): string {
+    const raw = modelId.includes("/")
+      ? modelId.split("/").pop() || modelId
+      : modelId;
+    return raw
+      .replace(/-(thinking|xhigh|high|medium|low|minimal|off)$/i, "")
+      .replace(/-001$/i, "");
   }
 
   function selectGeminiQuotaBucket(
@@ -387,6 +756,46 @@ export default function (pi: ExtensionAPI) {
     return text.replace(/\x1b\[[0-9;]*m/g, "");
   }
 
+  async function readAuthData(): Promise<any | null> {
+    const now = Date.now();
+    if (cachedAuthData && now - lastAuthFetched < 1000) return cachedAuthData;
+    if (authFetchInFlight) return authFetchInFlight;
+
+    const promise = (async () => {
+      try {
+        const raw = await readFile(PI_AUTH_PATH, "utf8");
+        const data = JSON.parse(raw);
+        cachedAuthData = data;
+        lastAuthFetched = Date.now();
+        return data;
+      } catch {
+        cachedAuthData = null;
+        lastAuthFetched = 0;
+        return null;
+      } finally {
+        authFetchInFlight = null;
+      }
+    })();
+
+    authFetchInFlight = promise;
+    return promise;
+  }
+
+  async function fetchWithTimeout(
+    url: string,
+    options: RequestInit,
+    timeoutMs: number = FETCH_TIMEOUT_MS,
+  ): Promise<Response> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
   async function fetchAnthropicUsage(): Promise<UsageLimitData | null> {
     // Cache for 5 minutes
     const now = Date.now();
@@ -395,12 +804,11 @@ export default function (pi: ExtensionAPI) {
     }
 
     try {
-      const authPath = `${process.env.HOME}/.pi/agent/auth.json`;
-      const authData = JSON.parse(readFileSync(authPath, "utf8"));
-      const anthropicAuth = authData.anthropic;
+      const authData = await readAuthData();
+      const anthropicAuth = authData?.anthropic;
       if (!anthropicAuth?.access) return null;
 
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         "https://api.anthropic.com/api/oauth/usage",
         {
           headers: {
@@ -413,7 +821,7 @@ export default function (pi: ExtensionAPI) {
       );
 
       if (!response.ok) {
-        console.error("OAuth usage API error:", response.status);
+        logDebug("OAuth usage API error:", response.status);
         return null;
       }
 
@@ -421,7 +829,7 @@ export default function (pi: ExtensionAPI) {
       lastAnthropicFetched = now;
       return cachedAnthropicUsage;
     } catch (error) {
-      console.error("Failed to fetch OAuth usage:", error);
+      logDebug("Failed to fetch OAuth usage:", error);
       return null;
     }
   }
@@ -434,16 +842,15 @@ export default function (pi: ExtensionAPI) {
     }
 
     try {
-      const authPath = `${process.env.HOME}/.pi/agent/auth.json`;
-      const authData = JSON.parse(readFileSync(authPath, "utf8"));
-      const codexAuth = authData["openai-codex"];
+      const authData = await readAuthData();
+      const codexAuth = authData?.["openai-codex"];
       if (!codexAuth?.access) return null;
 
       const token = codexAuth.access as string;
 
       // ChatGPT web client sends a bunch of OAI-* headers, but this endpoint appears
       // to work with just Authorization.
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         "https://chatgpt.com/backend-api/wham/usage",
         {
           method: "GET",
@@ -461,7 +868,133 @@ export default function (pi: ExtensionAPI) {
       cachedCodexUsage = (await response.json()) as CodexUsageResponse;
       lastCodexFetched = now;
       return cachedCodexUsage;
+    } catch (error) {
+      logDebug("Failed to fetch OpenAI/Codex usage:", error);
+      return null;
+    }
+  }
+
+  function normalizeGitHubCopilotEnterpriseDomain(
+    value: unknown,
+  ): string | null {
+    if (typeof value !== "string") return null;
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    try {
+      const url = trimmed.includes("://")
+        ? new URL(trimmed)
+        : new URL(`https://${trimmed}`);
+      return url.hostname;
     } catch {
+      return null;
+    }
+  }
+
+  function getGitHubApiBaseUrl(domain: string): string {
+    if (domain === "github.com") return "https://api.github.com";
+    return `https://api.${domain}`;
+  }
+
+  async function fetchGitHubCopilotUser(): Promise<GitHubCopilotUserResponse | null> {
+    // Cache for 60 seconds
+    const now = Date.now();
+    if (cachedGitHubCopilotUser && now - lastGitHubCopilotFetched < 60 * 1000) {
+      return cachedGitHubCopilotUser;
+    }
+
+    try {
+      const authData = await readAuthData();
+      const copilotAuth = authData?.["github-copilot"];
+      const refreshToken = copilotAuth?.refresh as string | undefined;
+      if (!refreshToken) return null;
+
+      const enterpriseDomain = normalizeGitHubCopilotEnterpriseDomain(
+        copilotAuth?.enterpriseUrl,
+      );
+      const domain = enterpriseDomain || "github.com";
+      const apiBaseUrl = getGitHubApiBaseUrl(domain);
+
+      const response = await fetchWithTimeout(
+        `${apiBaseUrl}/copilot_internal/user`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${refreshToken}`,
+            Accept: "application/json",
+            "User-Agent": "GitHubCopilotChat/0.35.0",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        logDebug("GitHub Copilot quota API error:", response.status);
+        return null;
+      }
+
+      cachedGitHubCopilotUser =
+        (await response.json()) as unknown as GitHubCopilotUserResponse;
+      lastGitHubCopilotFetched = now;
+      return cachedGitHubCopilotUser;
+    } catch (error) {
+      logDebug("Failed to fetch GitHub Copilot quota:", error);
+      return null;
+    }
+  }
+
+  async function getAntigravityCredentials(ctx: any): Promise<{
+    accessToken: string;
+    projectId: string;
+  } | null> {
+    try {
+      const raw =
+        await ctx?.modelRegistry?.getApiKeyForProvider?.("google-antigravity");
+      if (!raw) return null;
+
+      const parsed = JSON.parse(raw) as { token?: string; projectId?: string };
+      if (!parsed?.token || !parsed?.projectId) return null;
+
+      return { accessToken: parsed.token, projectId: parsed.projectId };
+    } catch {
+      return null;
+    }
+  }
+
+  async function fetchAntigravityQuota(
+    ctx: any,
+  ): Promise<GeminiCliQuotaResponse | null> {
+    // Cache for 60 seconds
+    const now = Date.now();
+    if (cachedAntigravityQuota && now - lastAntigravityFetched < 60 * 1000) {
+      return cachedAntigravityQuota;
+    }
+
+    try {
+      const creds = await getAntigravityCredentials(ctx);
+      if (!creds) return null;
+
+      const response = await fetchWithTimeout(ANTIGRAVITY_QUOTA_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${creds.accessToken}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...ANTIGRAVITY_HEADERS,
+        },
+        body: JSON.stringify({ project: creds.projectId }),
+      });
+
+      if (!response.ok) {
+        logDebug("Google Antigravity quota API error:", response.status);
+        return null;
+      }
+
+      cachedAntigravityQuota =
+        (await response.json()) as unknown as GeminiCliQuotaResponse;
+      lastAntigravityFetched = now;
+      return cachedAntigravityQuota;
+    } catch (error) {
+      logDebug("Failed to fetch Google Antigravity quota:", error);
       return null;
     }
   }
@@ -474,13 +1007,13 @@ export default function (pi: ExtensionAPI) {
     }
 
     try {
-      const accessToken = getGeminiAccessToken();
+      const accessToken = await getGeminiAccessToken();
       if (!accessToken) return null;
 
       const projectId = await fetchGeminiProjectId(accessToken);
       if (!projectId) return null;
 
-      const response = await fetch(GEMINI_CODE_ASSIST_QUOTA_URL, {
+      const response = await fetchWithTimeout(GEMINI_CODE_ASSIST_QUOTA_URL, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -490,7 +1023,7 @@ export default function (pi: ExtensionAPI) {
       });
 
       if (!response.ok) {
-        console.error("Gemini CLI quota API error:", response.status);
+        logDebug("Gemini CLI quota API error:", response.status);
         return null;
       }
 
@@ -498,7 +1031,7 @@ export default function (pi: ExtensionAPI) {
       lastGeminiFetched = now;
       return cachedGeminiQuota;
     } catch (error) {
-      console.error("Failed to fetch Gemini CLI quota:", error);
+      logDebug("Failed to fetch Gemini CLI quota:", error);
       return null;
     }
   }
@@ -525,7 +1058,7 @@ export default function (pi: ExtensionAPI) {
         ...(envProjectId ? { duetProject: envProjectId } : {}),
       };
 
-      const response = await fetch(GEMINI_CODE_ASSIST_LOAD_URL, {
+      const response = await fetchWithTimeout(GEMINI_CODE_ASSIST_LOAD_URL, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -555,7 +1088,7 @@ export default function (pi: ExtensionAPI) {
       lastGeminiProjectFetched = now;
       return cachedGeminiProjectId;
     } catch (error) {
-      console.error("Failed to load Gemini CLI project:", error);
+      logDebug("Failed to load Gemini CLI project:", error);
       if (envProjectId) {
         cachedGeminiProjectId = envProjectId;
         lastGeminiProjectFetched = now;
@@ -564,33 +1097,11 @@ export default function (pi: ExtensionAPI) {
     }
   }
 
-  function getGeminiAccessToken(): string | null {
-    try {
-      const authPath = `${process.env.HOME}/.pi/agent/auth.json`;
-      const authData = JSON.parse(readFileSync(authPath, "utf8"));
-      const geminiAuth =
-        authData["google-gemini-cli"] ?? authData["gemini-cli"];
-      if (!geminiAuth?.access) return null;
-      return (geminiAuth as GeminiCliAuthCredential).access ?? null;
-    } catch {
-      return null;
-    }
-  }
-
-  // Kept around for future endpoints that may require chatgpt-account-id.
-  function extractChatGPTAccountId(token: string): string {
-    const parts = token.split(".");
-    if (parts.length !== 3) throw new Error("Invalid JWT");
-
-    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const pad = "=".repeat((4 - (base64.length % 4)) % 4);
-    const json = JSON.parse(
-      Buffer.from(base64 + pad, "base64").toString("utf8"),
-    );
-
-    const claim = json?.["https://api.openai.com/auth"];
-    const accountId = claim?.chatgpt_account_id;
-    if (!accountId) throw new Error("No chatgpt_account_id in token");
-    return accountId;
+  async function getGeminiAccessToken(): Promise<string | null> {
+    const authData = await readAuthData();
+    const geminiAuth =
+      authData?.["google-gemini-cli"] ?? authData?.["gemini-cli"];
+    if (!geminiAuth?.access) return null;
+    return (geminiAuth as GeminiCliAuthCredential).access ?? null;
   }
 }
