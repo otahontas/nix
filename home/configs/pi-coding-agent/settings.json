@@ -1,0 +1,20 @@
+{
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.2-codex",
+  "defaultThinkingLevel": "high",
+  "doubleEscapeAction": "tree",
+  "enableSkillCommands": true,
+  "enabledModels": [
+    "claude-opus-4-5",
+    "claude-sonnet-4-5",
+    "openai-codex/gpt-5.2",
+    "openai-codex/gpt-5.2-codex",
+    "github-copilot/claude-opus-4.5",
+    "google-antigravity/claude-opus-4-5-thinking",
+    "google-antigravity/claude-sonnet-4-5-thinking",
+    "google-antigravity/gemini-3-pro-high",
+    "google-gemini-cli/gemini-3-flash-preview",
+    "google-gemini-cli/gemini-3-pro-preview"
+  ],
+  "hideThinkingBlock": true
+}

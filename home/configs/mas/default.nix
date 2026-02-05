@@ -14,6 +14,10 @@ let
       id = 634159523;
     }
     {
+      name = "Xcode";
+      id = 497799835;
+    }
+    {
       name = "Paprika Recipe Manager 3";
       id = 1303222628;
     }

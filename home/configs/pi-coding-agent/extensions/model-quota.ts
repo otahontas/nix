@@ -45,13 +45,42 @@ interface CodexUsageResponse {
   };
 }
 
-type Provider = "anthropic" | "openai-codex" | string;
+// Gemini CLI quota endpoints
+interface GeminiCliAuthCredential {
+  type?: string;
+  access?: string;
+  refresh?: string;
+  expires?: number;
+}
+
+interface GeminiCliLoadResponse {
+  cloudaicompanionProject?: string;
+}
+
+interface GeminiCliQuotaBucket {
+  remainingAmount?: string;
+  remainingFraction?: number;
+  resetTime?: string;
+  tokenType?: string;
+  modelId?: string;
+}
+
+interface GeminiCliQuotaResponse {
+  buckets?: GeminiCliQuotaBucket[];
+}
+
+type Provider = "anthropic" | "openai-codex" | "google-gemini-cli" | string;
 
 type QuotaInfo = {
   statusKey: string;
   statusText: string;
   notify?: { message: string; type: "info" | "warning" | "error" };
 };
+
+const GEMINI_CODE_ASSIST_BASE_URL =
+  "https://cloudcode-pa.googleapis.com/v1internal";
+const GEMINI_CODE_ASSIST_LOAD_URL = `${GEMINI_CODE_ASSIST_BASE_URL}:loadCodeAssist`;
+const GEMINI_CODE_ASSIST_QUOTA_URL = `${GEMINI_CODE_ASSIST_BASE_URL}:retrieveUserQuota`;
 
 export default function (pi: ExtensionAPI) {
   // Anthropic cache
@@ -62,8 +91,18 @@ export default function (pi: ExtensionAPI) {
   let cachedCodexUsage: CodexUsageResponse | null = null;
   let lastCodexFetched = 0;
 
+  // Gemini CLI cache
+  let cachedGeminiQuota: GeminiCliQuotaResponse | null = null;
+  let lastGeminiFetched = 0;
+  let cachedGeminiProjectId: string | null = null;
+  let lastGeminiProjectFetched = 0;
+
   pi.on("model_select", async (event, ctx) => {
-    const quota = await getQuotaForProvider(event.model.provider, ctx.ui.theme);
+    const quota = await getQuotaForProvider(
+      event.model.provider,
+      ctx.ui.theme,
+      event.model.id,
+    );
 
     ctx.ui.setStatus("model-quota", undefined);
 
@@ -78,27 +117,31 @@ export default function (pi: ExtensionAPI) {
   // Manual command
   pi.registerCommand("model-quota", {
     description:
-      "Show model quota for the current provider (Anthropic + OpenAI Codex supported)",
+      "Show model quota for the current provider (Anthropic + OpenAI Codex + Gemini CLI supported)",
     handler: async (_args, ctx) => {
       // Clear caches to get fresh data
       cachedAnthropicUsage = null;
       cachedCodexUsage = null;
+      cachedGeminiQuota = null;
+      cachedGeminiProjectId = null;
 
       // pi extensions don't get direct access to the selected provider inside commands.
-      // So we show both if available.
-      const [anthropic, codex] = await Promise.all([
+      // So we show all providers if available.
+      const [anthropic, codex, gemini] = await Promise.all([
         getQuotaForProvider("anthropic", ctx.ui.theme),
         getQuotaForProvider("openai-codex", ctx.ui.theme),
+        getQuotaForProvider("google-gemini-cli", ctx.ui.theme),
       ]);
 
       const lines: string[] = [];
       if (anthropic)
         lines.push(`Anthropic: ${stripAnsiLike(anthropic.statusText)}`);
       if (codex) lines.push(`OpenAI/Codex: ${stripAnsiLike(codex.statusText)}`);
+      if (gemini) lines.push(`Gemini CLI: ${stripAnsiLike(gemini.statusText)}`);
 
       if (lines.length === 0) {
         ctx.ui.notify(
-          "No quota info available. Make sure you are logged in (OAuth) for Anthropic and/or ChatGPT (Codex).",
+          "No quota info available. Make sure you are logged in (OAuth) for Anthropic, ChatGPT (Codex), or Gemini CLI.",
           "info",
         );
         return;
@@ -111,9 +154,13 @@ export default function (pi: ExtensionAPI) {
   async function getQuotaForProvider(
     provider: Provider,
     theme: any | undefined,
+    modelId?: string,
   ): Promise<QuotaInfo | null> {
     if (provider === "anthropic") return getAnthropicQuota(theme);
     if (provider === "openai-codex") return getCodexQuota(theme);
+    if (provider === "google-gemini-cli" || provider === "gemini-cli") {
+      return getGeminiQuota(theme, modelId);
+    }
     return null;
   }
 
@@ -231,6 +278,79 @@ export default function (pi: ExtensionAPI) {
     };
   }
 
+  async function getGeminiQuota(
+    theme: any | undefined,
+    modelId?: string,
+  ): Promise<QuotaInfo | null> {
+    const quota = await fetchGeminiQuota();
+    if (!quota?.buckets?.length) return null;
+
+    const bucket = selectGeminiQuotaBucket(quota.buckets, modelId);
+    if (!bucket || bucket.remainingFraction == null) return null;
+
+    const remainingPercent = Math.round(bucket.remainingFraction * 100);
+    const resetText = bucket.resetTime
+      ? formatTimeUntilIso(bucket.resetTime)
+      : null;
+
+    const colorPercent = (pct: number) => {
+      if (pct <= 0) return theme?.fg("muted", `${pct}%`) || `${pct}%`;
+      if (pct < 5) return theme?.fg("error", `${pct}%`) || `${pct}%`;
+      if (pct < 15) return theme?.fg("warning", `${pct}%`) || `${pct}%`;
+      return theme?.fg("success", `${pct}%`) || `${pct}%`;
+    };
+
+    const label = theme?.fg("muted", "usage left: ") || "usage left: ";
+    const timePart = resetText
+      ? theme?.fg("dim", ` (${resetText})`) || ` (${resetText})`
+      : "";
+
+    const status = `${label}${colorPercent(remainingPercent)}${timePart}`;
+
+    let notify: QuotaInfo["notify"];
+    if (remainingPercent <= 0) {
+      // No notification if exhausted
+    } else if (remainingPercent < 5) {
+      notify = { message: "Gemini CLI quota nearly exhausted!", type: "error" };
+    } else if (remainingPercent < 15) {
+      notify = { message: "Gemini CLI quota warning", type: "warning" };
+    }
+
+    return {
+      statusKey: "model-quota",
+      statusText: status,
+      notify,
+    };
+  }
+
+  function selectGeminiQuotaBucket(
+    buckets: GeminiCliQuotaBucket[],
+    modelId?: string,
+  ): GeminiCliQuotaBucket | null {
+    const usable = buckets.filter((bucket) => bucket.remainingFraction != null);
+    if (usable.length === 0) return null;
+
+    if (modelId) {
+      const normalizedModelId = normalizeGeminiModelId(modelId);
+      const match = usable.find(
+        (bucket) =>
+          bucket.modelId &&
+          normalizeGeminiModelId(bucket.modelId) === normalizedModelId,
+      );
+      if (match) return match;
+    }
+
+    return usable.reduce((lowest, bucket) =>
+      (bucket.remainingFraction ?? 1) < (lowest.remainingFraction ?? 1)
+        ? bucket
+        : lowest,
+    );
+  }
+
+  function normalizeGeminiModelId(modelId: string): string {
+    return modelId.replace(/-001$/, "");
+  }
+
   function formatTimeUntilIso(isoString: string): string {
     const now = Date.now();
     const reset = new Date(isoString).getTime();
@@ -341,6 +461,117 @@ export default function (pi: ExtensionAPI) {
       cachedCodexUsage = (await response.json()) as CodexUsageResponse;
       lastCodexFetched = now;
       return cachedCodexUsage;
+    } catch {
+      return null;
+    }
+  }
+
+  async function fetchGeminiQuota(): Promise<GeminiCliQuotaResponse | null> {
+    // Cache for 60 seconds
+    const now = Date.now();
+    if (cachedGeminiQuota && now - lastGeminiFetched < 60 * 1000) {
+      return cachedGeminiQuota;
+    }
+
+    try {
+      const accessToken = getGeminiAccessToken();
+      if (!accessToken) return null;
+
+      const projectId = await fetchGeminiProjectId(accessToken);
+      if (!projectId) return null;
+
+      const response = await fetch(GEMINI_CODE_ASSIST_QUOTA_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ project: projectId }),
+      });
+
+      if (!response.ok) {
+        console.error("Gemini CLI quota API error:", response.status);
+        return null;
+      }
+
+      cachedGeminiQuota = (await response.json()) as GeminiCliQuotaResponse;
+      lastGeminiFetched = now;
+      return cachedGeminiQuota;
+    } catch (error) {
+      console.error("Failed to fetch Gemini CLI quota:", error);
+      return null;
+    }
+  }
+
+  async function fetchGeminiProjectId(
+    accessToken: string,
+  ): Promise<string | null> {
+    const now = Date.now();
+    if (
+      cachedGeminiProjectId &&
+      now - lastGeminiProjectFetched < 5 * 60 * 1000
+    ) {
+      return cachedGeminiProjectId;
+    }
+
+    const envProjectId =
+      process.env.GOOGLE_CLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT_ID;
+
+    try {
+      const metadata = {
+        ideType: "IDE_UNSPECIFIED",
+        platform: "PLATFORM_UNSPECIFIED",
+        pluginType: "GEMINI",
+        ...(envProjectId ? { duetProject: envProjectId } : {}),
+      };
+
+      const response = await fetch(GEMINI_CODE_ASSIST_LOAD_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          metadata,
+          ...(envProjectId
+            ? {
+                cloudaicompanionProject: envProjectId,
+              }
+            : {}),
+        }),
+      });
+
+      if (!response.ok) {
+        if (envProjectId) {
+          cachedGeminiProjectId = envProjectId;
+          lastGeminiProjectFetched = now;
+        }
+        return envProjectId ?? null;
+      }
+
+      const payload = (await response.json()) as GeminiCliLoadResponse;
+      cachedGeminiProjectId =
+        payload.cloudaicompanionProject || envProjectId || null;
+      lastGeminiProjectFetched = now;
+      return cachedGeminiProjectId;
+    } catch (error) {
+      console.error("Failed to load Gemini CLI project:", error);
+      if (envProjectId) {
+        cachedGeminiProjectId = envProjectId;
+        lastGeminiProjectFetched = now;
+      }
+      return envProjectId ?? null;
+    }
+  }
+
+  function getGeminiAccessToken(): string | null {
+    try {
+      const authPath = `${process.env.HOME}/.pi/agent/auth.json`;
+      const authData = JSON.parse(readFileSync(authPath, "utf8"));
+      const geminiAuth =
+        authData["google-gemini-cli"] ?? authData["gemini-cli"];
+      if (!geminiAuth?.access) return null;
+      return (geminiAuth as GeminiCliAuthCredential).access ?? null;
     } catch {
       return null;
     }

@@ -103,11 +103,11 @@ in
     // extensionSymlinks
     // skillSymlinks;
 
-    # Activation script to merge enabledModels into settings.json
+    # Activation script to merge settings into settings.json
     # This preserves all other settings managed by pi itself
     activation = {
-      mergeEnabledModels = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        run ${pkgs.bash}/bin/bash ${./merge-enabled-models.sh} ${./enabled-models.json}
+      mergeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run ${pkgs.bash}/bin/bash ${./merge-settings.sh} ${./settings.json}
       '';
     };
   };

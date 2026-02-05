@@ -12,6 +12,12 @@
 - Do not use extra skill
 - Prefer bullet points over paragraphs
 
+## Git
+
+- **Never push to default/protected branches** (main, master, development) directly
+- Always push only the current feature branch explicitly: `git push origin <branch-name>` — never bare `git push`
+- Never force push to shared branches
+
 ## Coding specific guidelines:
 
 - KISS, YAGNI - prefer duplication over wrong abstraction
