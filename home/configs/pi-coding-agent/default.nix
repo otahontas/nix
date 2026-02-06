@@ -54,9 +54,11 @@ let
   # Extensions to keep source but not install
   disabledExtensions = [
     "agents-md-auto-revise.ts"
+    "context-for-editor.ts"
     "double-shot-latte.ts"
     "nvim-bridge.ts"
     "piception.ts"
+    "ralph-loop.ts"
   ];
   extensionFiles = builtins.filter (
     name: lib.hasSuffix ".ts" name && !builtins.elem name disabledExtensions
@@ -73,12 +75,15 @@ let
   # Auto-discover simple skills (no deps) - symlink entire directories
   # Skills to keep source but not install
   disabledSkills = [
-    "agents-md-improver"
-    "sequential-agent-execution"
     "address-reviews"
+    "agents-md-improver"
     "branch-review"
     "catch-up"
+    "code-simplifier"
     "context-hunter"
+    "feature-dev"
+    "pr-review-toolkit"
+    "sequential-agent-execution"
   ];
   skillDirs = builtins.filter (name: !builtins.elem name disabledSkills) (
     builtins.attrNames (builtins.readDir ./skills)
@@ -164,6 +169,5 @@ in
 
     # Catppuccin theme (follows global catppuccin.flavor)
     pi.catppuccin.enable = true;
-    pi.piception.enable = false;
   };
 }
