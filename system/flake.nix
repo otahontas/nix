@@ -107,7 +107,15 @@
                 /run/current-system/sw/bin/mas lucky *
             '';
 
-            programs.fish.enable = true;
+            programs.fish = {
+              enable = true;
+              interactiveShellInit = ''
+                # Fish aliases in nix-darwin are global, not per-user.
+                if test "$USER" = "${adminUser}"
+                  alias system-apply "sudo darwin-rebuild switch --flake /Users/${primaryUser}/.nix/system#${hostname}"
+                end
+              '';
+            };
 
             environment = {
               systemPackages = with inputs.nixpkgs.legacyPackages.aarch64-darwin; [
