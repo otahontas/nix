@@ -41,10 +41,47 @@
               stateVersion = 6;
               inherit primaryUser;
               startup.chime = false;
-              defaults.loginwindow = {
-                GuestEnabled = false;
-                DisableConsoleAccess = true;
-                SHOWFULLNAME = false;
+              defaults = {
+                loginwindow = {
+                  GuestEnabled = false;
+                  DisableConsoleAccess = true;
+                  SHOWFULLNAME = false;
+                };
+                finder = {
+                  QuitMenuItem = true;
+                  AppleShowAllFiles = true;
+                  AppleShowAllExtensions = true;
+                  ShowPathbar = true;
+                  ShowStatusBar = true;
+                  FXEnableExtensionChangeWarning = false;
+                  _FXSortFoldersFirst = true;
+                  FXPreferredViewStyle = "Nlsv";
+                };
+                NSGlobalDomain = {
+                  ApplePressAndHoldEnabled = false;
+                  InitialKeyRepeat = 12;
+                  KeyRepeat = 2;
+                  NSDocumentSaveNewDocumentsToCloud = false;
+                  NSAutomaticQuoteSubstitutionEnabled = false;
+                  NSAutomaticDashSubstitutionEnabled = false;
+                };
+                dock = {
+                  autohide = true;
+                  "show-recents" = false;
+                  "mru-spaces" = false;
+                  tilesize = 20;
+                  orientation = "bottom";
+                };
+                screencapture = {
+                  location = "/Users/otahontas";
+                  type = "png";
+                  "disable-shadow" = true;
+                  "show-thumbnail" = false;
+                };
+                trackpad = {
+                  Clicking = true;
+                  TrackpadThreeFingerDrag = true;
+                };
               };
             };
 
