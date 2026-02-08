@@ -8,8 +8,9 @@
     "claude-opus-4-6",
     "openai-codex/gpt-5.3-codex",
     "github-copilot/claude-opus-4.5",
-    "google-antigravity/claude-opus-4-5-thinking",
-    "google-antigravity/claude-sonnet-4-5-thinking",
+    "github-copilot/gpt-5.2-codex",
+    "github-copilot/gemini-3-pro-preview",
+    "google-antigravity/claude-opus-4-6-thinking",
     "google-antigravity/gemini-3-pro-high",
     "google-gemini-cli/gemini-3-flash-preview",
     "google-gemini-cli/gemini-3-pro-preview"
