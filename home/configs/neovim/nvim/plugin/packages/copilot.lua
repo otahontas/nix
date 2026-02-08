@@ -68,6 +68,7 @@ vim.api.nvim_create_autocmd("InsertEnter", {
 				return true
 			end,
 			filetypes = {
+				pass = false,
 				yazi = false,
 			},
 			suggestion = {

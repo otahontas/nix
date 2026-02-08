@@ -1,5 +1,7 @@
 vim.filetype.add({
 	pattern = {
+		-- pass edit uses secure temp files in pass.<random>/<tmp>-<entry>.txt
+		[".*/pass%.[^/]+/[^/]+%-.+%.txt"] = "pass",
 		-- yaml.github-action & yaml.docker-compose needed for proper treesitter and lsp setups
 		[".*/%.github/actions/.*"] = "yaml.github-action",
 		[".*/%.github/workflows/.*"] = "yaml.github-action",
