@@ -59,12 +59,23 @@
             };
 
             security.pam.services.sudo_local.touchIdAuth = true;
+            security.sudo.extraConfig = ''
+              ${primaryUser} ALL=(root) NOPASSWD: \
+                /run/current-system/sw/bin/mas version, \
+                /run/current-system/sw/bin/mas install *, \
+                /run/current-system/sw/bin/mas get *, \
+                /run/current-system/sw/bin/mas uninstall *, \
+                /run/current-system/sw/bin/mas update *, \
+                /run/current-system/sw/bin/mas upgrade *, \
+                /run/current-system/sw/bin/mas lucky *
+            '';
 
             programs.fish.enable = true;
 
             environment = {
               systemPackages = with inputs.nixpkgs.legacyPackages.aarch64-darwin; [
                 home-manager
+                mas
               ];
               shells = [ nixpkgs.legacyPackages.aarch64-darwin.fish ];
             };

@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ lib, ... }:
 let
   masApps = [
     {
@@ -53,24 +53,28 @@ let
 
   masAppIds = map (app: toString app.id) masApps;
   masAppIdList = lib.concatStringsSep " " masAppIds;
+  masBin = "/run/current-system/sw/bin/mas";
 in
 {
-  home.packages = [ pkgs.mas ];
-
   home.activation.installMasApps = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if ! ${pkgs.mas}/bin/mas account >/dev/null 2>&1; then
+    if ! /usr/bin/sudo -n ${masBin} version >/dev/null 2>&1; then
+      echo "mas: sudo rule not active for ${masBin}; skipping app installs" >&2
+      exit 0
+    fi
+
+    if ! ${masBin} list >/dev/null 2>&1; then
       echo "mas: sign in to the App Store to install apps" >&2
       exit 0
     fi
 
-    installed_ids="$(${pkgs.mas}/bin/mas list | /usr/bin/awk '{print $1}')"
+    installed_ids="$(${masBin} list | /usr/bin/awk '{print $1}')"
 
     for app_id in ${masAppIdList}; do
       if echo "$installed_ids" | /usr/bin/grep -qx "$app_id"; then
         continue
       fi
 
-      $DRY_RUN_CMD ${pkgs.mas}/bin/mas install "$app_id" || true
+      $DRY_RUN_CMD /usr/bin/sudo -n ${masBin} install "$app_id" || true
     done
   '';
 }
