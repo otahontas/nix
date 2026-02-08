@@ -82,14 +82,6 @@
     bantime-increment.enable = true; # Increase ban time for repeat offenders
   };
 
-  # Automatic security updates
-  system.autoUpgrade = {
-    enable = true;
-    dates = "04:00";
-    allowReboot = false; # Don't auto-reboot, but apply updates
-    flake = "git+file:///etc/nixos#otapi"; # Will need to be updated after setup
-  };
-
   # Kernel hardening
   boot.kernel.sysctl = {
     # Disable IP forwarding (not a router)
