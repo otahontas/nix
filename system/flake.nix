@@ -88,6 +88,15 @@
             nix = {
               linux-builder.enable = true;
               optimise.automatic = true;
+              gc = {
+                automatic = true;
+                interval = {
+                  Weekday = 0;
+                  Hour = 3;
+                  Minute = 0;
+                };
+                options = "--delete-older-than 14d";
+              };
               settings = {
                 experimental-features = [
                   "nix-command"
@@ -106,21 +115,14 @@
                   "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
                 ];
 
-                accept-flake-config = true;
-                keep-outputs = true;
+                accept-flake-config = false;
               };
             };
 
             security.pam.services.sudo_local.touchIdAuth = true;
             security.sudo.extraConfig = ''
               ${primaryUser} ALL=(root) NOPASSWD: \
-                /run/current-system/sw/bin/mas version, \
-                /run/current-system/sw/bin/mas install *, \
-                /run/current-system/sw/bin/mas get *, \
-                /run/current-system/sw/bin/mas uninstall *, \
-                /run/current-system/sw/bin/mas update *, \
-                /run/current-system/sw/bin/mas upgrade *, \
-                /run/current-system/sw/bin/mas lucky *
+                /run/current-system/sw/bin/mas install *
             '';
 
             programs.fish = {

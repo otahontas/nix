@@ -6,8 +6,14 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    catppuccin.url = "github:catppuccin/nix";
-    pi-catppuccin.url = "github:otahontas/pi-coding-agent-catppuccin";
+    catppuccin = {
+      url = "github:catppuccin/nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    pi-catppuccin = {
+      url = "github:otahontas/pi-coding-agent-catppuccin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs =
     {

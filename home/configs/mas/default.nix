@@ -57,11 +57,6 @@ let
 in
 {
   home.activation.installMasApps = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if ! /usr/bin/sudo -n ${masBin} version >/dev/null 2>&1; then
-      echo "mas: sudo rule not active for ${masBin}; skipping app installs" >&2
-      exit 0
-    fi
-
     if ! ${masBin} list >/dev/null 2>&1; then
       echo "mas: sign in to the App Store to install apps" >&2
       exit 0
@@ -74,7 +69,7 @@ in
         continue
       fi
 
-      $DRY_RUN_CMD /usr/bin/sudo -n ${masBin} install "$app_id" || true
+      $DRY_RUN_CMD /usr/bin/sudo -n ${masBin} install "$app_id"
     done
   '';
 }
