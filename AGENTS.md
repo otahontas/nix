@@ -24,3 +24,7 @@ All CLI and GUI apps are managed through home-manager.
 - Many packages have `-bin` variants for darwin (e.g., `ghostty` is Linux-only, `ghostty-bin` works on darwin)
 - `nix build --no-link --print-out-paths nixpkgs#<pkg>` then check for `Applications/*.app` - verifies GUI app bundle exists
 - `NIXPKGS_ALLOW_UNFREE=1 nix build --impure ...` - for testing unfree packages
+
+## Committing and pushing
+
+- All commits can be pushed directly to default branch (main) in github
