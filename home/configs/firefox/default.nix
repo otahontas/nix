@@ -1,7 +1,7 @@
 { pkgs, ... }:
+let
+  firefoxDeveditionBin = pkgs.callPackage ../../packages/firefox-devedition-bin.nix { };
+in
 {
-  programs.firefox = {
-    enable = true;
-    package = pkgs.firefox-devedition;
-  };
+  home.packages = [ firefoxDeveditionBin ];
 }

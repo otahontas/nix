@@ -32,6 +32,9 @@
         pkgs = import nixpkgs {
           inherit system;
           config.allowUnfree = true;
+          config.permittedInsecurePackages = [
+            "google-chrome-144.0.7559.97"
+          ];
         };
         modules = [
           catppuccin.homeModules.catppuccin
