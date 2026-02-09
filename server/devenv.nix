@@ -15,5 +15,22 @@ _: {
     "server:check" = {
       exec = "nix flake check";
     };
+    "server:update-keys" = {
+      exec = ''
+        echo "Fetching public key from pass..."
+        if ! OTAPI_PUBKEY="$(pass otapi/public_key)"; then
+           echo "Error: Failed to fetch key from pass. Make sure 'otapi/public_key' exists."
+           exit 1
+        fi
+
+        echo "[ \"$OTAPI_PUBKEY\" ]" > ssh-keys.nix
+
+        # Register the file with git so pure flakes can see it,
+        # but force it because it is in .gitignore
+        git add -N -f ssh-keys.nix || true
+
+        echo "Successfully updated ssh-keys.nix"
+      '';
+    };
   };
 }
