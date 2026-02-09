@@ -101,6 +101,7 @@ in
 {
   home = {
     # Install pi package with Node.js wrapper
+    # TODO: pin @mariozechner/pi-coding-agent to an explicit version in Nix instead of runtime npx resolution.
     packages = [
       (pkgs.writeShellScriptBin "pi" ''
         export PATH="${pkgs.nodejs_24}/bin:$PATH"

@@ -598,10 +598,10 @@ export default function (pi: ExtensionAPI) {
       ? formatTimeUntilIso(bucket.resetTime)
       : null;
 
-    const weeklyLabel = themed(theme, "muted", "weekly: ");
+    const sessionLabel = themed(theme, "muted", "session: ");
     const timePart = resetText ? themed(theme, "dim", ` (${resetText})`) : "";
 
-    const status = `${weeklyLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
+    const status = `${sessionLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
 
     let notify: QuotaInfo["notify"];
     if (usedPercent >= 100) {
@@ -639,10 +639,10 @@ export default function (pi: ExtensionAPI) {
       ? formatTimeUntilIso(bucket.resetTime)
       : null;
 
-    const dailyLabel = themed(theme, "muted", "daily: ");
+    const sessionLabel = themed(theme, "muted", "session: ");
     const timePart = resetText ? themed(theme, "dim", ` (${resetText})`) : "";
 
-    const status = `${dailyLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
+    const status = `${sessionLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
 
     let notify: QuotaInfo["notify"];
     if (usedPercent >= 100) {
