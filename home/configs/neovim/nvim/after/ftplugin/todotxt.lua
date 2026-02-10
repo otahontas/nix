@@ -200,6 +200,23 @@ local function adjust_meta_date(meta_key, delta)
 	highlight_dates()
 end
 
+local function set_meta_date_today(meta_key)
+	local row = vim.api.nvim_win_get_cursor(0)[1]
+	local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1] or ""
+	if line == "" then
+		return
+	end
+
+	local todo = TodoLine.parse(line)
+	if #todo.tokens == 0 then
+		return
+	end
+
+	todo:set_meta_value(meta_key, os.date("%Y-%m-%d"))
+	vim.api.nvim_buf_set_lines(0, row - 1, row, false, { todo:render() })
+	highlight_dates()
+end
+
 for _, m in ipairs({
 	{ "<space>dm", "due", -1, "Decrease due date by 1 day" },
 	{ "<space>dp", "due", 1, "Increase due date by 1 day" },
@@ -209,6 +226,15 @@ for _, m in ipairs({
 	vim.keymap.set("n", m[1], function()
 		adjust_meta_date(m[2], m[3])
 	end, { buffer = 0, desc = m[4] })
+end
+
+for _, m in ipairs({
+	{ "<space>dt", "due", "Set due date to today" },
+	{ "<space>tt", "t", "Set threshold date to today" },
+}) do
+	vim.keymap.set("n", m[1], function()
+		set_meta_date_today(m[2])
+	end, { buffer = 0, desc = m[3] })
 end
 
 -- Sort todo.txt: due → threshold → context → alphabetical
