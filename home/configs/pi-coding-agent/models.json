@@ -1,0 +1,25 @@
+{
+  "providers": {
+    "google-antigravity": {
+      "baseUrl": "https://daily-cloudcode-pa.sandbox.googleapis.com",
+      "apiKey": "GOOGLE_API_KEY",
+      "api": "google-gemini-cli",
+      "models": [
+        {
+          "id": "claude-opus-4-6-thinking",
+          "name": "Claude Opus 4.6 Thinking (Antigravity)",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 200000,
+          "maxTokens": 64000,
+          "cost": {
+            "input": 5,
+            "output": 25,
+            "cacheRead": 0.5,
+            "cacheWrite": 6.25
+          }
+        }
+      ]
+    }
+  }
+}
