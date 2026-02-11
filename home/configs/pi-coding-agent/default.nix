@@ -53,11 +53,8 @@ let
   # Auto-discover extensions (.ts files)
   # Extensions to keep source but not install
   disabledExtensions = [
-    "agents-md-auto-revise.ts"
-    "context-for-editor.ts"
     "double-shot-latte.ts"
     "nvim-bridge.ts"
-    "piception.ts"
     "ralph-loop.ts"
   ];
   extensionFiles = builtins.filter (
@@ -76,7 +73,6 @@ let
   # Skills to keep source but not install
   disabledSkills = [
     "address-reviews"
-    "agents-md-improver"
     "branch-review"
     "catch-up"
     "code-simplifier"
