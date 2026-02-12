@@ -40,6 +40,26 @@
         "type": "github"
       }
     },
+    "kanttiinit-cli": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1770895211,
+        "narHash": "sha256-ErP9Na0bL8wgDx+YFa1xw9KRxBFYI4y1zsy1pVJVq1s=",
+        "owner": "otahontas",
+        "repo": "kanttiinit-cli",
+        "rev": "eca7ea2acac70966d4e62b1c81b1e53be936228d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "otahontas",
+        "repo": "kanttiinit-cli",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1770537093,
@@ -80,6 +100,7 @@
       "inputs": {
         "catppuccin": "catppuccin",
         "home-manager": "home-manager",
+        "kanttiinit-cli": "kanttiinit-cli",
         "nixpkgs": "nixpkgs",
         "pi-catppuccin": "pi-catppuccin"
       }

@@ -14,6 +14,10 @@
       url = "github:otahontas/pi-coding-agent-catppuccin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    kanttiinit-cli = {
+      url = "github:otahontas/kanttiinit-cli";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs =
     {
@@ -21,6 +25,7 @@
       home-manager,
       catppuccin,
       pi-catppuccin,
+      kanttiinit-cli,
       ...
     }:
     let
@@ -35,6 +40,9 @@
           config.permittedInsecurePackages = [
             "google-chrome-144.0.7559.97"
           ];
+        };
+        extraSpecialArgs = {
+          inherit kanttiinit-cli system;
         };
         modules = [
           catppuccin.homeModules.catppuccin

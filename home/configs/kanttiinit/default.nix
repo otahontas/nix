@@ -1,7 +1,4 @@
-{ pkgs, ... }:
-let
-  kanttiinit = pkgs.callPackage ../../packages/kanttiinit.nix { };
-in
+{ kanttiinit-cli, system, ... }:
 {
-  home.packages = [ kanttiinit ];
+  home.packages = [ kanttiinit-cli.packages.${system}.default ];
 }
