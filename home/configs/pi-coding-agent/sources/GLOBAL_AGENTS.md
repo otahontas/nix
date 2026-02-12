@@ -17,6 +17,7 @@
 - **Never push to default/protected branches** (main, master, development) directly
 - Always push only the current feature branch explicitly: `git push origin <branch-name>` — never bare `git push`
 - Never force push to shared branches
+- For non-interactive rebases in pi, always run `GIT_EDITOR=true git rebase --continue`
 
 ## Coding specific guidelines:
 
