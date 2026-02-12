@@ -1,4 +1,4 @@
-Nix setup for macOS with strict user separation:
+Nix setup for macOS with strict user separation.
 
 ## User separation
 
@@ -28,3 +28,4 @@ All CLI and GUI apps are managed through home-manager.
 ## Committing and pushing
 
 - All commits can be pushed directly to default branch (main) in github
+- This project uses a CLI ticket system for task management. Run `tk help` when you need to use it.
