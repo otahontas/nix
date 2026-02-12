@@ -53,9 +53,7 @@ let
   # Auto-discover extensions (.ts files)
   # Extensions to keep source but not install
   disabledExtensions = [
-    "double-shot-latte.ts"
     "nvim-bridge.ts"
-    "ralph-loop.ts"
   ];
   extensionFiles = builtins.filter (
     name: lib.hasSuffix ".ts" name && !builtins.elem name disabledExtensions
@@ -72,14 +70,6 @@ let
   # Auto-discover simple skills (no deps) - symlink entire directories
   # Skills to keep source but not install
   disabledSkills = [
-    "address-reviews"
-    "branch-review"
-    "catch-up"
-    "code-simplifier"
-    "context-hunter"
-    "feature-dev"
-    "pr-review-toolkit"
-    "sequential-agent-execution"
   ];
   skillDirs = builtins.filter (name: !builtins.elem name disabledSkills) (
     builtins.attrNames (builtins.readDir ./skills)

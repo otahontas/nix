@@ -40,10 +40,13 @@ Spawning agents for simple tasks wastes time. Just read, edit, verify, commit.
 
 Skip clarification when the request fully specifies what and where. Otherwise:
 
-- Ask specific questions (not open-ended)
+- Identify underspecified aspects: edge cases, error handling, integration points, scope boundaries, backward compatibility, performance needs
+- Ask specific questions (not open-ended) — present as an organized list
 - Confirm your understanding of scope
 - Confirm which files/services are involved
 - Ask about model preferences if the user hasn't specified them
+
+If the user says "whatever you think is best", provide your recommendation and get explicit confirmation.
 
 Don't guess. A wrong assumption wastes an entire phase.
 
@@ -106,14 +109,15 @@ These are working files — trash them when done. Don't commit them unless the u
 
 ### Planner
 
-Goal: research and produce a written plan.
+Goal: research and produce a written plan that explores multiple approaches.
 
 Prompt structure:
 
 - Tell it what to research (exact file paths to read)
 - Tell it what question to answer
 - Tell it where to write the output (exact file path)
-- Tell it the format you want
+- Tell it to explore 2-3 approaches with different trade-offs
+- Tell it to include a recommendation with reasoning
 
 ```
 Your task is to research [topic] and write a plan.
@@ -127,7 +131,11 @@ Write the plan to: docs/plan.md
 The plan should cover:
 - [specific question 1]
 - [specific question 2]
+
+Explore 2-3 approaches with different trade-offs (e.g., minimal changes vs. clean architecture vs. pragmatic balance). For each, document: what changes, pros/cons, and risks. End with your recommendation and reasoning.
 ```
+
+After the plan is reviewed, **present the approaches and recommendation to the user**. Get approval before starting implementation — choosing the wrong approach wastes all subsequent phases.
 
 ### Reviewer
 
