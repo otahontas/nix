@@ -4,10 +4,10 @@ let
     pname = "ticket";
     version = "unstable-2025-06-15";
     src = pkgs.fetchFromGitHub {
-      owner = "wedow";
+      owner = "otahontas";
       repo = "ticket";
-      rev = "f4403d9fb1610493b4a003b62bb6063716c2d96d";
-      sha256 = "18r1pvzw6f9nygk64v2x4y1c16fpsrqfdsa5mfjj15m19anynl6y";
+      rev = "ce72583fa0a68fe6221c710ba7ce806dc2468609";
+      sha256 = "1kvpczmway07wzbb08v8ws178xcarqsjxssmrirkab6xnandzajm";
     };
     dontBuild = true;
     installPhase = ''
