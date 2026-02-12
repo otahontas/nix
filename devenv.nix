@@ -28,15 +28,19 @@ in
 
   tasks = {
     "home:apply" = {
+      description = "Apply home-manager configuration from ./home flake";
       exec = "home-manager switch --flake ./home";
     };
     "nix:update" = {
+      description = "Update root, home, and system flake lockfiles";
       exec = ''
+        nix flake update
         nix flake update --flake ./home
         nix flake update --flake ./system
       '';
     };
     "nix:format" = {
+      description = "Run treefmt formatters";
       exec = "treefmt -v";
     };
   };
