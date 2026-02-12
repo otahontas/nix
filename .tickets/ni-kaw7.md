@@ -1,6 +1,6 @@
 ---
 id: ni-kaw7
-status: open
+status: closed
 deps: []
 links: [ni-9i14]
 created: 2026-02-12T18:54:09Z

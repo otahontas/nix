@@ -1,6 +1,6 @@
 ---
 id: ni-a5kc
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-12T14:32:19Z

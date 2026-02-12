@@ -1,6 +1,6 @@
 ---
 id: nix-f9p3
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-12T19:10:30Z

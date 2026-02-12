@@ -1,6 +1,6 @@
 ---
 id: ni-vikz
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-12T18:59:15Z
