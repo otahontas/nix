@@ -1,3 +1,6 @@
+# Nix build output
+result
+
 # Devenv
 .devenv*
 devenv.local.nix
