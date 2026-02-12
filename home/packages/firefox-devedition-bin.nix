@@ -34,6 +34,21 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       exit 1
     fi
 
+    # Disable built-in auto-updater via enterprise policies.
+    # Firefox lives in read-only Nix store, so its updater downloads
+    # updates it can never apply — causing an endless update loop.
+    # Version updates are managed through Nix instead.
+    local distDir="$out/Applications/Firefox Developer Edition.app/Contents/Resources/distribution"
+    mkdir -p "$distDir"
+    cat > "$distDir/policies.json" << 'EOF'
+    {
+      "policies": {
+        "DisableAppUpdate": true,
+        "ManualAppUpdateOnly": true
+      }
+    }
+    EOF
+
     runHook postInstall
   '';
 
