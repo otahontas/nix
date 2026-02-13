@@ -25,16 +25,21 @@ Rules:
 
 ## Core workflow
 
-### When NOT to orchestrate
+### Classify complexity
 
-Skip orchestration entirely and do the work yourself when:
+Before spawning any agent, classify the task. Reclassify mid-flight if it proves harder or simpler than expected.
 
-- The change is mechanical (deletions, renames, moving code)
-- You can identify all affected files quickly (< ~5 files)
-- No design decisions are needed
-- The full scope is clear from the request
+| Level      | Criteria                                                     | Execution path                                           |
+| ---------- | ------------------------------------------------------------ | -------------------------------------------------------- |
+| **Simple** | ≤3 files, no design decisions, mechanical change             | Do it yourself: read → edit → verify → commit            |
+| **Medium** | 4–10 files, clear scope, follows existing patterns           | Single agent with self-review: plan → implement → verify |
+| **Hard**   | >10 files, design decisions required, cross-cutting concerns | Multi-agent team: plan → review → implement → verify     |
 
-Spawning agents for simple tasks wastes time. Just read, edit, verify, commit.
+**Simple** — skip orchestration entirely. The change is mechanical (deletions, renames, config changes, version bumps, typo fixes). You can identify all affected files quickly and no design decisions are needed. Just read, edit, verify, commit.
+
+**Medium** — write an inline plan yourself, then either implement it yourself or spawn one implementer agent. Verify the output and commit. No planner or reviewer agents needed.
+
+**Hard** — trigger the full multi-agent workflow: planner → reviewer → user approval → implementer(s) → code review → verification. Don't skip reviews — they catch real issues.
 
 ### 0. Clarify with the user
 
@@ -111,6 +116,8 @@ These are working files — trash them when done. Don't commit them unless the u
 
 Goal: research and produce a written plan that explores multiple approaches.
 
+Only invoked for **hard** tasks. Medium tasks get an inline plan from the orchestrator.
+
 Prompt structure:
 
 - Tell it what to research (exact file paths to read)
@@ -118,21 +125,33 @@ Prompt structure:
 - Tell it where to write the output (exact file path)
 - Tell it to explore 2-3 approaches with different trade-offs
 - Tell it to include a recommendation with reasoning
+- Tell it to list implementation steps as a **Markdown task list** (`- [ ] Step title: description`) — this enables parsing into sub-tickets
 
 ```
-Your task is to research [topic] and write a plan.
+Your task: research [topic] and write a plan.
 
-Read these files:
+Read these files first:
 - path/to/file1.ts
 - path/to/file2.ts
 
-Write the plan to: docs/plan.md
+Write the plan to: docs/<ticket>-plan.md
 
-The plan should cover:
+Answer these questions:
 - [specific question 1]
 - [specific question 2]
 
-Explore 2-3 approaches with different trade-offs (e.g., minimal changes vs. clean architecture vs. pragmatic balance). For each, document: what changes, pros/cons, and risks. End with your recommendation and reasoning.
+Explore 2-3 approaches. For each:
+- What changes (specific files and functions)
+- Pros and cons
+- Risks and edge cases
+
+End with your recommendation and reasoning.
+
+List implementation steps as a Markdown task list:
+- [ ] Step title: description (affected files)
+- [ ] Step title: description (affected files)
+
+No nested lists for top-level steps.
 ```
 
 After the plan is reviewed, **present the approaches and recommendation to the user**. Get approval before starting implementation — choosing the wrong approach wastes all subsequent phases.
@@ -162,10 +181,13 @@ Fix issues directly in the file. Add a '## Review notes' section.
 
 Goal: make a specific, well-defined code change. ONE task per agent.
 
-The more prescriptive the prompt, the better the result. Don't describe what to do abstractly — show it concretely:
+The more prescriptive the prompt, the better the result. Don't describe what to do abstractly — show it concretely. Scope each agent to a single ticket or step.
 
 ```
-Your task: [single specific change]
+You are implementing step [N]: [title].
+
+Context: [description from plan or ticket]
+Dependencies: [files modified in previous steps, if any]
 
 Read [file to modify] first.
 Read [file with existing pattern] to see the pattern to follow.
@@ -175,12 +197,12 @@ Then edit [file to modify]:
   [exact code or detailed description of what to add]
 - Follow the same style as [existing code reference]
 
-After editing, run: npm run build
+After editing, run: [verification command]
 Do NOT modify any other files.
 ```
 
 Bad implementer prompt: "Add soft-delete support to the drafts table"
-Good implementer prompt: "Read src/shared/softDelete.ts. After the responses block inside `if (requestIds.length > 0)`, add an update to `llm_feedback_drafts` setting deleted_at=now, draft_text='[DELETED]', prompt='[DELETED]' where icbt_request_id in requestIdsAsNumbers and deleted_at is null. Follow the exact same logging pattern as the responses block above it."
+Good implementer prompt: "You are implementing step 3: add soft-delete to drafts. Read src/shared/softDelete.ts. After the responses block inside `if (requestIds.length > 0)`, add an update to `llm_feedback_drafts` setting deleted_at=now, draft_text='[DELETED]', prompt='[DELETED]' where icbt_request_id in requestIdsAsNumbers and deleted_at is null. Follow the exact same logging pattern as the responses block above it."
 
 ### Verifier
 
@@ -239,15 +261,24 @@ Always respect user model preferences. If a model fails or times out, move to th
 
 ## Failure handling
 
-| Failure                       | Response                                                  |
-| ----------------------------- | --------------------------------------------------------- |
-| Agent returns empty/stub file | Write it yourself or retry with more explicit prompt      |
-| Agent times out               | Try simpler prompt, different model, or increase timeout  |
-| Agent makes wrong changes     | `git checkout -- <file>`, retry with more specific prompt |
-| Build fails after agent edit  | Let another agent fix it, or fix it yourself              |
-| Agent hallucinates file paths | You already know the codebase — just do it yourself       |
+| Failure                       | Max retries | Response                                                  |
+| ----------------------------- | ----------- | --------------------------------------------------------- |
+| Agent returns empty/stub file | 2           | Revised prompt, then different model, then do it yourself |
+| Agent times out               | 1           | Simpler prompt or different model, then do it yourself    |
+| Agent makes wrong changes     | 2           | `git checkout -- <file>`, retry with more specific prompt |
+| Build fails after agent edit  | 3           | Let verifier fix, then fix yourself                       |
+| Agent hallucinates file paths | 0           | Do it yourself immediately                                |
 
 **The "do it yourself" escape hatch**: if a change is small and well-understood, skip the agent. Write the code directly with the `write` or `edit` tool. Spawning an agent for a 3-line change wastes time. Version bumps, one-line edits, config changes — just do them.
+
+## Stopping criteria
+
+Stop the workflow and report to the user when:
+
+- **All gates pass** — deliver summary of commits and changes
+- **Retry budget exhausted** — 3 attempts per phase (same prompt, revised prompt, different model). After 3 failures, escalate to user
+- **Scope creep detected** — implementation reveals work beyond the original ticket. Stop, report findings, ask whether to expand scope
+- **Ambiguity discovered** — design decision not covered by the plan. Stop and ask
 
 ## Anti-patterns learned from experience
 
