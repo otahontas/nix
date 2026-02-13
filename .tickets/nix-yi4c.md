@@ -1,6 +1,6 @@
 ---
 id: nix-yi4c
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-12T20:11:54Z

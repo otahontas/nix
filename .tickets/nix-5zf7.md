@@ -1,6 +1,6 @@
 ---
 id: nix-5zf7
-status: open
+status: closed
 deps: [nix-5r18]
 links: []
 created: 2026-02-12T20:11:54Z
