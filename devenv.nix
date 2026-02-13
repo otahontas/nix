@@ -24,6 +24,7 @@ in
   packages = [
     treefmtEval.config.build.wrapper
     pkgs.commitlint
+    pkgs.nix-update
   ];
 
   tasks = {
@@ -38,6 +39,10 @@ in
         nix flake update --flake ./home
         nix flake update --flake ./system
       '';
+    };
+    "nix:update-manual" = {
+      description = "Update manual package definitions (versions & hashes)";
+      exec = "bash scripts/update-manual-pkgs.sh";
     };
     "nix:format" = {
       description = "Run treefmt formatters";

@@ -31,16 +31,26 @@
     let
       system = "aarch64-darwin";
       username = "otahontas";
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+        config.permittedInsecurePackages = [
+          "google-chrome-144.0.7559.97"
+        ];
+      };
     in
     {
+      # Expose manual packages for nix-update
+      packages.${system} = {
+        lulu = pkgs.callPackage ./packages/lulu.nix { };
+        blockblock = pkgs.callPackage ./packages/blockblock.nix { };
+        pearcleaner = pkgs.callPackage ./packages/pearcleaner.nix { };
+        pareto-security = pkgs.callPackage ./packages/pareto-security.nix { };
+        firefox-devedition-bin = pkgs.callPackage ./packages/firefox-devedition-bin.nix { };
+      };
+
       homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          inherit system;
-          config.allowUnfree = true;
-          config.permittedInsecurePackages = [
-            "google-chrome-144.0.7559.97"
-          ];
-        };
+        inherit pkgs;
         extraSpecialArgs = {
           inherit kanttiinit-cli system;
         };
