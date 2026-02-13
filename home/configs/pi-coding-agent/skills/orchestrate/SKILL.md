@@ -7,6 +7,32 @@ description: Multi-agent workflow orchestration. Use when the user wants to dele
 
 You are the **orchestrator**: a tech lead who breaks problems into phases, launches sub-agents for each phase via `pi -p`, verifies every output, and delivers working results. The user is the product owner who defines the problem — you handle everything else.
 
+## Ticket management (tk)
+
+Use `tk` as persistent state for all orchestration work. Every phase maps to tk commands. This is how you survive crashes, communicate progress, and maintain an audit trail.
+
+### Command reference
+
+| Command                         | When                                         | Example                                               |
+| ------------------------------- | -------------------------------------------- | ----------------------------------------------------- |
+| `tk create "Title" -t task`     | New work needs tracking                      | `tk create "Refactor auth" -t task`                   |
+| `tk start <id>`                 | Beginning work on a ticket                   | `tk start nix-a1b2`                                   |
+| `tk create "Sub" --parent <id>` | Break plan into trackable sub-tasks          | `tk create "Update API" --parent nix-a1b2`            |
+| `tk dep <parent> <child>`       | Sub-task must complete before parent         | `tk dep nix-a1b2 nix-c3d4`                            |
+| `tk add-note <id> "text"`       | Log progress, failures, verification results | `tk add-note nix-c3d4 "Build failed: missing import"` |
+| `tk close <id>`                 | Work verified and complete                   | `tk close nix-c3d4`                                   |
+| `tk ready`                      | Find unblocked tickets to work next          | `tk ready`                                            |
+| `tk blocked`                    | See what's waiting on dependencies           | `tk blocked`                                          |
+| `tk show <id>`                  | Check ticket state and notes                 | `tk show nix-a1b2`                                    |
+
+### Rules
+
+- **Always parse the ticket ID from `tk create` stdout** — you need it for subsequent commands
+- **Never close a ticket without verification passing** — failed work stays open with notes
+- **Use `tk add-note` liberally** — log agent prompts, verification results, failure reasons
+- **Sub-tickets get `--parent <main-id>`** — maintains hierarchy
+- **When a ticket already exists** (user gave you one, or it's in `tk ready`), use it — don't create duplicates
+
 ## Launching sub-agents
 
 ```bash
@@ -41,7 +67,7 @@ Before spawning any agent, classify the task. Reclassify mid-flight if it proves
 
 **Hard** — trigger the full multi-agent workflow: planner → reviewer → user approval → implementer(s) → code review → verification. Don't skip reviews — they catch real issues.
 
-### 0. Clarify with the user
+### 0. Clarify and initialize ticket
 
 Skip clarification when the request fully specifies what and where. Otherwise:
 
@@ -54,6 +80,12 @@ Skip clarification when the request fully specifies what and where. Otherwise:
 If the user says "whatever you think is best", provide your recommendation and get explicit confirmation.
 
 Don't guess. A wrong assumption wastes an entire phase.
+
+**Ticket initialization:**
+
+- Check if a ticket already exists (user mentioned one, or check `tk ready`)
+- If no ticket exists: `tk create "Title" -t task` and parse the ID from stdout
+- `tk start <id>` to mark work as active
 
 ### 1. Gather context yourself first
 
@@ -84,15 +116,28 @@ Not every task needs every phase. Simple changes: skip straight to implementatio
 
 **Don't skip reviews.** Review agents catch real issues — wrong SQL ordering, missing assertions, edge cases you didn't think of. They're high-value phases even when the plan looks correct.
 
+**Create sub-tickets for hard tasks:** After the plan is reviewed and approved, parse each implementation step into a sub-ticket:
+
+```bash
+# For each step in the plan:
+tk create "Step title: description" --parent <main-id>
+# Parse the ID from stdout, then:
+tk dep <main-id> <sub-id>
+```
+
+This gives you persistent, resumable tracking of each implementation step. For medium tasks, sub-tickets are optional — use your judgment.
+
 ### 3. Execute phases
 
 For each phase:
 
-1. Write a focused prompt with all context the agent needs
-2. Launch the agent
-3. Verify the output (read files, check diffs, run builds)
-4. If output is wrong: retry with better prompt, different model, or do it yourself
-5. If output is good: commit (for implementation phases) and move on
+1. `tk start <sub-id>` (if sub-tickets exist for this step)
+2. Write a focused prompt with all context the agent needs
+3. Launch the agent
+4. Verify the output (read files, check diffs, run builds)
+5. If output is wrong: `tk add-note <sub-id> "Attempt N failed: <reason>"`, retry with better prompt, different model, or do it yourself
+6. If output is good: commit, `tk close <sub-id>`, and move on
+7. When all sub-tickets are closed: run final verification, then `tk close <main-id>`
 
 ### 4. Report to the user
 
@@ -269,6 +314,15 @@ Always respect user model preferences. If a model fails or times out, move to th
 | Build fails after agent edit  | 3           | Let verifier fix, then fix yourself                       |
 | Agent hallucinates file paths | 0           | Do it yourself immediately                                |
 
+**Every failure gets a note:** Run `tk add-note <id> "Attempt N failed: <reason>"` on every failed attempt. This creates an audit trail and helps a resumed orchestrator understand what was already tried.
+
+**Retries exhausted:** When all retries are spent for a sub-ticket:
+
+- `tk add-note <id> "Retries exhausted. Human intervention required."`
+- Leave the ticket in `in_progress` status — do NOT close it
+- Stop processing that branch of work
+- Report to the user with the ticket ID and failure context
+
 **The "do it yourself" escape hatch**: if a change is small and well-understood, skip the agent. Write the code directly with the `write` or `edit` tool. Spawning an agent for a 3-line change wastes time. Version bumps, one-line edits, config changes — just do them.
 
 ## Stopping criteria
@@ -279,6 +333,83 @@ Stop the workflow and report to the user when:
 - **Retry budget exhausted** — 3 attempts per phase (same prompt, revised prompt, different model). After 3 failures, escalate to user
 - **Scope creep detected** — implementation reveals work beyond the original ticket. Stop, report findings, ask whether to expand scope
 - **Ambiguity discovered** — design decision not covered by the plan. Stop and ask
+
+## Crash recovery
+
+Since all state lives in `tk`, the orchestrator can resume after a crash or session timeout:
+
+1. Run `tk list --status=in_progress` to find active tickets
+2. Run `tk show <id>` on each to read notes and understand what was attempted
+3. Run `tk ready` to find sub-tickets that are unblocked and ready for work
+4. Run `tk blocked` to see what's still waiting on dependencies
+5. Resume execution from step 3 of the workflow — pick up the next ready sub-ticket
+
+The orchestrator does NOT need to re-plan or re-create tickets. The tk state IS the plan.
+
+## Example workflow walkthrough
+
+This shows the full tk-integrated orchestration for a hard task.
+
+**User request:** "Refactor the login module" (no existing ticket)
+
+```
+# 0. Initialize
+$ tk create "Refactor login module" -t task
+nix-1001                                        # parse this ID
+
+$ tk start nix-1001
+
+# 1. Gather context — orchestrator reads source files
+
+# 2. Plan — spawn planner agent, produces docs/nix-1001-plan.md
+#    Plan identifies two steps:
+#    - [ ] Update AuthService: extract token refresh logic
+#    - [ ] Update LoginForm: use new AuthService API
+
+# 2b. Create sub-tickets from plan
+$ tk create "Update AuthService: extract token refresh" --parent nix-1001
+nix-1002
+
+$ tk create "Update LoginForm: use new AuthService API" --parent nix-1001
+nix-1003
+
+$ tk dep nix-1001 nix-1002
+$ tk dep nix-1001 nix-1003
+
+# 3. Execute — process sub-ticket nix-1002
+$ tk start nix-1002
+# Spawn implementer agent → success → verify → commit
+$ tk close nix-1002
+
+# 3. Execute — process sub-ticket nix-1003
+$ tk start nix-1003
+# Spawn implementer agent → build fails
+$ tk add-note nix-1003 "Attempt 1 failed: missing import for RefreshToken type"
+# Retry → success → verify → commit
+$ tk close nix-1003
+
+# 4. Finalize — all deps resolved
+# Run final verification (build, lint, tests)
+$ tk close nix-1001
+```
+
+**Crash scenario:** If the orchestrator dies after closing `nix-1002` but before starting `nix-1003`:
+
+```
+# New session — resume
+$ tk list --status=in_progress
+nix-1001  Refactor login module  [in_progress]
+
+$ tk show nix-1001
+# See deps: nix-1002 (closed), nix-1003 (open)
+
+$ tk ready
+nix-1003  Update LoginForm  [open]  # unblocked, nix-1002 is done
+
+# Pick up from nix-1003 and continue
+$ tk start nix-1003
+# ... continue as normal
+```
 
 ## Anti-patterns learned from experience
 
