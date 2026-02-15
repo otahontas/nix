@@ -278,9 +278,7 @@ Concrete defaults (adjust based on availability):
 
 - `--provider anthropic --model claude-opus-4-6` — planning, final review
 - `--provider openai-codex --model gpt-5.3-codex` — code review, implementation planning
-- `--provider google-gemini-cli --model gemini-3-pro-preview` — implementation
-- `--provider google-antigravity --model gemini-3-pro-high` — implementation fallback (gemini-cli times out on complex tasks; antigravity is more reliable)
-- `--provider anthropic --model claude-sonnet-4-6` — implementation fallback if gemini unavailable
+- `--provider anthropic --model claude-sonnet-4-6` — implementation
 
 Why different models for different roles:
 

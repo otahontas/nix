@@ -7,7 +7,7 @@ Build a "deep mode" for Pi that uses GPT-5.2-Codex (via existing `openai-codex` 
 ## Current setup
 
 - Default model: `openai-codex/gpt-5.2-codex` with `high` thinking
-- OAuth providers: `anthropic`, `openai-codex`, `github-copilot`, `google-gemini-cli`, `google-antigravity`
+- OAuth providers: `anthropic`, `openai-codex`, `github-copilot`
 - Extensions managed via nix home-manager auto-discovery in `extensions/`
 - The `preset.ts` example from Pi shows how to do this with JSON config, but it requires installing the preset extension separately
 

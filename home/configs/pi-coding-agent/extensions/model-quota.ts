@@ -46,30 +46,6 @@ interface CodexUsageResponse {
   };
 }
 
-// Gemini CLI quota endpoints
-interface GeminiCliAuthCredential {
-  type?: string;
-  access?: string;
-  refresh?: string;
-  expires?: number;
-}
-
-interface GeminiCliLoadResponse {
-  cloudaicompanionProject?: string;
-}
-
-interface GeminiCliQuotaBucket {
-  remainingAmount?: string;
-  remainingFraction?: number;
-  resetTime?: string;
-  tokenType?: string;
-  modelId?: string;
-}
-
-interface GeminiCliQuotaResponse {
-  buckets?: GeminiCliQuotaBucket[];
-}
-
 // GitHub Copilot quota endpoint
 interface GitHubCopilotQuotaSnapshot {
   entitlement?: number;
@@ -88,13 +64,7 @@ interface GitHubCopilotUserResponse {
   };
 }
 
-type Provider =
-  | "anthropic"
-  | "openai-codex"
-  | "google-gemini-cli"
-  | "google-antigravity"
-  | "github-copilot"
-  | string;
+type Provider = "anthropic" | "openai-codex" | "github-copilot" | string;
 
 type QuotaInfo = {
   statusText: string;
@@ -105,25 +75,6 @@ type ThemeColor = "muted" | "error" | "warning" | "success" | "dim";
 
 type ThemeLike = {
   fg: (color: ThemeColor, text: string) => string;
-};
-
-const GEMINI_CODE_ASSIST_BASE_URL =
-  "https://cloudcode-pa.googleapis.com/v1internal";
-const GEMINI_CODE_ASSIST_LOAD_URL = `${GEMINI_CODE_ASSIST_BASE_URL}:loadCodeAssist`;
-const GEMINI_CODE_ASSIST_QUOTA_URL = `${GEMINI_CODE_ASSIST_BASE_URL}:retrieveUserQuota`;
-
-const ANTIGRAVITY_BASE_URL =
-  "https://daily-cloudcode-pa.sandbox.googleapis.com";
-const ANTIGRAVITY_QUOTA_URL = `${ANTIGRAVITY_BASE_URL}/v1internal:retrieveUserQuota`;
-
-const ANTIGRAVITY_HEADERS = {
-  "User-Agent": "antigravity/1.15.8 darwin/arm64",
-  "X-Goog-Api-Client": "google-cloud-sdk vscode_cloudshelleditor/0.1",
-  "Client-Metadata": JSON.stringify({
-    ideType: "IDE_UNSPECIFIED",
-    platform: "PLATFORM_UNSPECIFIED",
-    pluginType: "GEMINI",
-  }),
 };
 
 const PI_AUTH_PATH = join(homedir(), ".pi", "agent", "auth.json");
@@ -142,16 +93,6 @@ export default function (pi: ExtensionAPI) {
   // GitHub Copilot cache
   let cachedGitHubCopilotUser: GitHubCopilotUserResponse | null = null;
   let lastGitHubCopilotFetched = 0;
-
-  // Google Antigravity cache
-  let cachedAntigravityQuota: GeminiCliQuotaResponse | null = null;
-  let lastAntigravityFetched = 0;
-
-  // Gemini CLI cache
-  let cachedGeminiQuota: GeminiCliQuotaResponse | null = null;
-  let lastGeminiFetched = 0;
-  let cachedGeminiProjectId: string | null = null;
-  let lastGeminiProjectFetched = 0;
 
   // auth.json cache (shared by all providers)
   let cachedAuthData: any | null = null;
@@ -199,28 +140,13 @@ export default function (pi: ExtensionAPI) {
       lastGitHubCopilotFetched = 0;
       return;
     }
-
-    if (provider === "google-antigravity") {
-      cachedAntigravityQuota = null;
-      lastAntigravityFetched = 0;
-      return;
-    }
-
-    if (provider === "google-gemini-cli" || provider === "gemini-cli") {
-      cachedGeminiQuota = null;
-      lastGeminiFetched = 0;
-      return;
-    }
   }
 
   function providerSupportsQuota(provider: Provider): boolean {
     return (
       provider === "anthropic" ||
       provider === "openai-codex" ||
-      provider === "github-copilot" ||
-      provider === "google-antigravity" ||
-      provider === "google-gemini-cli" ||
-      provider === "gemini-cli"
+      provider === "github-copilot"
     );
   }
 
@@ -326,7 +252,7 @@ export default function (pi: ExtensionAPI) {
   // Manual command
   pi.registerCommand("model-quota", {
     description:
-      "Show model quota for the current provider (Anthropic + OpenAI Codex + GitHub Copilot + Gemini CLI + Google Antigravity supported)",
+      "Show model quota for the current provider (Anthropic + OpenAI Codex + GitHub Copilot supported)",
     handler: async (_args, ctx) => {
       if (!ctx.hasUI) return;
 
@@ -335,34 +261,17 @@ export default function (pi: ExtensionAPI) {
       cachedCodexUsage = null;
       cachedGitHubCopilotUser = null;
       lastGitHubCopilotFetched = 0;
-      cachedAntigravityQuota = null;
-      lastAntigravityFetched = 0;
-      cachedGeminiQuota = null;
-      cachedGeminiProjectId = null;
       cachedAuthData = null;
       lastAuthFetched = 0;
       authFetchInFlight = null;
 
       // pi extensions don't get direct access to the selected provider inside commands.
       // So we show all providers if available.
-      const [anthropic, codex, copilot, antigravity, gemini] =
-        await Promise.all([
-          getQuotaForProvider("anthropic", ctx.ui.theme, undefined, ctx),
-          getQuotaForProvider("openai-codex", ctx.ui.theme, undefined, ctx),
-          getQuotaForProvider("github-copilot", ctx.ui.theme, undefined, ctx),
-          getQuotaForProvider(
-            "google-antigravity",
-            ctx.ui.theme,
-            undefined,
-            ctx,
-          ),
-          getQuotaForProvider(
-            "google-gemini-cli",
-            ctx.ui.theme,
-            undefined,
-            ctx,
-          ),
-        ]);
+      const [anthropic, codex, copilot] = await Promise.all([
+        getQuotaForProvider("anthropic", ctx.ui.theme, undefined, ctx),
+        getQuotaForProvider("openai-codex", ctx.ui.theme, undefined, ctx),
+        getQuotaForProvider("github-copilot", ctx.ui.theme, undefined, ctx),
+      ]);
 
       const lines: string[] = [];
       if (anthropic)
@@ -370,15 +279,10 @@ export default function (pi: ExtensionAPI) {
       if (codex) lines.push(`OpenAI/Codex: ${stripAnsiLike(codex.statusText)}`);
       if (copilot)
         lines.push(`GitHub Copilot: ${stripAnsiLike(copilot.statusText)}`);
-      if (antigravity)
-        lines.push(
-          `Google Antigravity: ${stripAnsiLike(antigravity.statusText)}`,
-        );
-      if (gemini) lines.push(`Gemini CLI: ${stripAnsiLike(gemini.statusText)}`);
 
       if (lines.length === 0) {
         ctx.ui.notify(
-          "No quota info available. Make sure you are logged in (OAuth) for Anthropic, ChatGPT (Codex), GitHub Copilot, Gemini CLI, or Google Antigravity.",
+          "No quota info available. Make sure you are logged in (OAuth) for Anthropic, ChatGPT (Codex), or GitHub Copilot.",
           "info",
         );
         return;
@@ -397,12 +301,6 @@ export default function (pi: ExtensionAPI) {
     if (provider === "anthropic") return getAnthropicQuota(theme);
     if (provider === "openai-codex") return getCodexQuota(theme);
     if (provider === "github-copilot") return getGitHubCopilotQuota(theme);
-    if (provider === "google-antigravity") {
-      return getAntigravityQuota(theme, modelId, ctx);
-    }
-    if (provider === "google-gemini-cli" || provider === "gemini-cli") {
-      return getGeminiQuota(theme, modelId);
-    }
     return null;
   }
 
@@ -577,147 +475,6 @@ export default function (pi: ExtensionAPI) {
     }
 
     return { statusText: status, notify };
-  }
-
-  async function getAntigravityQuota(
-    theme: ThemeLike | undefined,
-    modelId: string | undefined,
-    ctx: any,
-  ): Promise<QuotaInfo | null> {
-    const quota = await fetchAntigravityQuota(ctx);
-    if (!quota?.buckets?.length) return null;
-
-    const bucket = selectAntigravityQuotaBucket(quota.buckets, modelId);
-    if (!bucket || bucket.remainingFraction == null) return null;
-
-    const usedPercent = Math.max(
-      0,
-      Math.min(100, Math.round((1 - bucket.remainingFraction) * 100)),
-    );
-    const resetText = bucket.resetTime
-      ? formatTimeUntilIso(bucket.resetTime)
-      : null;
-
-    const sessionLabel = themed(theme, "muted", "session: ");
-    const timePart = resetText ? themed(theme, "dim", ` (${resetText})`) : "";
-
-    const status = `${sessionLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
-
-    let notify: QuotaInfo["notify"];
-    if (usedPercent >= 100) {
-      // No notification if exhausted
-    } else if (usedPercent > 95) {
-      notify = {
-        message: "Google Antigravity quota nearly exhausted!",
-        type: "error",
-      };
-    } else if (usedPercent > 85) {
-      notify = { message: "Google Antigravity quota warning", type: "warning" };
-    }
-
-    return {
-      statusText: status,
-      notify,
-    };
-  }
-
-  async function getGeminiQuota(
-    theme: ThemeLike | undefined,
-    modelId?: string,
-  ): Promise<QuotaInfo | null> {
-    const quota = await fetchGeminiQuota();
-    if (!quota?.buckets?.length) return null;
-
-    const bucket = selectGeminiQuotaBucket(quota.buckets, modelId);
-    if (!bucket || bucket.remainingFraction == null) return null;
-
-    const usedPercent = Math.max(
-      0,
-      Math.min(100, Math.round((1 - bucket.remainingFraction) * 100)),
-    );
-    const resetText = bucket.resetTime
-      ? formatTimeUntilIso(bucket.resetTime)
-      : null;
-
-    const sessionLabel = themed(theme, "muted", "session: ");
-    const timePart = resetText ? themed(theme, "dim", ` (${resetText})`) : "";
-
-    const status = `${sessionLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
-
-    let notify: QuotaInfo["notify"];
-    if (usedPercent >= 100) {
-      // No notification if exhausted
-    } else if (usedPercent > 95) {
-      notify = { message: "Gemini CLI quota nearly exhausted!", type: "error" };
-    } else if (usedPercent > 85) {
-      notify = { message: "Gemini CLI quota warning", type: "warning" };
-    }
-
-    return {
-      statusText: status,
-      notify,
-    };
-  }
-
-  function selectAntigravityQuotaBucket(
-    buckets: GeminiCliQuotaBucket[],
-    modelId?: string,
-  ): GeminiCliQuotaBucket | null {
-    const usable = buckets.filter((bucket) => bucket.remainingFraction != null);
-    if (usable.length === 0) return null;
-
-    if (modelId) {
-      const normalizedModelId = normalizeAntigravityModelId(modelId);
-      const match = usable.find(
-        (bucket) =>
-          bucket.modelId &&
-          normalizeAntigravityModelId(bucket.modelId) === normalizedModelId,
-      );
-      if (match) return match;
-    }
-
-    return usable.reduce((lowest, bucket) =>
-      (bucket.remainingFraction ?? 1) < (lowest.remainingFraction ?? 1)
-        ? bucket
-        : lowest,
-    );
-  }
-
-  function normalizeAntigravityModelId(modelId: string): string {
-    const raw = modelId.includes("/")
-      ? modelId.split("/").pop() || modelId
-      : modelId;
-    return raw
-      .replace(/-(thinking|xhigh|high|medium|low|minimal|off)$/i, "")
-      .replace(/-001$/i, "");
-  }
-
-  function selectGeminiQuotaBucket(
-    buckets: GeminiCliQuotaBucket[],
-    modelId?: string,
-  ): GeminiCliQuotaBucket | null {
-    const usable = buckets.filter((bucket) => bucket.remainingFraction != null);
-    if (usable.length === 0) return null;
-
-    if (modelId) {
-      const normalizedModelId = normalizeGeminiModelId(modelId);
-      const match = usable.find(
-        (bucket) =>
-          bucket.modelId &&
-          normalizeGeminiModelId(bucket.modelId) === normalizedModelId,
-      );
-      if (match) return match;
-    }
-
-    return usable.reduce((lowest, bucket) =>
-      (bucket.remainingFraction ?? 1) < (lowest.remainingFraction ?? 1)
-        ? bucket
-        : lowest,
-    );
-  }
-
-  function normalizeGeminiModelId(modelId: string): string {
-    return modelId.replace(/-001$/, "");
   }
 
   function formatTimeUntilIso(isoString: string): string {
@@ -940,168 +697,5 @@ export default function (pi: ExtensionAPI) {
       logDebug("Failed to fetch GitHub Copilot quota:", error);
       return null;
     }
-  }
-
-  async function getAntigravityCredentials(ctx: any): Promise<{
-    accessToken: string;
-    projectId: string;
-  } | null> {
-    try {
-      const raw =
-        await ctx?.modelRegistry?.getApiKeyForProvider?.("google-antigravity");
-      if (!raw) return null;
-
-      const parsed = JSON.parse(raw) as { token?: string; projectId?: string };
-      if (!parsed?.token || !parsed?.projectId) return null;
-
-      return { accessToken: parsed.token, projectId: parsed.projectId };
-    } catch {
-      return null;
-    }
-  }
-
-  async function fetchAntigravityQuota(
-    ctx: any,
-  ): Promise<GeminiCliQuotaResponse | null> {
-    // Cache for 60 seconds
-    const now = Date.now();
-    if (cachedAntigravityQuota && now - lastAntigravityFetched < 60 * 1000) {
-      return cachedAntigravityQuota;
-    }
-
-    try {
-      const creds = await getAntigravityCredentials(ctx);
-      if (!creds) return null;
-
-      const response = await fetchWithTimeout(ANTIGRAVITY_QUOTA_URL, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${creds.accessToken}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          ...ANTIGRAVITY_HEADERS,
-        },
-        body: JSON.stringify({ project: creds.projectId }),
-      });
-
-      if (!response.ok) {
-        logDebug("Google Antigravity quota API error:", response.status);
-        return null;
-      }
-
-      cachedAntigravityQuota =
-        (await response.json()) as unknown as GeminiCliQuotaResponse;
-      lastAntigravityFetched = now;
-      return cachedAntigravityQuota;
-    } catch (error) {
-      logDebug("Failed to fetch Google Antigravity quota:", error);
-      return null;
-    }
-  }
-
-  async function fetchGeminiQuota(): Promise<GeminiCliQuotaResponse | null> {
-    // Cache for 60 seconds
-    const now = Date.now();
-    if (cachedGeminiQuota && now - lastGeminiFetched < 60 * 1000) {
-      return cachedGeminiQuota;
-    }
-
-    try {
-      const accessToken = await getGeminiAccessToken();
-      if (!accessToken) return null;
-
-      const projectId = await fetchGeminiProjectId(accessToken);
-      if (!projectId) return null;
-
-      const response = await fetchWithTimeout(GEMINI_CODE_ASSIST_QUOTA_URL, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ project: projectId }),
-      });
-
-      if (!response.ok) {
-        logDebug("Gemini CLI quota API error:", response.status);
-        return null;
-      }
-
-      cachedGeminiQuota = (await response.json()) as GeminiCliQuotaResponse;
-      lastGeminiFetched = now;
-      return cachedGeminiQuota;
-    } catch (error) {
-      logDebug("Failed to fetch Gemini CLI quota:", error);
-      return null;
-    }
-  }
-
-  async function fetchGeminiProjectId(
-    accessToken: string,
-  ): Promise<string | null> {
-    const now = Date.now();
-    if (
-      cachedGeminiProjectId &&
-      now - lastGeminiProjectFetched < 5 * 60 * 1000
-    ) {
-      return cachedGeminiProjectId;
-    }
-
-    const envProjectId =
-      process.env.GOOGLE_CLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT_ID;
-
-    try {
-      const metadata = {
-        ideType: "IDE_UNSPECIFIED",
-        platform: "PLATFORM_UNSPECIFIED",
-        pluginType: "GEMINI",
-        ...(envProjectId ? { duetProject: envProjectId } : {}),
-      };
-
-      const response = await fetchWithTimeout(GEMINI_CODE_ASSIST_LOAD_URL, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          metadata,
-          ...(envProjectId
-            ? {
-                cloudaicompanionProject: envProjectId,
-              }
-            : {}),
-        }),
-      });
-
-      if (!response.ok) {
-        if (envProjectId) {
-          cachedGeminiProjectId = envProjectId;
-          lastGeminiProjectFetched = now;
-        }
-        return envProjectId ?? null;
-      }
-
-      const payload = (await response.json()) as GeminiCliLoadResponse;
-      cachedGeminiProjectId =
-        payload.cloudaicompanionProject || envProjectId || null;
-      lastGeminiProjectFetched = now;
-      return cachedGeminiProjectId;
-    } catch (error) {
-      logDebug("Failed to load Gemini CLI project:", error);
-      if (envProjectId) {
-        cachedGeminiProjectId = envProjectId;
-        lastGeminiProjectFetched = now;
-      }
-      return envProjectId ?? null;
-    }
-  }
-
-  async function getGeminiAccessToken(): Promise<string | null> {
-    const authData = await readAuthData();
-    const geminiAuth =
-      authData?.["google-gemini-cli"] ?? authData?.["gemini-cli"];
-    if (!geminiAuth?.access) return null;
-    return (geminiAuth as GeminiCliAuthCredential).access ?? null;
   }
 }

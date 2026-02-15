@@ -10,11 +10,7 @@
     "github-copilot/claude-opus-4.6",
     "github-copilot/gpt-5.2-codex",
     "github-copilot/gemini-3-pro-preview",
-    "github-copilot/grok-code-fast-1",
-    "google-antigravity/claude-opus-4-6-thinking",
-    "google-antigravity/gemini-3-pro-high",
-    "google-gemini-cli/gemini-3-flash-preview",
-    "google-gemini-cli/gemini-3-pro-preview"
+    "github-copilot/grok-code-fast-1"
   ],
   "hideThinkingBlock": true,
   "shellCommandPrefix": "export GIT_EDITOR=true\nexport GIT_SEQUENCE_EDITOR=true\nexport GIT_TERMINAL_PROMPT=0"
