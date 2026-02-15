@@ -24,6 +24,8 @@ in
   packages = [
     treefmtEval.config.build.wrapper
     pkgs.commitlint
+    pkgs.git
+    pkgs.gitleaks
     pkgs.nix-update
   ];
 
@@ -55,7 +57,11 @@ in
     deadnix.enable = true;
     detect-private-keys.enable = true;
     shellcheck.enable = true;
-    statix.enable = true;
+    statix = {
+      enable = true;
+      entry = "${pkgs.statix}/bin/statix check --format errfmt --ignore .devenv,.devenv.*,.direnv .";
+      pass_filenames = false;
+    };
     typos.enable = true;
     treefmt = {
       enable = true;
