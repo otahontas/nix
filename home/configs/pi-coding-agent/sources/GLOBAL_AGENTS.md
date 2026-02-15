@@ -11,6 +11,7 @@
 - When actually editing or creating text to be read by humans use skill "writing-clearly-and-concisely".
 - Do not use extra skill
 - Prefer bullet points over paragraphs
+- Never include time estimations (e.g., "day 1: do X, day 2: do Y", "this takes 1 week") unless the user specifically asks for them
 
 ## Git
 
