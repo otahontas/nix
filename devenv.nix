@@ -21,6 +21,8 @@ let
   };
 in
 {
+  claude.code.enable = true;
+
   packages = [
     treefmtEval.config.build.wrapper
     pkgs.commitlint
