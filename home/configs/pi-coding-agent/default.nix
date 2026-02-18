@@ -20,6 +20,30 @@ let
     '';
   };
 
+  # Pi MCP adapter extension - built from GitHub source
+  pi-mcp-adapter = pkgs.buildNpmPackage {
+    pname = "pi-mcp-adapter";
+    version = "2.1.2";
+
+    src = pkgs.fetchFromGitHub {
+      owner = "nicobailon";
+      repo = "pi-mcp-adapter";
+      rev = "fcd9c4bd55552db362118cd8f3b0ec0e3e9f6189";
+      hash = "sha256-+OF5jkP5VTzj314wom3m7MWWu0B6iGjq4sNkJLKaNcE=";
+    };
+
+    npmDepsHash = "sha256-ME9AQknl35IHlqLXOUmP6GRCW5sxqMQTzym0XILAAV8=";
+
+    dontNpmBuild = true;
+
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out
+      cp -r . $out/
+      runHook postInstall
+    '';
+  };
+
   piSessionsBackup = pkgs.writeShellScriptBin "pi-sessions-backup" ''
     set -euo pipefail
 
@@ -121,6 +145,9 @@ in
 
       # Skills with deps - built separately
       ".pi/agent/skills/brave-search".source = brave-search-skill;
+
+      # Pi MCP adapter extension - built with deps
+      ".pi/agent/extensions/pi-mcp-adapter".source = pi-mcp-adapter;
 
       # Opt-in extensions (not auto-discovered)
       ".pi/agent/extensions-opt/nvim-bridge.ts".source = ./extensions/nvim-bridge.ts;
