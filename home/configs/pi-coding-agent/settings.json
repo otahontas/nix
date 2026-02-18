@@ -1,16 +1,20 @@
 {
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.2-codex",
+  "defaultModel": "gpt-5.3-codex",
   "defaultThinkingLevel": "high",
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
   "enabledModels": [
     "claude-opus-4-6",
-    "openai-codex/gpt-5.3-codex",
+    "claude-sonnet-4-6",
     "github-copilot/claude-opus-4.6",
-    "github-copilot/gpt-5.2-codex",
+    "github-copilot/claude-sonnet-4-6",
     "github-copilot/gemini-3-pro-preview",
-    "github-copilot/grok-code-fast-1"
+    "github-copilot/gpt-5.2-codex",
+    "github-copilot/grok-code-fast-1",
+    "openai-codex/gpt-5.2",
+    "openai-codex/gpt-5.3-codex",
+    "openai-codex/gpt-5.3-codex-spark"
   ],
   "hideThinkingBlock": true,
   "shellCommandPrefix": "export GIT_EDITOR=true\nexport GIT_SEQUENCE_EDITOR=true\nexport GIT_TERMINAL_PROMPT=0"
