@@ -64,6 +64,8 @@ in
       initLua = builtins.readFile ./nvim/init.lua;
       extraPackages = with pkgs; [
         copilot-node-server
+        imagemagick
+        mermaid-cli
       ];
       plugins = with pkgs.vimPlugins; [
         # Completion & snippets
@@ -91,6 +93,8 @@ in
 
         # Markdown
         markview-nvim
+        image-nvim
+        diagram-nvim
 
         # Note: catppuccin is auto-installed, so not included here
       ];
