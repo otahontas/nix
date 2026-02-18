@@ -31,6 +31,10 @@ refactor(parser): simplify token handling
 test: add integration tests for payment flow
 ```
 
+## Signing
+
+- Always use `git commit -S` to GPG-sign commits
+
 ## Commit message rules
 
 - **Always use single-line commits** - no body, no bullet points, everything in the subject line
