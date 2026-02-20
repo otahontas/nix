@@ -26,20 +26,12 @@ let
       id = 747648890;
     }
     {
-      name = "Slack";
-      id = 803453959;
-    }
-    {
       name = "Velja";
       id = 1607635845;
     }
     {
       name = "WhatsApp Messenger";
       id = 310633997;
-    }
-    {
-      name = "WireGuard";
-      id = 1451685025;
     }
     {
       name = "iReal Pro";
