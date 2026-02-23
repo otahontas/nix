@@ -22,6 +22,16 @@ let
 in
 {
   claude.code.enable = true;
+  enterShell = ''
+    root="$DEVENV_ROOT"
+    if [ -z "$root" ]; then
+      root="$PWD"
+    fi
+    if [ -f "$root/.mcp.json" ]; then
+      mkdir -p "$root/.pi"
+      ln -sfn "$root/.mcp.json" "$root/.pi/mcp.json"
+    fi
+  '';
 
   packages = [
     treefmtEval.config.build.wrapper
