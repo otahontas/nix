@@ -1,2 +1,1 @@
-vim.lsp.enable("nixd")
-vim.cmd([[set runtimepath+=.nvim]])
+/nix/store/h3idifwv54k6zhz33w53k92pg3py162j-nvim.lua
