@@ -24,6 +24,13 @@ let
       treesitterFiletypesDir
     ];
   };
+
+  puppeteerConfig = pkgs.writeText "puppeteer-config.json" (
+    builtins.toJSON {
+      executablePath = "${pkgs.google-chrome}/bin/google-chrome-stable";
+      args = [ "--no-sandbox" ];
+    }
+  );
 in
 {
   xdg.configFile = {
@@ -34,6 +41,7 @@ in
     "nvim/lua".source = treesitterLuaDir;
     "nvim/plugin".source = ./nvim/plugin;
     "nvim/after".source = ./nvim/after;
+    "nvim/puppeteer-config.json".source = puppeteerConfig;
   };
 
   programs = {
@@ -66,6 +74,7 @@ in
         copilot-node-server
         imagemagick
         mermaid-cli
+        google-chrome
       ];
       plugins = with pkgs.vimPlugins; [
         # Completion & snippets

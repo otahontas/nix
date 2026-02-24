@@ -26,7 +26,9 @@ require("diagram").setup({
 	},
 	renderer_options = {
 		mermaid = {
-			cli_args = { "-p", vim.fn.stdpath("config") .. "/plugin/packages/puppeteer-config.json" },
+			scale = 3,
+			width = 1200,
+			cli_args = { "-p", vim.fn.stdpath("config") .. "/puppeteer-config.json" },
 		},
 	},
 })
