@@ -26,7 +26,7 @@ require("diagram").setup({
 	},
 	renderer_options = {
 		mermaid = {
-			cli_args = { "--no-sandbox" },
+			cli_args = { "-p", vim.fn.stdpath("config") .. "/plugin/packages/puppeteer-config.json" },
 		},
 	},
 })
