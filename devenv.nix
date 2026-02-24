@@ -39,6 +39,7 @@ in
     pkgs.git
     pkgs.gitleaks
     pkgs.nix-update
+    pkgs.nixd
   ];
 
   tasks = {

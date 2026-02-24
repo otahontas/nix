@@ -20,8 +20,7 @@ vim.iter({
 	cursorlineopt = "screenline,number",
 	-- Use spaces instead of tab characters
 	expandtab = true,
-	-- Load .nvim.lua/.nvimrc/.exrc from current directory (prompts first)
-	exrc = true,
+
 	-- Nice unicode characters for visualizing folds, splits, and separators
 	fillchars = {
 		eob = " ", -- Don't fill empty lines at the end of buffer
