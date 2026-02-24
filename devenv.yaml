@@ -5,3 +5,6 @@ inputs:
   treefmt-nix:
     url: github:numtide/treefmt-nix
     flake: false
+  devenv-base:
+    url: github:otahontas/devenv-base
+    flake: false

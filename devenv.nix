@@ -1,5 +1,9 @@
-{ pkgs, inputs, ... }:
-
+{
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 let
   treefmt-nix = import inputs.treefmt-nix;
   treefmtEval = treefmt-nix.evalModule pkgs {
@@ -21,15 +25,14 @@ let
   };
 in
 {
-  claude.code.enable = true;
-  enterShell = ''
+  imports = [
+    "${inputs.devenv-base}/modules/base.nix"
+  ];
+
+  enterShell = lib.mkAfter ''
     root="$DEVENV_ROOT"
     if [ -z "$root" ]; then
       root="$PWD"
-    fi
-    if [ -f "$root/.mcp.json" ]; then
-      mkdir -p "$root/.pi"
-      ln -sfn "$root/.mcp.json" "$root/.pi/mcp.json"
     fi
 
     cat > "$root/.gitignore" <<'EOF'
@@ -74,13 +77,14 @@ in
     '';
   };
 
-  packages = [
-    treefmtEval.config.build.wrapper
-    pkgs.commitlint
-    pkgs.git
-    pkgs.gitleaks
-    pkgs.nix-update
-    pkgs.nixd
+  packages = lib.mkMerge [
+    (lib.mkBefore [
+      treefmtEval.config.build.wrapper
+    ])
+    [
+      pkgs.nix-update
+      pkgs.nixd
+    ]
   ];
 
   tasks = {
@@ -102,33 +106,12 @@ in
     };
     "nix:format" = {
       description = "Run treefmt formatters";
-      exec = "treefmt -v";
+      exec = "${treefmtEval.config.build.wrapper}/bin/treefmt -v";
     };
   };
 
   git-hooks.hooks = {
-    check-merge-conflicts.enable = true;
-    deadnix.enable = true;
-    detect-private-keys.enable = true;
     shellcheck.enable = true;
-    statix = {
-      enable = true;
-      entry = "${pkgs.statix}/bin/statix check --format errfmt --ignore .devenv,.devenv.*,.direnv .";
-      pass_filenames = false;
-    };
-    typos.enable = true;
-    treefmt = {
-      enable = true;
-      package = treefmtEval.config.build.wrapper;
-    };
-    commitlint = {
-      enable = true;
-      stages = [ "commit-msg" ];
-      entry = "${pkgs.commitlint}/bin/commitlint --extends @commitlint/config-conventional --edit";
-    };
-    gitleaks = {
-      enable = true;
-      entry = "${pkgs.gitleaks}/bin/gitleaks protect --staged --verbose";
-    };
+    treefmt.package = lib.mkForce treefmtEval.config.build.wrapper;
   };
 }

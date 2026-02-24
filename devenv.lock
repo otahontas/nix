@@ -16,6 +16,21 @@
         "type": "github"
       }
     },
+    "devenv-base": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1771927633,
+        "owner": "otahontas",
+        "repo": "devenv-base",
+        "rev": "13326e28f1a03b491eac70c7b378a6d3433874f8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "otahontas",
+        "repo": "devenv-base",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -90,6 +105,7 @@
     "root": {
       "inputs": {
         "devenv": "devenv",
+        "devenv-base": "devenv-base",
         "git-hooks": "git-hooks",
         "nixpkgs": "nixpkgs",
         "pre-commit-hooks": [
