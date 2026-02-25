@@ -37,6 +37,18 @@
         config.permittedInsecurePackages = [
           "google-chrome-144.0.7559.97"
         ];
+        overlays = [
+          (_: prev: {
+            python313Packages = prev.python313Packages.overrideScope (
+              _: pythonPrev: {
+                jeepney = pythonPrev.jeepney.overrideAttrs {
+                  doInstallCheck = false;
+                  pythonImportsCheck = [ ];
+                };
+              }
+            );
+          })
+        ];
       };
     in
     {
