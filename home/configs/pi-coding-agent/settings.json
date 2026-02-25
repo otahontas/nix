@@ -11,7 +11,8 @@
     "openai-codex/gpt-5.3-codex",
     "openai-codex/gpt-5.3-codex-spark",
     "mistral/devstral-medium-latest",
-    "mistral/mistral-medium-latest"
+    "mistral/mistral-medium-latest",
+    "github-copilot/claude-opus-4-6"
   ],
   "hideThinkingBlock": true,
   "shellCommandPrefix": "export GIT_EDITOR=true\nexport GIT_SEQUENCE_EDITOR=true\nexport GIT_TERMINAL_PROMPT=0"
