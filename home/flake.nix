@@ -38,15 +38,13 @@
           "google-chrome-144.0.7559.97"
         ];
         overlays = [
+          # https://github.com/NixOS/nixpkgs/pull/485980
           (_: prev: {
-            python313Packages = prev.python313Packages.overrideScope (
-              _: pythonPrev: {
-                jeepney = pythonPrev.jeepney.overrideAttrs {
-                  doInstallCheck = false;
-                  pythonImportsCheck = [ ];
-                };
-              }
-            );
+            dbus = prev.dbus.overrideAttrs (old: {
+              mesonFlags = old.mesonFlags or [ ] ++ [
+                (prev.lib.mesonOption "dbus_session_bus_listen_address" "unix:tmpdir=/tmp")
+              ];
+            });
           })
         ];
       };
