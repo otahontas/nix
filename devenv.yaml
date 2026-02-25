@@ -8,3 +8,6 @@ inputs:
   devenv-base:
     url: github:otahontas/devenv-base
     flake: false
+
+imports:
+  - devenv-base

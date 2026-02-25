@@ -25,9 +25,6 @@ let
   };
 in
 {
-  imports = [
-    "${inputs.devenv-base}/modules/base.nix"
-  ];
 
   enterShell = lib.mkAfter ''
     root="$DEVENV_ROOT"
