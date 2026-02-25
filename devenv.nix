@@ -12,6 +12,12 @@
       Pn = "Pn"
       # Proper name (sculptor in Browning's "My Last Duchess")
       Claus = "Claus"
+
+      [type.md]
+      extend-ignore-re = [
+        "nix-[a-z0-9]{4}\\.md",
+        "(?m)^id:\\s+nix-[a-z0-9]{4}$",
+      ]
     '';
   };
 
@@ -39,9 +45,8 @@
       exec = "home-manager switch --flake ./home";
     };
     "nix:update" = {
-      description = "Update root, home, and system flake lockfiles";
+      description = "Update home, and system flake lockfiles";
       exec = ''
-        nix flake update
         nix flake update --flake ./home
         nix flake update --flake ./system
       '';

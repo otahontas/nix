@@ -1,13 +1,13 @@
 ---
-id: ni-9i14
+id: nix-9i14
 status: closed
-deps: [ni-r51a, ni-wupr]
-links: [ni-kaw7]
+deps: [nix-r51a, nix-wupr]
+links: [nix-kaw7]
 created: 2026-02-12T14:36:06Z
 type: task
 priority: 2
 assignee: Otto Ahoniemi
-parent: ni-vljj
+parent: nix-vljj
 tags: [pi, orchestration, design]
 ---
 

@@ -1,5 +1,5 @@
 ---
-id: ni-9lyh
+id: nix-9lyh
 status: closed
 deps: []
 links: []
@@ -7,7 +7,7 @@ created: 2026-02-12T19:01:02Z
 type: task
 priority: 1
 assignee: Otto Ahoniemi
-parent: ni-vikz
+parent: nix-vikz
 tags: [research, evidence, agents]
 ---
 

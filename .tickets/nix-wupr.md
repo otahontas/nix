@@ -1,5 +1,5 @@
 ---
-id: ni-wupr
+id: nix-wupr
 status: closed
 deps: []
 links: []
@@ -7,7 +7,7 @@ created: 2026-02-12T14:36:06Z
 type: task
 priority: 2
 assignee: Otto Ahoniemi
-parent: ni-vljj
+parent: nix-vljj
 tags: [pi, planning, architecture]
 ---
 

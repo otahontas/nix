@@ -6,7 +6,7 @@ inputs:
     url: github:numtide/treefmt-nix
     flake: false
   devenv-base:
-    url: github:otahontas/devenv-base?ref=1.0.2
+    url: github:otahontas/devenv-base
     flake: false
 
 imports:

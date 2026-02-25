@@ -1,13 +1,13 @@
 ---
-id: ni-kaw7
+id: nix-kaw7
 status: closed
 deps: []
-links: [ni-9i14]
+links: [nix-9i14]
 created: 2026-02-12T18:54:09Z
 type: task
 priority: 2
 assignee: Otto Ahoniemi
-parent: ni-vljj
+parent: nix-vljj
 tags: [pi, orchestration, tk, tickets]
 ---
 

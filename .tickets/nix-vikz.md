@@ -1,5 +1,5 @@
 ---
-id: ni-vikz
+id: nix-vikz
 status: closed
 deps: []
 links: []

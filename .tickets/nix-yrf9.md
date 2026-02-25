@@ -1,13 +1,13 @@
 ---
-id: ni-yrf9
+id: nix-yrf9
 status: closed
-deps: [ni-9lyh]
+deps: [nix-9lyh]
 links: []
 created: 2026-02-12T19:01:02Z
 type: task
 priority: 1
 assignee: Otto Ahoniemi
-parent: ni-vikz
+parent: nix-vikz
 tags: [design, agents, orchestration]
 ---
 
