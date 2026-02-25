@@ -33,6 +33,29 @@ Use `tk` as persistent state for all orchestration work. Every phase maps to tk 
 - **Sub-tickets get `--parent <main-id>`** — maintains hierarchy
 - **When a ticket already exists** (user gave you one, or it's in `tk ready`), use it — don't create duplicates
 
+### Plan mode progress sync (required)
+
+Use plan mode tools to mirror tk state so users always see live progress in the TUI widget.
+
+Required tools:
+
+- `plan_set_goal`
+- `plan_add_step`
+- `plan_mark_active`
+- `plan_mark_done`
+
+Sync mapping:
+
+| tk action                                         | plan mode action                                                                        |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Start main ticket (`tk start <id>`)               | `plan_set_goal` once for the overall goal, then `plan_mark_active` for the current step |
+| Create sub-ticket (`tk create ... --parent <id>`) | `plan_add_step` for the new sub-step                                                    |
+| Start sub-ticket (`tk start <sub-id>`)            | `plan_mark_active` for that sub-step                                                    |
+| Close sub-ticket (`tk close <sub-id>`)            | `plan_mark_done` for that sub-step                                                      |
+| Close main ticket (`tk close <id>`)               | `plan_mark_done` for the final parent step                                              |
+
+If tk and plan mode diverge, fix plan mode immediately before continuing. The widget is part of the user-facing status contract.
+
 ## Launching sub-agents
 
 ```bash
@@ -86,6 +109,9 @@ Don't guess. A wrong assumption wastes an entire phase.
 - Check if a ticket already exists (user mentioned one, or check `tk ready`)
 - If no ticket exists: `tk create "Title" -t task` and parse the ID from stdout
 - `tk start <id>` to mark work as active
+- Initialize plan mode goal with `plan_set_goal` using the main ticket title
+- Add initial execution steps with `plan_add_step` so progress is visible from the start
+- Mark the current step active with `plan_mark_active`
 
 ### 1. Gather context yourself first
 
@@ -131,13 +157,13 @@ This gives you persistent, resumable tracking of each implementation step. For m
 
 For each phase:
 
-1. `tk start <sub-id>` (if sub-tickets exist for this step)
+1. `tk start <sub-id>` (if sub-tickets exist for this step), then `plan_mark_active` for the same step
 2. Write a focused prompt with all context the agent needs
 3. Launch the agent
 4. Verify the output (read files, check diffs, run builds)
 5. If output is wrong: `tk add-note <sub-id> "Attempt N failed: <reason>"`, retry with better prompt, different model, or do it yourself
-6. If output is good: commit, `tk close <sub-id>`, and move on
-7. When all sub-tickets are closed: run final verification, then `tk close <main-id>`
+6. If output is good: commit, `tk close <sub-id>`, `plan_mark_done` for that step, and move on
+7. When all sub-tickets are closed: run final verification, then `tk close <main-id>` and `plan_mark_done` for the parent step
 
 ### 4. Report to the user
 

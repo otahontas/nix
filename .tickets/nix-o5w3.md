@@ -1,6 +1,6 @@
 ---
 id: nix-o5w3
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-13T11:48:09Z

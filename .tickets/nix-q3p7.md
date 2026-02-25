@@ -1,6 +1,6 @@
 ---
 id: nix-q3p7
-status: open
+status: closed
 deps: [nix-dfca]
 links: []
 created: 2026-02-12T20:11:54Z

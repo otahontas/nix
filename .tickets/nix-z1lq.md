@@ -1,6 +1,6 @@
 ---
 id: nix-z1lq
-status: open
+status: closed
 deps: [nix-5zf7]
 links: []
 created: 2026-02-12T20:11:54Z

@@ -1,6 +1,6 @@
 ---
 id: nix-cej2
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-14T16:00:53Z

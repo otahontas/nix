@@ -26,11 +26,15 @@ let
       id = 747648890;
     }
     {
+      name = "Slack";
+      id = 803453959;
+    }
+    {
       name = "Velja";
       id = 1607635845;
     }
     {
-      name = "WhatsApp Messenger";
+      name = "WhatsApp";
       id = 310633997;
     }
     {
@@ -38,7 +42,7 @@ let
       id = 409035833;
     }
     {
-      name = "reMarkable desktop";
+      name = "reMarkable";
       id = 1276493162;
     }
   ];

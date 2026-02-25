@@ -24,16 +24,27 @@ Devenv is a Nix-based dev environment runner. Prefer it over ad-hoc installs and
 - `devenv.nix`: main configuration (Nix module system)
 - `devenv.yaml`: inputs + imports (composition)
 - `devenv.lock`: pinned inputs
-- `.envrc`: usually `use devenv` (direnv auto-activation)
+- `.envrc`: prefer the full template (direnv + devenv):
+
+  ```bash
+  #!/usr/bin/env bash
+
+  export DIRENV_WARN_TIMEOUT=20s
+
+  eval "$(devenv direnvrc)"
+
+  use devenv
+  ```
 
 ## Core commands (starting point)
 
 - Setup / enter
   - `devenv init`
-  - `devenv shell` (or `direnv allow` if `.envrc` uses devenv)
+  - `devenv shell` (or `direnv allow` if `.envrc` uses the full devenv template)
 - Run things
   - `devenv up` (runs configured processes; services often add their own processes)
   - `devenv tasks list` / `devenv tasks run <name>`
+  - `prek run -a` (run all configured git hooks)
 - Inspect / debug
   - `devenv info`
   - `devenv repl`
@@ -55,7 +66,7 @@ Devenv is a Nix-based dev environment runner. Prefer it over ad-hoc installs and
 - Task runner (recommended for workflows)
   - `tasks.*` + `devenv tasks run ...` (dependencies, caching via `status`, file watching via `execIfModified`)
 - Git hooks
-  - `git-hooks.hooks.*` (pre-commit integration)
+  - `git-hooks.hooks.*` (run hooks with `prek`, not `pre-commit`)
 - Profiles
   - `profiles.*` + `devenv --profile <name> shell|up` (activate subsets/variants)
 - Outputs (build artifacts)
