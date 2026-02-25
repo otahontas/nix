@@ -2,31 +2,27 @@
 
 - Always use `trash` instead of `rm` for file deletion
 - Always use `brave-search` skill for web searches
-- Always read `AGENTS.md` file
+- Always use `devenv` cli and `devenv` skill to install tools, clis and commands.
+  - When `devenv.nix` doesn't exist and a command/tool is missing, create an ad-hoc environment
+  - When the setup is becomes complex create `devenv.nix` and run commands within
+  - Use `devenv` skill
 
 ## Writing
 
 - Use sentence case: "Next steps" not "Next Steps", "Plan overview" not "Plan Overview"
-- For answering directly, just sacrifice grammar over being concise unless specifically asked to write clearly
-- When actually editing or creating text to be read by humans use skill "writing-clearly-and-concisely".
-- Do not use extra skill
+- For answering directly, sacrifice grammar over being concise unless specifically asked to write clearly
+- When actually editing or creating text to be read by humans use skill `writing-clearly-and-concisely`.
 - Prefer bullet points over paragraphs
 - Never include time estimations (e.g., "day 1: do X, day 2: do Y", "this takes 1 week") unless the user specifically asks for them
 
 ## Git
 
-- **Never push to default/protected branches** (main, master, development) directly
-- Always push only the current feature branch explicitly: `git push origin <branch-name>` — never bare `git push`
-- Never force push to shared branches
-- For non-interactive rebases in pi, always run `GIT_EDITOR=true git rebase --continue`
+- For non-interactive rebases, always run `GIT_EDITOR=true git rebase --continue`
 
 ## Coding specific guidelines:
 
 - KISS, YAGNI - prefer duplication over wrong abstraction
 - Prefer unix tools for single task scripts
-- Use project scripts (just, package.json, Makefile, mise, uv, cargo.toml) for linting/formatting, not global tools
-- Node/Deno/Bun: prefer package.json scripts, then node_modules/.bin/, over npx/bunx
-- Always use lockfiles (npm ci, yarn install --frozen-lockfile)
 - Only fix what's asked - no bonus improvements, refactoring, or extra comments unless requested
 
 ## Multi-step task workflow:
@@ -43,5 +39,4 @@
 ## Local development scripts:
 
 - Use `.local_scripts/` for temporary verification scripts that shouldn't be committed
-- Examples: version update checks, one-off validation scripts, personal dev utilities
 - Scripts can be messy and repo-specific

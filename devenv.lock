@@ -19,14 +19,15 @@
     "devenv-base": {
       "flake": false,
       "locked": {
-        "lastModified": 1771927633,
+        "lastModified": 1772017820,
         "owner": "otahontas",
         "repo": "devenv-base",
-        "rev": "13326e28f1a03b491eac70c7b378a6d3433874f8",
+        "rev": "203ea50be3e3416340ef9b25d2cef710d2dbcb78",
         "type": "github"
       },
       "original": {
         "owner": "otahontas",
+        "ref": "1.0.2",
         "repo": "devenv-base",
         "type": "github"
       }

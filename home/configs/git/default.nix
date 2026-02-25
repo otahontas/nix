@@ -115,7 +115,7 @@
         ".localized"
         "**/.worktrees/**"
         "**/.local_scripts/**"
-        "*.review"
+        "*plan*.md"
       ];
     };
     fish = {

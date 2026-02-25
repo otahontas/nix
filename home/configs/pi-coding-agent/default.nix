@@ -77,7 +77,6 @@ let
   # Auto-discover extensions (.ts files)
   # Extensions to keep source but not install
   disabledExtensions = [
-    "nvim-bridge.ts"
   ];
   extensionFiles = builtins.filter (
     name: lib.hasSuffix ".ts" name && !builtins.elem name disabledExtensions
@@ -124,18 +123,6 @@ in
         exec npx @mariozechner/pi-coding-agent "$@"
       '')
 
-      # Opt-in pi instance that syncs with Neovim via the nvim bridge extension.
-      (pkgs.writeShellScriptBin "pinvim" ''
-        export PATH="${pkgs.nodejs_24}/bin:$PATH"
-
-        # Load Brave Search API key if available
-        if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
-          export BRAVE_API_KEY="$(${pkgs.pass}/bin/pass show api/brave-search 2>/dev/null || true)"
-        fi
-
-        exec npx @mariozechner/pi-coding-agent -e "$HOME/.pi/agent/extensions-opt/nvim-bridge.ts" "$@"
-      '')
-
       piSessionsBackup
     ];
 
@@ -148,9 +135,6 @@ in
 
       # Pi MCP adapter extension - built with deps
       ".pi/agent/extensions/pi-mcp-adapter".source = pi-mcp-adapter;
-
-      # Opt-in extensions (not auto-discovered)
-      ".pi/agent/extensions-opt/nvim-bridge.ts".source = ./extensions/nvim-bridge.ts;
     }
     // extensionSymlinks
     // skillSymlinks;

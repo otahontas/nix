@@ -1,6 +1,6 @@
 ---
 name: devenv
-description: Use when working in a repo that uses devenv (devenv.nix/devenv.yaml/.envrc) or when the user mentions devenv, direnv+devenv, languages.*, services.*, processes, tasks, git-hooks, profiles, outputs, containers, devenv shell/up/test/search/update.
+description: Use when working in a repo that uses devenv (devenv.nix/devenv.yaml/.envrc), when ad-hoc-developer-environment is needed or when the user mentions devenv, direnv+devenv, languages.*, services.*, processes, tasks, git-hooks, profiles, outputs, containers, devenv shell/up/test/search/update.
 ---
 
 # Devenv
@@ -52,6 +52,20 @@ Devenv is a Nix-based dev environment runner. Prefer it over ad-hoc installs and
 - Update
   - `devenv update` (refresh lockfile)
   - `devenv changelogs` (see breaking/behavior changes)
+
+## Ad-hoc environments
+
+- Instead of creating and maintaining a devenv.nix file, you can create ad-hoc developer environments directly from the command line using the --option flag.
+
+```
+$ devenv --option languages.python.enable:bool true \
+         --option languages.python.version:string "3.10" \
+         shell
+```
+
+This creates a temporary Python development environment without needing any configuration files.
+
+See <https://devenv.sh/ad-hoc-developer-environments/> for more information.
 
 ## What devenv can do (feature map)
 
