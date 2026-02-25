@@ -207,6 +207,40 @@ const blockRmCommand: Guard = (event) => {
 };
 
 /**
+ * Block non-standard git worktree paths
+ *
+ * Enforces creating worktrees under <repo>/.worktrees/<branch>
+ */
+const blockNonStandardWorktreePath: Guard = (event) => {
+  if (event.toolName !== "bash") return;
+
+  const cmd = (event as ToolCallEvent).input.command;
+  const isWorktreeAdd = /\bgit\b[^\n;|&]*\bworktree\s+add\b/.test(cmd);
+
+  if (!isWorktreeAdd) return;
+
+  // Accept commands that clearly target .worktrees path.
+  // This also allows multi-command snippets where worktree_path is assigned earlier.
+  const usesStandardPath =
+    cmd.includes(".worktrees/") || cmd.includes(".worktrees\\");
+
+  if (!usesStandardPath) {
+    return {
+      block: true,
+      reason:
+        "🌳 **Non-standard worktree path blocked**\n\n" +
+        "Use the shared worktree layout for this environment:\n" +
+        "- `<repo>/.worktrees/<branch>`\n\n" +
+        "**What to do instead:**\n" +
+        "1. `repo_root=$(git rev-parse --show-toplevel)`\n" +
+        '2. `mkdir -p "$repo_root/.worktrees"`\n' +
+        '3. `git worktree add "$repo_root/.worktrees/$branch" -b "$branch"`\n\n' +
+        "This keeps create/cd/prune workflows consistent.",
+    };
+  }
+};
+
+/**
  * Block secret tools
  *
  * Prevents running commands that expose secrets (pass, gpg).
@@ -285,6 +319,7 @@ const guards: Guard[] = [
   blockNonConventionalCommits,
   blockNpxBunx,
   blockRmCommand,
+  blockNonStandardWorktreePath,
   blockSecretTools,
   blockTitleCaseHeaders,
 ];
