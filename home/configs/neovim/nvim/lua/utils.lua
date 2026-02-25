@@ -60,10 +60,62 @@ M.get_closest_ancestor_directory_that_has_file = function(filename)
 	return vim.fn.getcwd() -- fallback to cwd if file not found
 end
 
--- Setup buffer for prose editing (soft wrap, markdown link surround)
+-- Override gra (code action) to show spell actions when cursor is on a misspelled word,
+-- falling through to LSP code actions otherwise.
+M.setup_spell_code_actions = function()
+	vim.keymap.set("n", "gra", function()
+		if vim.wo.spell then
+			local word = vim.fn.expand("<cword>")
+			local bad = vim.fn.spellbadword(word)
+			if bad[1] ~= "" then
+				local actions = {}
+
+				table.insert(actions, {
+					label = "Add '" .. word .. "' to spellfile",
+					fn = function()
+						vim.cmd("normal! zg")
+					end,
+				})
+
+				table.insert(actions, {
+					label = "Mark '" .. word .. "' as wrong",
+					fn = function()
+						vim.cmd("normal! zw")
+					end,
+				})
+
+				for i, s in ipairs(vim.fn.spellsuggest(word, 5)) do
+					table.insert(actions, {
+						label = word .. " → " .. s,
+						fn = function()
+							vim.cmd("normal! " .. i .. "z=")
+						end,
+					})
+				end
+
+				vim.ui.select(actions, {
+					prompt = "Spelling: " .. word,
+					format_item = function(item)
+						return item.label
+					end,
+				}, function(choice)
+					if choice then
+						choice.fn()
+					end
+				end)
+				return
+			end
+		end
+
+		vim.lsp.buf.code_action()
+	end, { buffer = true, desc = "Code actions (with spelling)" })
+end
+
+-- Setup buffer for prose editing (soft wrap, spelling code actions, markdown link surround)
 M.setup_prose_buffer = function()
 	M.disable_hard_wrap_for_buffer()
 	vim.opt_local.wrap = true -- enable soft wrap
+	M.setup_spell_code_actions()
 	vim.b.minisurround_config = {
 		custom_surroundings = {
 			-- Markdown link: saiwL, sdL, srLL
