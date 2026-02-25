@@ -130,7 +130,17 @@
               interactiveShellInit = ''
                 # Fish aliases in nix-darwin are global, not per-user.
                 if test "$USER" = "${adminUser}"
-                  alias system-apply "sudo darwin-rebuild switch --flake /Users/${primaryUser}/.nix/system#${hostname}"
+                  function system-apply
+                    set -l root "$DEVENV_ROOT"
+                    if test -z "$root"
+                      set root (command git rev-parse --show-toplevel 2>/dev/null)
+                    end
+                    if test -z "$root"
+                      echo "system-apply: run inside repo or devenv shell"
+                      return 1
+                    end
+                    sudo darwin-rebuild switch --flake "$root/system#${hostname}"
+                  end
                 end
               '';
             };
