@@ -57,6 +57,7 @@
         pearcleaner = pkgs.callPackage ./packages/pearcleaner.nix { };
         pareto-security = pkgs.callPackage ./packages/pareto-security.nix { };
         firefox-devedition-bin = pkgs.callPackage ./packages/firefox-devedition-bin.nix { };
+        ollama-bin = pkgs.callPackage ./packages/ollama-bin.nix { };
       };
 
       homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {

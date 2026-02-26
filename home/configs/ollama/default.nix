@@ -1,3 +1,7 @@
-_: {
-  services.ollama.enable = true;
+{ pkgs, ... }:
+{
+  services.ollama = {
+    enable = true;
+    package = pkgs.callPackage ../../packages/ollama-bin.nix { };
+  };
 }
