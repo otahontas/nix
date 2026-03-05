@@ -113,7 +113,7 @@ in
     # TODO: pin @mariozechner/pi-coding-agent to an explicit version in Nix instead of runtime npx resolution.
     packages = [
       (pkgs.writeShellScriptBin "pi" ''
-        export PATH="${pkgs.nodejs_24}/bin:$PATH"
+        export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:$PATH"
 
         # Load Brave Search API key if available
         if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
@@ -124,6 +124,7 @@ in
       '')
 
       piSessionsBackup
+      pkgs."poppler-utils"
     ];
 
     file = {
