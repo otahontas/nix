@@ -129,7 +129,6 @@ in
 
     file = {
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
-      ".pi/agent/models.json".source = ./models.json;
 
       # Skills with deps - built separately
       ".pi/agent/skills/brave-search".source = brave-search-skill;
