@@ -10,25 +10,24 @@ echo
 echo "--- GitHub packages ---"
 for pkg in lulu blockblock pearcleaner pareto-security; do
   echo "Checking $pkg..."
-  nix-update --flake ./home "$pkg" || echo "  Warning: $pkg update failed, skipping"
+  nix-update --flake --file ./home "$pkg" || echo "  Warning: $pkg update failed, skipping"
   echo
 done
 
 # 2. Firefox Developer Edition (version from Mozilla Archive)
 echo "--- Firefox Developer Edition ---"
 echo "Fetching latest version from archive.mozilla.org..."
-FIREFOX_VER=$(
-  curl -sL "https://archive.mozilla.org/pub/devedition/releases/" |
-    grep -o 'href="[0-9]*\.[0-9]*b[0-9]*/"' |
-    cut -d'"' -f2 |
-    tr -d '/' |
+FIREFOX_VER="$(
+  curl -fsSL "https://archive.mozilla.org/pub/devedition/releases/" |
+    grep -oE '/pub/devedition/releases/[0-9][0-9.]*b[0-9]+/' |
+    cut -d'/' -f5 |
     sort -V |
-    tail -n 1
-)
+    tail -n 1 || true
+)"
 
 if [ -n "$FIREFOX_VER" ]; then
   echo "Latest Firefox DevEdition: $FIREFOX_VER"
-  nix-update --flake ./home firefox-devedition-bin --version "$FIREFOX_VER" ||
+  nix-update --flake --file ./home firefox-devedition-bin --version "$FIREFOX_VER" ||
     echo "  Warning: firefox-devedition-bin update failed, skipping"
 else
   echo "  Failed to determine latest Firefox DevEdition version"
@@ -39,7 +38,7 @@ echo
 echo "--- MacWhisper ---"
 echo "Skipping: requires manual build number update (no public API)."
 echo "To update manually: edit home/packages/macwhisper.nix version + build, then:"
-echo "  nix-update --flake ./home macwhisper --version <ver>"
+echo "  nix-update --flake --file ./home macwhisper --version <ver>"
 echo
 
 echo "=== Done ==="

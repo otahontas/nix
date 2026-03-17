@@ -6,11 +6,11 @@
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "firefox-devedition-bin";
-  version = "148.0b10";
+  version = "149.0b9";
 
   src = fetchurl {
     url = "https://archive.mozilla.org/pub/devedition/releases/${finalAttrs.version}/mac/en-US/Firefox%20${finalAttrs.version}.dmg";
-    hash = "sha256-xnMNEG0UNIJOC2Kx3XGm6WJ2ibdiMuLZAFgCv+M1Y0M=";
+    hash = "sha256-uiBVIQ32pUDvYwKNCFrZx3qoRIEzUbNyx7GK2WBM/uw=";
   };
 
   sourceRoot = ".";

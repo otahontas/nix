@@ -5,11 +5,11 @@
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "pareto-security";
-  version = "1.21.0";
+  version = "1.24.0";
 
   src = fetchurl {
     url = "https://github.com/ParetoSecurity/pareto-mac/releases/download/${finalAttrs.version}/ParetoSecurity.dmg";
-    hash = "sha256-zG1DnGhg0oiMA2uezU5+/+6T9/PHn293DaLFzT2lANY=";
+    hash = "sha256-hdrSgR6FeoHs3Pnjq/c+iFsj34lRZr+NqxIOXZzLZLo=";
   };
 
   dontFixup = true;

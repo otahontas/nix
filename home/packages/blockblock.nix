@@ -6,11 +6,11 @@
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "blockblock";
-  version = "2.2.5";
+  version = "2.4.2";
 
   src = fetchurl {
     url = "https://github.com/objective-see/BlockBlock/releases/download/v${finalAttrs.version}/BlockBlock_${finalAttrs.version}.zip";
-    hash = "sha256-g22MTM9LwzvkbwGfHw/LLsYehK+oTbtVCYuw7XNQ/Ik=";
+    hash = "sha256-0jbL6Pk6+KPJ9MgCzFOLmSd0kzhM+2kjSbug1aDPB+k=";
   };
 
   dontUnpack = true;
