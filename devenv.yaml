@@ -1,13 +1,16 @@
-# yaml-language-server: $schema=https://devenv.sh/devenv.schema.json
 inputs:
+  devenv-base:
+    url: github:otahontas/devenv-base
+    flake: false
+  git-hooks:
+    url: github:cachix/git-hooks.nix
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
   treefmt-nix:
     url: github:numtide/treefmt-nix
     flake: false
-  devenv-base:
-    url: github:otahontas/devenv-base
-    flake: false
-
 imports:
   - devenv-base

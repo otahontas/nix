@@ -6,11 +6,11 @@
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "lulu";
-  version = "4.3.0";
+  version = "4.3.1";
 
   src = fetchurl {
     url = "https://github.com/objective-see/LuLu/releases/download/v${finalAttrs.version}/LuLu_${finalAttrs.version}.dmg";
-    hash = "sha256-8SP5uNEm/fr+FylwQPVDd6rUAspb2EjYCA8zxDaZW/0=";
+    hash = "sha256-zANmUn8fQSMpX9EzKaCAMaZgr9JWB23asD5gdDZc75M=";
   };
 
   dontFixup = true;

@@ -5,6 +5,7 @@
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
   "enabledModels": [
+    "anthropic/claude-opus-4-6",
     "github-copilot/gpt-5.4",
     "github-copilot/claude-opus-4.6",
     "mistral/devstral-2512"

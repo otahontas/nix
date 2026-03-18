@@ -45,15 +45,13 @@
       exec = "home-manager switch --flake ./home";
     };
     "nix:update" = {
-      description = "Update home, and system flake lockfiles";
+      description = "Update home and system flake lockfiles, devenv and manual packages";
       exec = ''
         nix flake update --flake ./home
         nix flake update --flake ./system
+        devenv update
+        bash scripts/update-manual-pkgs.sh
       '';
-    };
-    "nix:update-manual" = {
-      description = "Update manual package definitions (versions & hashes)";
-      exec = "bash scripts/update-manual-pkgs.sh";
     };
     "nix:format" = {
       description = "Run treefmt formatters";
