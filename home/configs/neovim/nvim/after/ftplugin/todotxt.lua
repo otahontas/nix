@@ -237,7 +237,7 @@ for _, m in ipairs({
 	end, { buffer = 0, desc = m[3] })
 end
 
--- Sort todo.txt: group (due → threshold → rest) → priority → area → natural alphabetical
+-- Sort todo.txt: due → threshold → priority → area → natural alphabetical (sans priority)
 local function sort_buffer()
 	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
@@ -275,49 +275,70 @@ local function sort_buffer()
 		return false
 	end
 
+	-- Empty values sort last; equal values return nil to fall through
+	local function cmp(va, vb)
+		if va == "" and vb == "" then
+			return nil
+		end
+		if va == "" then
+			return false
+		end
+		if vb == "" then
+			return true
+		end
+		if va ~= vb then
+			return va < vb
+		end
+		return nil
+	end
+
 	local indexed_lines = {}
 	for _, line in ipairs(lines) do
 		local todo = TodoLine.parse(line)
-		local has_due = todo:get_meta_value("due") ~= nil
-		local has_threshold = todo:get_meta_value("t") ~= nil
-		local group = has_due and 1 or has_threshold and 2 or 3
 		local first_context = todo.contexts[1]
+
+		-- Build line without priority for alphabetical tiebreaker
+		local parts = {}
+		vim.list_extend(parts, todo.prefix)
+		vim.list_extend(parts, todo.description)
+		vim.list_extend(parts, todo.contexts)
+		vim.list_extend(parts, todo.projects)
+		for _, key in ipairs({ "due", "t", "est", "other" }) do
+			vim.list_extend(parts, todo.meta[key])
+		end
+
 		table.insert(indexed_lines, {
 			line = line,
-			group = group,
+			due = todo:get_meta_value("due") or "",
+			threshold = todo:get_meta_value("t") or "",
 			priority = todo.priority or "",
 			area = first_context and first_context:sub(2) or "",
+			sort_line = table.concat(parts, " "),
 		})
 	end
 
 	table.sort(indexed_lines, function(a, b)
-		if a.group ~= b.group then
-			return a.group < b.group
+		local r = cmp(a.due, b.due)
+		if r ~= nil then
+			return r
 		end
 
-		-- Priority: missing goes last
-		if a.priority ~= b.priority then
-			if a.priority == "" then
-				return false
-			end
-			if b.priority == "" then
-				return true
-			end
-			return a.priority < b.priority
+		r = cmp(a.threshold, b.threshold)
+		if r ~= nil then
+			return r
 		end
 
-		-- Area: missing goes last
-		if a.area ~= b.area then
-			if a.area == "" then
-				return false
-			end
-			if b.area == "" then
-				return true
-			end
-			return a.area < b.area
+		r = cmp(a.priority, b.priority)
+		if r ~= nil then
+			return r
 		end
 
-		return natural_cmp(a.line, b.line)
+		r = cmp(a.area, b.area)
+		if r ~= nil then
+			return r
+		end
+
+		return natural_cmp(a.sort_line, b.sort_line)
 	end)
 
 	local sorted_lines = vim.tbl_map(function(item)
@@ -331,7 +352,7 @@ vim.api.nvim_buf_create_user_command(
 	0,
 	"Sort",
 	sort_buffer,
-	{ desc = "Sort by date group, priority, area, then alphabetically" }
+	{ desc = "Sort by due, threshold, priority, area, then alphabetically" }
 )
 vim.api.nvim_buf_create_user_command(0, "Format", format_buffer, { desc = "Normalize todo.txt tokens" })
 
