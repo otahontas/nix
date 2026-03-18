@@ -135,6 +135,7 @@ in
 
       # Pi MCP adapter extension - built with deps
       ".pi/agent/extensions/pi-mcp-adapter".source = pi-mcp-adapter;
+
     }
     // extensionSymlinks
     // skillSymlinks;
