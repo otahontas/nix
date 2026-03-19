@@ -1,6 +1,7 @@
 /**
- * From: https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/examples/extensions/rainbow-editor.ts
  * Rainbow Editor - highlights "ultrathink" with animated shine effect
+ *
+ * Usage: pi --extension ./examples/extensions/rainbow-editor.ts
  */
 
 import { CustomEditor, type ExtensionAPI } from "@mariozechner/pi-coding-agent";

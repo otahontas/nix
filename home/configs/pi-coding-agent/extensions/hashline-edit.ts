@@ -194,13 +194,21 @@ function stripBom(content: string): { bom: string; text: string } {
   return { bom: "", text: content };
 }
 
-function computeLineHash(line: string): string {
+const RE_ALNUM = /[\p{L}\p{N}]/u;
+
+function computeLineHash(line: string, lineNumber: number): string {
   const normalized = line.replace(/\r/g, "").replace(/\s+/g, "");
-  return createHash("sha1").update(normalized).digest("hex").slice(0, 2);
+  // Mix line number into hash for punctuation-only lines (}, ), blank lines)
+  // to avoid collisions — these lines all normalize to the same or very short strings
+  const seed = RE_ALNUM.test(normalized) ? "" : String(lineNumber);
+  return createHash("sha1")
+    .update(seed + normalized)
+    .digest("hex")
+    .slice(0, 2);
 }
 
 function formatHashline(line: string, lineNumber: number): string {
-  return `${lineNumber}:${computeLineHash(line)}|${line}`;
+  return `${lineNumber}:${computeLineHash(line, lineNumber)}|${line}`;
 }
 
 function parseAnchor(anchor: string): ParsedAnchor {
@@ -222,7 +230,18 @@ function parseAnchor(anchor: string): ParsedAnchor {
   };
 }
 
-function validateAnchor(anchor: string, lines: string[], path: string): number {
+type AnchorMismatch = {
+  line: number;
+  expected: string;
+  actual: string;
+};
+
+function validateAnchor(
+  anchor: string,
+  lines: string[],
+  path: string,
+  mismatches: AnchorMismatch[],
+): number {
   const parsed = parseAnchor(anchor);
   const lineIndex = parsed.line - 1;
 
@@ -232,15 +251,51 @@ function validateAnchor(anchor: string, lines: string[], path: string): number {
     );
   }
 
-  const actualHash = computeLineHash(lines[lineIndex]);
+  const actualHash = computeLineHash(lines[lineIndex], parsed.line);
   if (actualHash !== parsed.hash) {
-    const currentAnchor = `${parsed.line}:${actualHash}`;
-    throw new Error(
-      `Anchor mismatch for ${anchor} in ${path}. Current anchor at line ${parsed.line} is ${currentAnchor}. Re-read the file before editing.`,
-    );
+    mismatches.push({
+      line: parsed.line,
+      expected: parsed.hash,
+      actual: actualHash,
+    });
   }
 
   return lineIndex;
+}
+
+function formatMismatchError(
+  mismatches: AnchorMismatch[],
+  lines: string[],
+  path: string,
+): string {
+  const CONTEXT = 2;
+  const displayLines = new Set<number>();
+  for (const m of mismatches) {
+    const lo = Math.max(1, m.line - CONTEXT);
+    const hi = Math.min(lines.length, m.line + CONTEXT);
+    for (let i = lo; i <= hi; i++) displayLines.add(i);
+  }
+
+  const mismatchSet = new Set(mismatches.map((m) => m.line));
+  const sorted = [...displayLines].sort((a, b) => a - b);
+  const out: string[] = [
+    `${mismatches.length} anchor${mismatches.length > 1 ? "s have" : " has"} changed since last read of ${path}. Use the updated anchors shown below (>>> marks changed lines).`,
+    "",
+  ];
+
+  let prev = -1;
+  for (const num of sorted) {
+    if (prev !== -1 && num > prev + 1) out.push("    ...");
+    prev = num;
+    const text = lines[num - 1];
+    const hash = computeLineHash(text, num);
+    const tag = `${num}:${hash}`;
+    out.push(
+      mismatchSet.has(num) ? `>>> ${tag}|${text}` : `    ${tag}|${text}`,
+    );
+  }
+
+  return out.join("\n");
 }
 
 function generateDiffString(
@@ -330,9 +385,15 @@ function parseAnchoredOperation(
   operation: HashlineEdit,
   lines: string[],
   path: string,
+  mismatches: AnchorMismatch[],
 ): AnchoredOperation | null {
   if ("set_line" in operation) {
-    const lineIndex = validateAnchor(operation.set_line.anchor, lines, path);
+    const lineIndex = validateAnchor(
+      operation.set_line.anchor,
+      lines,
+      path,
+      mismatches,
+    );
     return {
       type: "set_line",
       startLineIndex: lineIndex,
@@ -346,11 +407,13 @@ function parseAnchoredOperation(
       operation.replace_lines.start_anchor,
       lines,
       path,
+      mismatches,
     );
     const endLineIndex = validateAnchor(
       operation.replace_lines.end_anchor,
       lines,
       path,
+      mismatches,
     );
 
     if (endLineIndex < startLineIndex) {
@@ -372,6 +435,7 @@ function parseAnchoredOperation(
       operation.insert_after.anchor,
       lines,
       path,
+      mismatches,
     );
     return {
       type: "insert_after",
@@ -598,13 +662,18 @@ export default function (pi: ExtensionAPI) {
       const normalizedOriginal = normalizeToLf(text);
       const originalLines = normalizedOriginal.split("\n");
 
+      const mismatches: AnchorMismatch[] = [];
       const anchoredOperations = params.edits
         .map((operation) =>
-          parseAnchoredOperation(operation, originalLines, path),
+          parseAnchoredOperation(operation, originalLines, path, mismatches),
         )
         .filter(
           (operation): operation is AnchoredOperation => operation !== null,
         );
+
+      if (mismatches.length > 0) {
+        throw new Error(formatMismatchError(mismatches, originalLines, path));
+      }
 
       const withAnchorsApplied = applyAnchoredOperations(
         originalLines,
