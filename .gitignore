@@ -1,6 +1,7 @@
-# devenv-base gitignore start
 .devenv*
 .direnv
+.gitignore
+.nvim.lua
 .pre-commit-config.yaml
 .claude/
 .mcp.json
@@ -8,4 +9,3 @@
 devenv.local.nix
 devenv.local.yaml
 result
-# devenv-base gitignore end

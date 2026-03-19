@@ -1,5 +1,1 @@
--- devenv-base nvim setup start
-vim.cmd([[set runtimepath+=.nvim]])
-vim.lsp.enable("nixd")
-vim.lsp.enable("bashls")
--- devenv-base nvim setup end
+/nix/store/p7p6ffqm2bs7jbwvd0r69bq2fa1qd35c-nvim.lua
