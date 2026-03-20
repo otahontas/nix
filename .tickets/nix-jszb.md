@@ -1,5 +1,5 @@
 ---
-id: .ni-jszb
+id: nix-jszb
 status: open
 deps: []
 links: []
