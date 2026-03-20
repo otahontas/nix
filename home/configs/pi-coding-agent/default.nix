@@ -1,6 +1,8 @@
 { pkgs, lib, ... }:
 
 let
+  piVersion = "0.61.0";
+
   # Skills with npm dependencies need to be built
   brave-search-skill = pkgs.buildNpmPackage {
     pname = "brave-search-skill";
@@ -16,6 +18,27 @@ let
       runHook preInstall
       mkdir -p $out
       cp -r . $out/
+      runHook postInstall
+    '';
+  };
+
+  # Pi coding agent - built from npm registry
+  pi-coding-agent = pkgs.buildNpmPackage {
+    pname = "pi-coding-agent";
+    version = piVersion;
+
+    src = ./pi-package;
+
+    npmDepsHash = "sha256-aRcglGYkdF6qneWZ6iRaZWJgLKD8bskJ2lzhZQnUZgs=";
+
+    dontNpmBuild = true;
+
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out/lib
+      cp -r node_modules $out/lib/node_modules
+      mkdir -p $out/bin
+      ln -s $out/lib/node_modules/@mariozechner/pi-coding-agent/dist/cli.js $out/bin/pi
       runHook postInstall
     '';
   };
@@ -109,8 +132,6 @@ in
 
 {
   home = {
-    # Install pi package with Node.js wrapper
-    # TODO: pin @mariozechner/pi-coding-agent to an explicit version in Nix instead of runtime npx resolution.
     packages = [
       (pkgs.writeShellScriptBin "pi" ''
         export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:$PATH"
@@ -120,7 +141,7 @@ in
           export BRAVE_API_KEY="$(${pkgs.pass}/bin/pass show api/brave-search 2>/dev/null || true)"
         fi
 
-        exec npx @mariozechner/pi-coding-agent "$@"
+        exec ${pi-coding-agent}/bin/pi "$@"
       '')
 
       piSessionsBackup
@@ -145,6 +166,15 @@ in
     activation = {
       mergeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${pkgs.bash}/bin/bash ${./merge-settings.sh} ${./settings.json}
+      '';
+
+      # Clean up redundant extension deps (pi's jiti resolves these internally)
+      cleanExtensionDeps = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        ext_dir="$HOME/.pi/agent/extensions"
+        for f in "$ext_dir/package.json" "$ext_dir/package-lock.json"; do
+          [ -f "$f" ] && run rm "$f"
+        done
+        [ -d "$ext_dir/node_modules" ] && run rm -rf "$ext_dir/node_modules"
       '';
     };
   };
