@@ -32,9 +32,20 @@
       pkgs = nixpkgs.legacyPackages.aarch64-darwin;
       lulu = pkgs.callPackage ./packages/lulu.nix { };
       blockblock = pkgs.callPackage ./packages/blockblock.nix { };
+      arturia-software-center = pkgs.callPackage ./packages/arturia-software-center.nix { };
+      native-access = pkgs.callPackage ./packages/native-access.nix { };
+      waves-central = pkgs.callPackage ./packages/waves-central.nix { };
     in
     {
-      packages.aarch64-darwin = { inherit lulu blockblock; };
+      packages.aarch64-darwin = {
+        inherit
+          lulu
+          blockblock
+          arturia-software-center
+          native-access
+          waves-central
+          ;
+      };
 
       darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
@@ -159,6 +170,9 @@
                 ++ [
                   lulu
                   blockblock
+                  arturia-software-center
+                  native-access
+                  waves-central
                 ];
               shells = [ nixpkgs.legacyPackages.aarch64-darwin.fish ];
             };
