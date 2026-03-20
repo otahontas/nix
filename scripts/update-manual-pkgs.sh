@@ -7,8 +7,15 @@ echo "=== Updating manual packages ==="
 echo
 
 # 1. GitHub-hosted packages (nix-update auto-discovers new releases)
-echo "--- GitHub packages ---"
-for pkg in lulu blockblock pearcleaner pareto-security; do
+echo "--- GitHub packages (system) ---"
+for pkg in lulu blockblock; do
+  echo "Checking $pkg..."
+  nix-update --flake --file ./system "$pkg" || echo "  Warning: $pkg update failed, skipping"
+  echo
+done
+
+echo "--- GitHub packages (home) ---"
+for pkg in pearcleaner pareto-security; do
   echo "Checking $pkg..."
   nix-update --flake --file ./home "$pkg" || echo "  Warning: $pkg update failed, skipping"
   echo

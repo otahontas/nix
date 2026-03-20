@@ -53,8 +53,6 @@
     {
       # Expose manual packages for nix-update
       packages.${system} = {
-        lulu = pkgs.callPackage ./packages/lulu.nix { };
-        blockblock = pkgs.callPackage ./packages/blockblock.nix { };
         pearcleaner = pkgs.callPackage ./packages/pearcleaner.nix { };
         pareto-security = pkgs.callPackage ./packages/pareto-security.nix { };
         firefox-devedition-bin = pkgs.callPackage ./packages/firefox-devedition-bin.nix { };
