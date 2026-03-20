@@ -3,5 +3,8 @@ let
   firefoxDeveditionBin = pkgs.callPackage ../../packages/firefox-devedition-bin.nix { };
 in
 {
-  home.packages = [ firefoxDeveditionBin ];
+  home.packages = [
+    pkgs.firefox-bin
+    firefoxDeveditionBin
+  ];
 }
