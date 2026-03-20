@@ -56,12 +56,14 @@
         pearcleaner = pkgs.callPackage ./packages/pearcleaner.nix { };
         pareto-security = pkgs.callPackage ./packages/pareto-security.nix { };
         firefox-devedition-bin = pkgs.callPackage ./packages/firefox-devedition-bin.nix { };
+        pi-mcp-adapter = pkgs.callPackage ./packages/pi-mcp-adapter.nix { };
       };
 
       homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = {
           inherit kanttiinit-cli system;
+          pi-mcp-adapter = pkgs.callPackage ./packages/pi-mcp-adapter.nix { };
         };
         modules = [
           catppuccin.homeModules.catppuccin

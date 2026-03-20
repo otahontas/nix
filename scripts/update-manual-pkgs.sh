@@ -15,7 +15,7 @@ for pkg in lulu blockblock; do
 done
 
 echo "--- GitHub packages (home) ---"
-for pkg in pearcleaner pareto-security; do
+for pkg in pearcleaner pareto-security pi-mcp-adapter; do
   echo "Checking $pkg..."
   nix-update --flake --file ./home "$pkg" || echo "  Warning: $pkg update failed, skipping"
   echo

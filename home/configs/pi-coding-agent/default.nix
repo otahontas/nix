@@ -1,4 +1,9 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  pi-mcp-adapter,
+  ...
+}:
 
 let
   piVersion = "0.61.0";
@@ -39,30 +44,6 @@ let
       cp -r node_modules $out/lib/node_modules
       mkdir -p $out/bin
       ln -s $out/lib/node_modules/@mariozechner/pi-coding-agent/dist/cli.js $out/bin/pi
-      runHook postInstall
-    '';
-  };
-
-  # Pi MCP adapter extension - built from GitHub source
-  pi-mcp-adapter = pkgs.buildNpmPackage {
-    pname = "pi-mcp-adapter";
-    version = "2.1.2";
-
-    src = pkgs.fetchFromGitHub {
-      owner = "nicobailon";
-      repo = "pi-mcp-adapter";
-      rev = "fcd9c4bd55552db362118cd8f3b0ec0e3e9f6189";
-      hash = "sha256-+OF5jkP5VTzj314wom3m7MWWu0B6iGjq4sNkJLKaNcE=";
-    };
-
-    npmDepsHash = "sha256-ME9AQknl35IHlqLXOUmP6GRCW5sxqMQTzym0XILAAV8=";
-
-    dontNpmBuild = true;
-
-    installPhase = ''
-      runHook preInstall
-      mkdir -p $out
-      cp -r . $out/
       runHook postInstall
     '';
   };
