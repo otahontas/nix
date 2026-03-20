@@ -14,6 +14,37 @@ for pkg in lulu blockblock; do
   echo
 done
 
+# 2. Self-updating apps (custom version APIs, nix-update handles hash refresh)
+echo "--- Self-updating system apps ---"
+
+echo "Checking arturia-software-center..."
+arturia_ver=$(curl -sL "https://www.arturia.com/api/resources?slugs=asc&types=soft" 2>/dev/null | \
+  python3 -c "import json,sys; data=json.load(sys.stdin); print(next(x['version'] for x in data if x.get('platform_type')=='mac'))" 2>/dev/null)
+if [ -n "$arturia_ver" ]; then
+  nix-update --flake --file ./system arturia-software-center --version "$arturia_ver" || echo "  Warning: arturia-software-center update failed, skipping"
+else
+  echo "  Failed to fetch Arturia version, skipping"
+fi
+echo
+
+echo "Checking native-access..."
+ni_ver=$(curl -sL "https://na-update.native-instruments.com/arm64/latest-mac.yml" 2>/dev/null | awk '/^version:/{print $2}')
+if [ -n "$ni_ver" ]; then
+  nix-update --flake --file ./system native-access --version "$ni_ver" || echo "  Warning: native-access update failed, skipping"
+else
+  echo "  Failed to fetch Native Instruments version, skipping"
+fi
+echo
+
+echo "Checking waves-central..."
+waves_ver=$(curl -sL "https://register.waves.com/Autoupdate/Updates/ByProductId/1/latest-mac.yml" 2>/dev/null | awk '/^version:/{print $2}')
+if [ -n "$waves_ver" ]; then
+  nix-update --flake --file ./system waves-central --version "$waves_ver" || echo "  Warning: waves-central update failed, skipping"
+else
+  echo "  Failed to fetch Waves version, skipping"
+fi
+echo
+
 echo "--- GitHub packages (home) ---"
 for pkg in pearcleaner pareto-security pi-mcp-adapter; do
   echo "Checking $pkg..."
