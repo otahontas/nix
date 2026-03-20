@@ -152,6 +152,9 @@
                       set root (command git rev-parse --show-toplevel 2>/dev/null)
                     end
                     if test -z "$root"
+                      set root /Users/${primaryUser}/.nix
+                    end
+                    if test -z "$root"
                       echo "system-apply: run inside repo or devenv shell"
                       return 1
                     end
