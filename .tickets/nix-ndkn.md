@@ -1,6 +1,6 @@
 ---
 id: nix-ndkn
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-25T11:40:49Z
