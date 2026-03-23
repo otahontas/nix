@@ -18,7 +18,7 @@ done
 echo "--- Self-updating system apps ---"
 
 echo "Checking arturia-software-center..."
-arturia_ver=$(curl -sL "https://www.arturia.com/api/resources?slugs=asc&types=soft" 2>/dev/null | \
+arturia_ver=$(curl -sL "https://www.arturia.com/api/resources?slugs=asc&types=soft" 2>/dev/null |
   python3 -c "import json,sys; data=json.load(sys.stdin); print(next(x['version'] for x in data if x.get('platform_type')=='mac'))" 2>/dev/null)
 if [ -n "$arturia_ver" ]; then
   nix-update --flake --file ./system arturia-software-center --version "$arturia_ver" || echo "  Warning: arturia-software-center update failed, skipping"
@@ -52,7 +52,6 @@ for pkg in pearcleaner pareto-security pi-mcp-adapter; do
   echo
 done
 
-
 # 3. MacWhisper (no public API for build numbers)
 echo "--- MacWhisper ---"
 echo "Skipping: requires manual build number update (no public API)."
@@ -75,8 +74,8 @@ else
   echo "  Updating $CURRENT_PI_VER -> $LATEST_PI_VER"
 
   # Update version in package.json
-  sed -i '' "s/\"@mariozechner\/pi-coding-agent\": \"$CURRENT_PI_VER\"/\"@mariozechner\/pi-coding-agent\": \"$LATEST_PI_VER\"/" "$PI_PKG_DIR/package.json"
-  sed -i '' "s/\"version\": \"$CURRENT_PI_VER\"/\"version\": \"$LATEST_PI_VER\"/" "$PI_PKG_DIR/package.json"
+  sed -i "s/\"@mariozechner\/pi-coding-agent\": \"$CURRENT_PI_VER\"/\"@mariozechner\/pi-coding-agent\": \"$LATEST_PI_VER\"/" "$PI_PKG_DIR/package.json"
+  sed -i "s/\"version\": \"$CURRENT_PI_VER\"/\"version\": \"$LATEST_PI_VER\"/" "$PI_PKG_DIR/package.json"
 
   # Regenerate lockfile
   (cd "$PI_PKG_DIR" && npm install --package-lock-only --ignore-scripts 2>/dev/null)
@@ -90,8 +89,8 @@ else
   else
     # Update version and hash in nix file (target pi-coding-agent block specifically)
     OLD_HASH=$(awk '/pname = "pi-coding-agent"/{found=1} found && /npmDepsHash/{print; exit}' "$PI_NIX" | grep -oE 'sha256-[A-Za-z0-9+/=]+')
-    sed -i '' "s/piVersion = \"$CURRENT_PI_VER\"/piVersion = \"$LATEST_PI_VER\"/" "$PI_NIX"
-    sed -i '' "s|$OLD_HASH|$NEW_HASH|" "$PI_NIX"
+    sed -i "s/piVersion = \"$CURRENT_PI_VER\"/piVersion = \"$LATEST_PI_VER\"/" "$PI_NIX"
+    sed -i "s|$OLD_HASH|$NEW_HASH|" "$PI_NIX"
     echo "  Updated to $LATEST_PI_VER"
   fi
 fi
