@@ -28,7 +28,7 @@ fi
 echo
 
 echo "Checking native-access..."
-ni_ver=$(curl -sL "https://na-update.native-instruments.com/arm64/latest-mac.yml" 2>/dev/null | awk '/^version:/{print $2}')
+ni_ver=$(curl -sL "https://na-update.native-instruments.com/arm64/latest-mac.yml" 2>/dev/null | awk '/^version:/{print $2}' | tr -d '\r')
 if [ -n "$ni_ver" ]; then
   nix-update --flake --file ./system native-access --version "$ni_ver" || echo "  Warning: native-access update failed, skipping"
 else
@@ -37,7 +37,7 @@ fi
 echo
 
 echo "Checking waves-central..."
-waves_ver=$(curl -sL "https://register.waves.com/Autoupdate/Updates/ByProductId/1/latest-mac.yml" 2>/dev/null | awk '/^version:/{print $2}')
+waves_ver=$(curl -sL "https://register.waves.com/Autoupdate/Updates/ByProductId/1/latest-mac.yml" 2>/dev/null | awk '/^version:/{print $2}' | tr -d '\r')
 if [ -n "$waves_ver" ]; then
   nix-update --flake --file ./system waves-central --version "$waves_ver" || echo "  Warning: waves-central update failed, skipping"
 else
