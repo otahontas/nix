@@ -6,7 +6,7 @@
 }:
 
 let
-  piVersion = "0.61.0";
+  piVersion = "0.62.0";
 
   # Skills with npm dependencies need to be built
   brave-search-skill = pkgs.buildNpmPackage {
@@ -34,7 +34,7 @@ let
 
     src = ./pi-package;
 
-    npmDepsHash = "sha256-aRcglGYkdF6qneWZ6iRaZWJgLKD8bskJ2lzhZQnUZgs=";
+    npmDepsHash = "sha256-M+sx+AN+9mVWuwzEdrSD1YRimr2csDyXbIBz31wkSyc=";
 
     dontNpmBuild = true;
 
