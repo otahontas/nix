@@ -2,30 +2,12 @@
   pkgs,
   lib,
   pi-mcp-adapter,
+  pi-web-access,
   ...
 }:
 
 let
   piVersion = "0.62.0";
-
-  # Skills with npm dependencies need to be built
-  brave-search-skill = pkgs.buildNpmPackage {
-    pname = "brave-search-skill";
-    version = "1.0.0";
-
-    src = ./skills-with-deps/brave-search;
-
-    npmDepsHash = "sha256-BQM1qKFB/CcCyyQqUnnCx3V2ZxDhC392nB4G2ZnjicQ=";
-
-    dontNpmBuild = true;
-
-    installPhase = ''
-      runHook preInstall
-      mkdir -p $out
-      cp -r . $out/
-      runHook postInstall
-    '';
-  };
 
   # Pi coding agent - built from npm registry
   pi-coding-agent = pkgs.buildNpmPackage {
@@ -87,11 +69,6 @@ in
       (pkgs.writeShellScriptBin "pi" ''
         export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:$PATH"
 
-        # Load Brave Search API key if available
-        if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
-          export BRAVE_API_KEY="$(${pkgs.pass}/bin/pass show api/brave-search 2>/dev/null || true)"
-        fi
-
         exec ${pi-coding-agent}/bin/pi "$@"
       '')
 
@@ -101,11 +78,11 @@ in
     file = {
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
 
-      # Skills with deps - built separately
-      ".pi/agent/skills/brave-search".source = brave-search-skill;
-
       # Pi MCP adapter extension - built with deps
       ".pi/agent/extensions/pi-mcp-adapter".source = pi-mcp-adapter;
+
+      # Pi web access extension - built with deps
+      ".pi/agent/extensions/pi-web-access".source = pi-web-access;
 
     }
     // extensionSymlinks

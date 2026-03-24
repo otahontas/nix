@@ -1,7 +1,7 @@
 ## Tools
 
 - Always use `trash` instead of `rm` for file deletion
-- Always use `brave-search` skill for web searches
+- Always use `web_search` and `fetch_content` tools for web searches
 - Always use `devenv` cli and `devenv` skill to install tools, clis and commands.
   - When `devenv.nix` doesn't exist and a command/tool is missing, create an ad-hoc environment
   - When the setup is becomes complex create `devenv.nix` and run commands within
