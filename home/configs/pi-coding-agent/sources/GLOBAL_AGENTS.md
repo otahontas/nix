@@ -37,6 +37,8 @@
   - Remove/prune:
     - `git worktree remove "$repo_root/.worktrees/$branch" --force`
     - `git branch -D "$branch"` (only if branch exists)
+  - Run commands in a worktree (each bash call starts from session cwd):
+    - `cd "$repo_root/.worktrees/$branch" && <command>`
 
 ## Coding specific guidelines:
 
