@@ -2,10 +2,12 @@
 
 - Always use `trash` instead of `rm` for file deletion
 - Always use `web_search` and `fetch_content` tools for web searches
-- Always use `devenv` cli and `devenv` skill to install tools, clis and commands.
-  - When `devenv.nix` doesn't exist and a command/tool is missing, create an ad-hoc environment
-  - When the setup is becomes complex create `devenv.nix` and run commands within
-  - Use `devenv` skill
+- Always use `devenv` for developer environments
+  - When `devenv.nix` exists: `devenv shell -- <cmd>`, `devenv up`, `devenv tasks run <task>`
+  - When `devenv.nix` doesn't exist and a tool is missing: `devenv --option languages.<lang>.enable:bool true shell`
+  - When setup gets complex, create `devenv.nix`
+  - Don't bypass devenv with global installs
+  - `devenv search <query>` to find packages and options
 
 ## Writing
 
