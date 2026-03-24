@@ -69,6 +69,10 @@ in
       (pkgs.writeShellScriptBin "pi" ''
         export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:$PATH"
 
+        # Load Gemini API key for pi-web-access
+        if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
+          export GEMINI_API_KEY="$(${pkgs.pass}/bin/pass show api/gemini-pi-coding-agent-web-search 2>/dev/null || true)"
+        fi
         exec ${pi-coding-agent}/bin/pi "$@"
       '')
 
