@@ -88,6 +88,7 @@ in
       # Pi web access extension - built with deps
       ".pi/agent/extensions/pi-web-access".source = pi-web-access;
 
+      ".pi/agent/models.json".source = ./models.json;
     }
     // extensionSymlinks
     // skillSymlinks;
