@@ -2,7 +2,7 @@
   "providers": {
     "zai": {
       "baseUrl": "https://api.z.ai/api/coding/paas/v4",
-      "apiKey": "!pass api/z-pi-coding-agent"
+      "apiKey": "ZAI_API_KEY"
     }
   }
 }

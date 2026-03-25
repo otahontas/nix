@@ -812,12 +812,14 @@ export default function (pi: ExtensionAPI) {
       const zaiConfig = modelsData?.providers?.zai;
       if (!zaiConfig?.baseUrl) return null;
 
-      // Resolve the API key if it uses pass reference
+      // Resolve API key: if it looks like an env var name, read from environment
       let apiKey = zaiConfig.apiKey;
-      if (typeof apiKey === "string" && apiKey.startsWith("!pass ")) {
-        // Cannot execute pass command from extension for security reasons
-        logDebug("Z.ai API key uses pass reference, cannot resolve");
-        return null;
+      if (
+        typeof apiKey === "string" &&
+        apiKey === apiKey.toUpperCase() &&
+        /^[A-Z_]+$/.test(apiKey)
+      ) {
+        apiKey = process.env[apiKey] || null;
       }
 
       if (!apiKey) return null;
