@@ -61,6 +61,32 @@ let
       };
     }) skillDirs
   );
+
+  # Auto-discover agents (.md files)
+  agentFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
+    builtins.attrNames (builtins.readDir ./agents)
+  );
+  agentSymlinks = builtins.listToAttrs (
+    map (name: {
+      name = ".pi/agent/agents/${name}";
+      value = {
+        source = ./agents/${name};
+      };
+    }) agentFiles
+  );
+
+  # Auto-discover prompt templates (.md files)
+  promptFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
+    builtins.attrNames (builtins.readDir ./prompts)
+  );
+  promptSymlinks = builtins.listToAttrs (
+    map (name: {
+      name = ".pi/agent/prompts/${name}";
+      value = {
+        source = ./prompts/${name};
+      };
+    }) promptFiles
+  );
 in
 
 {
@@ -88,10 +114,15 @@ in
       # Pi web access extension - built with deps
       ".pi/agent/extensions/pi-web-access".source = pi-web-access;
 
+      # Subagent extension (multi-file, from pi-mono examples)
+      ".pi/agent/extensions/subagent".source = ./extensions/subagent;
+
       ".pi/agent/models.json".source = ./models.json;
     }
     // extensionSymlinks
-    // skillSymlinks;
+    // skillSymlinks
+    // agentSymlinks
+    // promptSymlinks;
 
     # Activation script to merge settings into settings.json
     # This preserves all other settings managed by pi itself
