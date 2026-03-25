@@ -63,8 +63,24 @@ interface GitHubCopilotUserResponse {
     completions?: GitHubCopilotQuotaSnapshot;
   };
 }
+type Provider = "anthropic" | "openai-codex" | "github-copilot" | "zai" | string;
 
-type Provider = "anthropic" | "openai-codex" | "github-copilot" | string;
+// Z.ai quota endpoint response
+interface ZaiQuotaWindow {
+  usage: number;
+  remaining: number;
+  percentage: number;
+  unit: string;
+  number: number;
+  next_flush_time?: string;
+}
+
+interface ZaiQuotaLimit {
+  data: ZaiQuotaWindow[];
+  code?: number;
+  message?: string;
+}
+
 
 type QuotaInfo = {
   statusText: string;
@@ -78,6 +94,8 @@ type ThemeLike = {
 };
 
 const PI_AUTH_PATH = join(homedir(), ".pi", "agent", "auth.json");
+
+const PI_MODELS_PATH = join(homedir(), ".pi", "agent", "models.json");
 const FETCH_TIMEOUT_MS = 10_000;
 const MODEL_QUOTA_DEBUG = process.env.PI_MODEL_QUOTA_DEBUG === "1";
 
@@ -93,6 +111,13 @@ export default function (pi: ExtensionAPI) {
   // GitHub Copilot cache
   let cachedGitHubCopilotUser: GitHubCopilotUserResponse | null = null;
   let lastGitHubCopilotFetched = 0;
+
+  // Z.ai cache
+  let cachedZaiQuota: ZaiQuotaLimit | null = null;
+  let lastZaiFetched = 0;
+  let modelsData: any | null = null;
+  let lastModelsFetched = 0;
+  let modelsFetchInFlight: Promise<any | null> | null = null;
 
   // auth.json cache (shared by all providers)
   let cachedAuthData: any | null = null;
@@ -140,13 +165,21 @@ export default function (pi: ExtensionAPI) {
       lastGitHubCopilotFetched = 0;
       return;
     }
+
+    if (provider === "zai") {
+      cachedZaiQuota = null;
+      lastZaiFetched = 0;
+      return;
+    }
   }
+
 
   function providerSupportsQuota(provider: Provider): boolean {
     return (
       provider === "anthropic" ||
       provider === "openai-codex" ||
-      provider === "github-copilot"
+      provider === "github-copilot" ||
+      provider === "zai"
     );
   }
 
@@ -252,7 +285,7 @@ export default function (pi: ExtensionAPI) {
   // Manual command
   pi.registerCommand("model-quota", {
     description:
-      "Show model quota for the current provider (Anthropic + OpenAI Codex + GitHub Copilot supported)",
+      "Show model quota for the current provider (Anthropic + OpenAI Codex + GitHub Copilot + Z.ai supported)",
     handler: async (_args, ctx) => {
       if (!ctx.hasUI) return;
 
@@ -260,6 +293,8 @@ export default function (pi: ExtensionAPI) {
       cachedAnthropicUsage = null;
       cachedCodexUsage = null;
       cachedGitHubCopilotUser = null;
+      cachedZaiQuota = null;
+      lastZaiFetched = 0;
       lastGitHubCopilotFetched = 0;
       cachedAuthData = null;
       lastAuthFetched = 0;
@@ -267,10 +302,11 @@ export default function (pi: ExtensionAPI) {
 
       // pi extensions don't get direct access to the selected provider inside commands.
       // So we show all providers if available.
-      const [anthropic, codex, copilot] = await Promise.all([
+      const [anthropic, codex, copilot, zai] = await Promise.all([
         getQuotaForProvider("anthropic", ctx.ui.theme, undefined, ctx),
         getQuotaForProvider("openai-codex", ctx.ui.theme, undefined, ctx),
         getQuotaForProvider("github-copilot", ctx.ui.theme, undefined, ctx),
+        getQuotaForProvider("zai", ctx.ui.theme, undefined, ctx),
       ]);
 
       const lines: string[] = [];
@@ -279,10 +315,10 @@ export default function (pi: ExtensionAPI) {
       if (codex) lines.push(`OpenAI/Codex: ${stripAnsiLike(codex.statusText)}`);
       if (copilot)
         lines.push(`GitHub Copilot: ${stripAnsiLike(copilot.statusText)}`);
-
+      if (zai) lines.push(`Z.ai: ${stripAnsiLike(zai.statusText)}`);
       if (lines.length === 0) {
         ctx.ui.notify(
-          "No quota info available. Make sure you are logged in (OAuth) for Anthropic, ChatGPT (Codex), or GitHub Copilot.",
+          "No quota info available. Make sure you are logged in (OAuth) for Anthropic, ChatGPT (Codex), or GitHub Copilot, or have configured Z.ai API key in models.json",
           "info",
         );
         return;
@@ -301,6 +337,8 @@ export default function (pi: ExtensionAPI) {
     if (provider === "anthropic") return getAnthropicQuota(theme);
     if (provider === "openai-codex") return getCodexQuota(theme);
     if (provider === "github-copilot") return getGitHubCopilotQuota(theme);
+    if (provider === "zai") return getZaiQuota(theme);
+
     return null;
   }
 
@@ -475,6 +513,41 @@ export default function (pi: ExtensionAPI) {
     }
 
     return { statusText: status, notify };
+  }
+
+  async function getZaiQuota(
+    theme: ThemeLike | undefined,
+  ): Promise<QuotaInfo | null> {
+    const quota = await fetchZaiQuota();
+    if (!quota?.data) return null;
+
+    // Z.ai returns multiple quota windows - find the primary one (TOKENS_LIMIT)
+    const primaryWindow = quota.data.find((w) => w.unit === "TOKENS_LIMIT");
+    if (!primaryWindow) return null;
+
+    const usedPercent = Math.round(primaryWindow.percentage);
+    const resetText = primaryWindow.next_flush_time
+      ? formatTimeUntilIso(primaryWindow.next_flush_time)
+      : null;
+
+    const sessionLabel = themed(theme, "muted", "quota: ");
+    const timePart = resetText ? themed(theme, "dim", ` (${resetText})`) : "";
+
+    const status = `${sessionLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
+
+    let notify: QuotaInfo["notify"];
+    if (usedPercent >= 100) {
+      // No notification if quota is exhausted
+    } else if (usedPercent > 95) {
+      notify = { message: "Z.ai quota nearly exhausted!", type: "error" };
+    } else if (usedPercent > 85) {
+      notify = { message: "Z.ai quota warning", type: "warning" };
+    }
+
+    return {
+      statusText: status,
+      notify,
+    };
   }
 
   function formatTimeUntilIso(isoString: string): string {
@@ -697,5 +770,80 @@ export default function (pi: ExtensionAPI) {
       logDebug("Failed to fetch GitHub Copilot quota:", error);
       return null;
     }
+
+  async function readModelsData(): Promise<any | null> {
+    const now = Date.now();
+    if (modelsData && now - lastModelsFetched < 1000) return modelsData;
+    if (modelsFetchInFlight) return modelsFetchInFlight;
+
+    const promise = (async () => {
+      try {
+        const raw = await readFile(PI_MODELS_PATH, "utf8");
+        const data = JSON.parse(raw);
+        modelsData = data;
+        lastModelsFetched = Date.now();
+        return data;
+      } catch {
+        modelsData = null;
+        lastModelsFetched = 0;
+        return null;
+      } finally {
+        modelsFetchInFlight = null;
+      }
+    })();
+
+    modelsFetchInFlight = promise;
+    return promise;
+  }
+
+  async function fetchZaiQuota(): Promise<ZaiQuotaLimit | null> {
+    // Cache for 60 seconds
+    const now = Date.now();
+    if (cachedZaiQuota && now - lastZaiFetched < 60 * 1000) {
+      return cachedZaiQuota;
+    }
+
+    try {
+      const modelsData = await readModelsData();
+      const zaiConfig = modelsData?.providers?.zai;
+      if (!zaiConfig?.baseUrl) return null;
+
+      // Resolve the API key if it uses pass reference
+      let apiKey = zaiConfig.apiKey;
+      if (typeof apiKey === "string" && apiKey.startsWith("!pass ")) {
+        // Cannot execute pass command from extension for security reasons
+        logDebug("Z.ai API key uses pass reference, cannot resolve");
+        return null;
+      }
+
+      if (!apiKey) return null;
+
+      // Construct the quota endpoint URL
+      const quotaUrl = `${zaiConfig.baseUrl}/api/monitor/usage/quota/limit`;
+
+      const response = await fetchWithTimeout(
+        quotaUrl,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            Accept: "application/json",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        logDebug("Z.ai quota API error:", response.status);
+        return null;
+      }
+
+      cachedZaiQuota = (await response.json()) as ZaiQuotaLimit;
+      lastZaiFetched = now;
+      return cachedZaiQuota;
+    } catch (error) {
+      logDebug("Failed to fetch Z.ai quota:", error);
+      return null;
+    }
+  }
   }
 }
