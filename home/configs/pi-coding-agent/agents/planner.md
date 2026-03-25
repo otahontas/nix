@@ -1,7 +1,6 @@
 ---
 name: planner
 description: Creates implementation plans from context and requirements
-tools: read, grep, find, ls
 model: glm-4.7
 ---
 
