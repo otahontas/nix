@@ -63,7 +63,12 @@ interface GitHubCopilotUserResponse {
     completions?: GitHubCopilotQuotaSnapshot;
   };
 }
-type Provider = "anthropic" | "openai-codex" | "github-copilot" | "zai" | string;
+type Provider =
+  | "anthropic"
+  | "openai-codex"
+  | "github-copilot"
+  | "zai"
+  | string;
 
 // Z.ai quota endpoint response
 interface ZaiQuotaWindow {
@@ -80,7 +85,6 @@ interface ZaiQuotaLimit {
   code?: number;
   message?: string;
 }
-
 
 type QuotaInfo = {
   statusText: string;
@@ -172,7 +176,6 @@ export default function (pi: ExtensionAPI) {
       return;
     }
   }
-
 
   function providerSupportsQuota(provider: Provider): boolean {
     return (
@@ -770,6 +773,7 @@ export default function (pi: ExtensionAPI) {
       logDebug("Failed to fetch GitHub Copilot quota:", error);
       return null;
     }
+  }
 
   async function readModelsData(): Promise<any | null> {
     const now = Date.now();
@@ -821,16 +825,13 @@ export default function (pi: ExtensionAPI) {
       // Construct the quota endpoint URL
       const quotaUrl = `${zaiConfig.baseUrl}/api/monitor/usage/quota/limit`;
 
-      const response = await fetchWithTimeout(
-        quotaUrl,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            Accept: "application/json",
-          },
+      const response = await fetchWithTimeout(quotaUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          Accept: "application/json",
         },
-      );
+      });
 
       if (!response.ok) {
         logDebug("Z.ai quota API error:", response.status);
@@ -844,6 +845,5 @@ export default function (pi: ExtensionAPI) {
       logDebug("Failed to fetch Z.ai quota:", error);
       return null;
     }
-  }
   }
 }
