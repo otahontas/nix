@@ -72,18 +72,24 @@ type Provider =
 
 // Z.ai quota endpoint response
 interface ZaiQuotaWindow {
-  usage: number;
-  remaining: number;
-  percentage: number;
-  unit: string;
+  type: string;
+  unit: number;
   number: number;
-  next_flush_time?: string;
+  percentage: number;
+  usage?: number;
+  currentValue?: number;
+  remaining?: number;
+  nextResetTime?: number;
 }
 
 interface ZaiQuotaLimit {
-  data: ZaiQuotaWindow[];
   code?: number;
-  message?: string;
+  msg?: string;
+  data?: {
+    limits: ZaiQuotaWindow[];
+    level?: string;
+  };
+  success?: boolean;
 }
 
 type QuotaInfo = {
@@ -522,15 +528,17 @@ export default function (pi: ExtensionAPI) {
     theme: ThemeLike | undefined,
   ): Promise<QuotaInfo | null> {
     const quota = await fetchZaiQuota();
-    if (!quota?.data) return null;
+    if (!quota?.data?.limits) return null;
 
-    // Z.ai returns multiple quota windows - find the primary one (TOKENS_LIMIT)
-    const primaryWindow = quota.data.find((w) => w.unit === "TOKENS_LIMIT");
+    // Z.ai returns multiple quota windows - find the first TOKENS_LIMIT (shortest period)
+    const primaryWindow = quota.data.limits.find(
+      (w) => w.type === "TOKENS_LIMIT",
+    );
     if (!primaryWindow) return null;
 
     const usedPercent = Math.round(primaryWindow.percentage);
-    const resetText = primaryWindow.next_flush_time
-      ? formatTimeUntilIso(primaryWindow.next_flush_time)
+    const resetText = primaryWindow.nextResetTime
+      ? formatTimeUntilUnixMs(primaryWindow.nextResetTime)
       : null;
 
     const sessionLabel = themed(theme, "muted", "quota: ");
@@ -563,6 +571,10 @@ export default function (pi: ExtensionAPI) {
     const now = Date.now();
     const reset = unixSeconds * 1000;
     return formatDiffMs(reset - now);
+  }
+
+  function formatTimeUntilUnixMs(unixMs: number): string {
+    return formatDiffMs(unixMs - Date.now());
   }
 
   function formatDiffMs(diffMs: number): string {
@@ -824,8 +836,9 @@ export default function (pi: ExtensionAPI) {
 
       if (!apiKey) return null;
 
-      // Construct the quota endpoint URL
-      const quotaUrl = `${zaiConfig.baseUrl}/api/monitor/usage/quota/limit`;
+      // Construct the quota endpoint URL (base domain, not the model API path)
+      const baseOrigin = new URL(zaiConfig.baseUrl).origin;
+      const quotaUrl = `${baseOrigin}/api/monitor/usage/quota/limit`;
 
       const response = await fetchWithTimeout(quotaUrl, {
         method: "GET",
