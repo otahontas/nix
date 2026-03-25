@@ -530,28 +530,47 @@ export default function (pi: ExtensionAPI) {
     const quota = await fetchZaiQuota();
     if (!quota?.data?.limits) return null;
 
-    // Z.ai returns multiple quota windows - find the first TOKENS_LIMIT (shortest period)
-    const primaryWindow = quota.data.limits.find(
-      (w) => w.type === "TOKENS_LIMIT",
-    );
-    if (!primaryWindow) return null;
+    // Z.ai returns two TOKENS_LIMIT windows: session (shorter) and weekly (longer)
+    const tokenLimits = quota.data.limits
+      .filter((w) => w.type === "TOKENS_LIMIT")
+      .sort((a, b) => (a.nextResetTime ?? 0) - (b.nextResetTime ?? 0));
+    if (tokenLimits.length === 0) return null;
 
-    const usedPercent = Math.round(primaryWindow.percentage);
-    const resetText = primaryWindow.nextResetTime
-      ? formatTimeUntilUnixMs(primaryWindow.nextResetTime)
+    const [sessionWindow, weeklyWindow] = tokenLimits;
+
+    const sessionPercent = Math.round(sessionWindow.percentage);
+    const sessionReset = sessionWindow.nextResetTime
+      ? formatTimeUntilUnixMs(sessionWindow.nextResetTime)
       : null;
 
-    const sessionLabel = themed(theme, "muted", "quota: ");
-    const timePart = resetText ? themed(theme, "dim", ` (${resetText})`) : "";
+    const sessionLabel = themed(theme, "muted", "session: ");
+    const sessionTime = sessionReset
+      ? themed(theme, "dim", ` (${sessionReset})`)
+      : "";
+    const separator = themed(theme, "dim", " | ");
 
-    const status = `${sessionLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
+    let status = `${sessionLabel}${formatUsedPercent(theme, sessionPercent)}${sessionTime}`;
+
+    let weeklyPercent: number | undefined;
+    if (weeklyWindow) {
+      weeklyPercent = Math.round(weeklyWindow.percentage);
+      const weeklyReset = weeklyWindow.nextResetTime
+        ? formatTimeUntilUnixMs(weeklyWindow.nextResetTime)
+        : null;
+      const weeklyLabel = themed(theme, "muted", "weekly: ");
+      const weeklyTime = weeklyReset
+        ? themed(theme, "dim", ` (${weeklyReset})`)
+        : "";
+      status += `${separator}${weeklyLabel}${formatUsedPercent(theme, weeklyPercent)}${weeklyTime}`;
+    }
 
     let notify: QuotaInfo["notify"];
-    if (usedPercent >= 100) {
+    const maxPercent = Math.max(sessionPercent, weeklyPercent ?? 0);
+    if (maxPercent >= 100) {
       // No notification if quota is exhausted
-    } else if (usedPercent > 95) {
+    } else if (maxPercent > 95) {
       notify = { message: "Z.ai quota nearly exhausted!", type: "error" };
-    } else if (usedPercent > 85) {
+    } else if (maxPercent > 85) {
       notify = { message: "Z.ai quota warning", type: "warning" };
     }
 
