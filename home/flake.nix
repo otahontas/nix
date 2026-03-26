@@ -53,8 +53,6 @@
     {
       # Expose manual packages for nix-update
       packages.${system} = {
-        pearcleaner = pkgs.callPackage ./packages/pearcleaner.nix { };
-        pareto-security = pkgs.callPackage ./packages/pareto-security.nix { };
         pi-mcp-adapter = pkgs.callPackage ./packages/pi-mcp-adapter.nix { };
         pi-web-access = pkgs.callPackage ./packages/pi-web-access.nix { };
       };
