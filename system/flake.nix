@@ -1,10 +1,8 @@
 # How to use:
-# - Setup admin account in setup assistant
 # - Enable firevault
 # - Install nix (e.g. https://lix.systems/install/)
 # - Install software tools
 # - Apply this setup
-# - Login to day-to-day user
 # - Apply home manager stuff
 # - Apply stuff from https://github.com/drduh/macOS-Security-and-Privacy-Guide
 {
@@ -26,8 +24,7 @@
       ...
     }:
     let
-      adminUser = "otahontas-admin";
-      primaryUser = "otahontas";
+      username = "otahontas";
       hostname = "otabook";
 
     in
@@ -41,7 +38,7 @@
             system = {
               configurationRevision = self.rev or self.dirtyRev or null;
               stateVersion = 6;
-              inherit primaryUser;
+              primaryUser = username;
               startup.chime = false;
               defaults = {
                 loginwindow = {
@@ -104,7 +101,7 @@
                   "nix-command"
                   "flakes"
                 ];
-                trusted-users = [ primaryUser ];
+                trusted-users = [ username ];
 
                 substituters = [
                   "https://cache.nixos.org/"
@@ -123,29 +120,23 @@
 
             security.pam.services.sudo_local.touchIdAuth = true;
             security.sudo.extraConfig = ''
-              ${primaryUser} ALL=(root) NOPASSWD: \
+              ${username} ALL=(root) NOPASSWD: \
                 /run/current-system/sw/bin/mas install *
             '';
 
             programs.fish = {
               enable = true;
               interactiveShellInit = ''
-                # Fish aliases in nix-darwin are global, not per-user.
-                if test "$USER" = "${adminUser}"
-                  function system-apply
-                    set -l root "$DEVENV_ROOT"
-                    if test -z "$root"
-                      set root (command git rev-parse --show-toplevel 2>/dev/null)
-                    end
-                    if test -z "$root"
-                      set root (cat /tmp/admin-shell-repo-root 2>/dev/null)
-                    end
-                    if test -z "$root"
-                      echo "system-apply: run inside repo or devenv shell"
-                      return 1
-                    end
-                    sudo darwin-rebuild switch --flake "$root/system#${hostname}"
+                function system-apply
+                  set -l root "$DEVENV_ROOT"
+                  if test -z "$root"
+                    set root (command git rev-parse --show-toplevel 2>/dev/null)
                   end
+                  if test -z "$root"
+                    echo "system-apply: run inside repo or devenv shell"
+                    return 1
+                  end
+                  sudo darwin-rebuild switch --flake "$root/system#${hostname}"
                 end
               '';
             };
@@ -159,18 +150,10 @@
             };
 
             users = {
-              knownUsers = [
-                adminUser
-                primaryUser
-              ];
-              users.${adminUser} = {
+              knownUsers = [ username ];
+              users.${username} = {
                 uid = 501;
-                home = "/Users/${adminUser}";
-                shell = nixpkgs.legacyPackages.aarch64-darwin.fish;
-              };
-              users.${primaryUser} = {
-                uid = 502; # 501 is for the first user (admin)
-                home = "/Users/${primaryUser}";
+                home = "/Users/${username}";
                 shell = nixpkgs.legacyPackages.aarch64-darwin.fish;
               };
             };

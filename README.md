@@ -1,13 +1,13 @@
 # nix config
 
-nix-darwin + home-manager based nix setup for macos. Uses strict user separation: an admin account handles system-level stuff, while my daily-driver account stays sudo-free.
+nix-darwin + home-manager based nix setup for macos. System config and user config are separate — system needs sudo, user config doesn't.
 
 main goodies: neovim, fish, pi-coding assistant, catppuccin, gpg based git & ssh setup.
 
 configs can be found from:
 
-- **`home/`** - home-manager config for CLI and GUI apps (runs as primary user)
-- **`system/`** - nix-darwin config for system settings (runs as admin)
+- **`home/`** - home-manager config for CLI and GUI apps (no sudo needed)
+- **`system/`** - nix-darwin config for system settings (needs sudo)
 
 All CLI and GUI apps are managed through home-manager.
 

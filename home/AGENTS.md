@@ -5,7 +5,7 @@ home-manager user-level config for macOS, includes:
 - GUI apps
 - Catppuccin theme (macchiato flavor, blue accent)
 
-Applied per-user, no admin privileges needed.
+Applied per-user, no sudo needed.
 All CLI and GUI apps are managed through home-manager.
 When applying use `devenv tasks run home:apply` from repo root.
 If you add new files to configuration, you need to stage them before applying.

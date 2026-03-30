@@ -1,14 +1,11 @@
-Nix setup for macOS with strict user separation.
+Nix setup for macOS. System config (nix-darwin) and user config (home-manager) are separate — system needs sudo, user config doesn't.
 
-## User separation
+## Config layout
 
-- **Admin user** (`otahontas-admin`) - only account with sudo access (by design)
-  - Manages nix-darwin config in `system/` folder
-  - Only system related configs
-- **Primary user** (`otahontas`) - day-to-day account without sudo
-  - Manages home-manager config in `home/` folder
-  - Installs all CLI tools, graphical apps via home-manager
+- **`home/`** — home-manager config for CLI and GUI apps (no sudo)
+- **`system/`** — nix-darwin config for system settings (needs sudo)
 
+All CLI and GUI apps are managed through home-manager.
 All CLI and GUI apps are managed through home-manager.
 
 ## Development environment
