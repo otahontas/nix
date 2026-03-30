@@ -7,12 +7,10 @@
 }:
 
 let
-  piVersion = "0.62.0";
-
   # Pi coding agent - built from npm registry
   pi-coding-agent = pkgs.buildNpmPackage {
     pname = "pi-coding-agent";
-    version = piVersion;
+    version = "0.62.0";
 
     src = ./pi-package;
 
@@ -31,12 +29,9 @@ let
   };
 
   # Auto-discover extensions (.ts files)
-  # Extensions to keep source but not install
-  disabledExtensions = [
-  ];
-  extensionFiles = builtins.filter (
-    name: lib.hasSuffix ".ts" name && !builtins.elem name disabledExtensions
-  ) (builtins.attrNames (builtins.readDir ./extensions));
+  extensionFiles = builtins.filter (name: lib.hasSuffix ".ts" name) (
+    builtins.attrNames (builtins.readDir ./extensions)
+  );
   extensionSymlinks = builtins.listToAttrs (
     map (name: {
       name = ".pi/agent/extensions/${name}";
@@ -47,12 +42,7 @@ let
   );
 
   # Auto-discover simple skills (no deps) - symlink entire directories
-  # Skills to keep source but not install
-  disabledSkills = [
-  ];
-  skillDirs = builtins.filter (name: !builtins.elem name disabledSkills) (
-    builtins.attrNames (builtins.readDir ./skills)
-  );
+  skillDirs = builtins.attrNames (builtins.readDir ./skills);
   skillSymlinks = builtins.listToAttrs (
     map (name: {
       name = ".pi/agent/skills/${name}";

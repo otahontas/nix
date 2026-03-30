@@ -1,13 +1,6 @@
-{ pkgs, lib, ... }:
-let
-  yt-dlp-wrapped = pkgs.writeShellScriptBin "yt-dlp" ''
-    exec ${lib.getExe pkgs.yt-dlp} "$@"
-  '';
-in
-{
+_: {
   programs.yt-dlp = {
     enable = true;
-    package = yt-dlp-wrapped;
     settings = {
       # Best quality video + audio
       format = "bestvideo+bestaudio/best";

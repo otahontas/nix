@@ -34,9 +34,6 @@
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        config.permittedInsecurePackages = [
-          "google-chrome-144.0.7559.97"
-        ];
         overlays = [
           # https://github.com/NixOS/nixpkgs/pull/485980
           (_: prev: {
