@@ -48,6 +48,10 @@
       description = "Apply home-manager configuration from ./home flake";
       exec = "home-manager switch --flake ./home";
     };
+    "system:apply" = {
+      description = "Apply system from ./system flake";
+      exec = "sudo darwin-rebuild switch --flake ./system";
+    };
     "nix:update" = {
       description = "Update home and system flake lockfiles and devenv";
       exec = ''
