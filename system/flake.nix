@@ -124,22 +124,7 @@
                 /run/current-system/sw/bin/mas install *
             '';
 
-            programs.fish = {
-              enable = true;
-              interactiveShellInit = ''
-                function system-apply
-                  set -l root "$DEVENV_ROOT"
-                  if test -z "$root"
-                    set root (command git rev-parse --show-toplevel 2>/dev/null)
-                  end
-                  if test -z "$root"
-                    echo "system-apply: run inside repo or devenv shell"
-                    return 1
-                  end
-                  sudo darwin-rebuild switch --flake "$root/system#${hostname}"
-                end
-              '';
-            };
+            programs.fish.enable = true;
 
             environment = {
               systemPackages = with nixpkgs.legacyPackages.aarch64-darwin; [
