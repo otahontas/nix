@@ -46,20 +46,24 @@
 
         ];
       };
+      pi-mcp-adapter = pkgs.callPackage ./packages/pi-mcp-adapter.nix { };
+      pi-web-access = pkgs.callPackage ./packages/pi-web-access.nix { };
     in
     {
       # Expose manual packages for nix-update
       packages.${system} = {
-        pi-mcp-adapter = pkgs.callPackage ./packages/pi-mcp-adapter.nix { };
-        pi-web-access = pkgs.callPackage ./packages/pi-web-access.nix { };
+        inherit pi-mcp-adapter pi-web-access;
       };
 
       homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = {
-          inherit kanttiinit-cli system;
-          pi-mcp-adapter = pkgs.callPackage ./packages/pi-mcp-adapter.nix { };
-          pi-web-access = pkgs.callPackage ./packages/pi-web-access.nix { };
+          inherit
+            kanttiinit-cli
+            system
+            pi-mcp-adapter
+            pi-web-access
+            ;
         };
         modules = [
           catppuccin.homeModules.catppuccin

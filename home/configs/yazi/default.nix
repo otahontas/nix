@@ -4,10 +4,12 @@
     enable = true;
     shellWrapperName = "y";
     plugins = {
-      inherit (pkgs.yaziPlugins) git;
-      inherit (pkgs.yaziPlugins) jump-to-char;
-      inherit (pkgs.yaziPlugins) relative-motions;
-      inherit (pkgs.yaziPlugins) starship;
+      inherit (pkgs.yaziPlugins)
+        git
+        jump-to-char
+        relative-motions
+        starship
+        ;
     };
     settings = {
       mgr = {

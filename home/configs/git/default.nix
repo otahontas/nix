@@ -50,8 +50,7 @@
         difftool = {
           nvim_difftool.cmd = ''nvim -c "packadd nvim.difftool" -c "DiffTool $LOCAL $REMOTE"'';
         };
-        tag.gpgsign = true;
-        commit.gpgsign = true;
+
         gpg.ssh.allowedSignersFile = "${config.home.homeDirectory}/.ssh/allowed_signers";
         init.defaultBranch = "main";
         rebase = {

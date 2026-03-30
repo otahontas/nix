@@ -17,7 +17,7 @@
   };
 
   outputs =
-    inputs@{
+    {
       self,
       nixpkgs,
       nix-darwin,
@@ -142,7 +142,7 @@
             };
 
             environment = {
-              systemPackages = with inputs.nixpkgs.legacyPackages.aarch64-darwin; [
+              systemPackages = with nixpkgs.legacyPackages.aarch64-darwin; [
                 home-manager
                 mas
               ];
