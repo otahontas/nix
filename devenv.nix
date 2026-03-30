@@ -18,6 +18,10 @@
         "nix-[a-z0-9]{4}\\.md",
         "(?m)^id:\\s+nix-[a-z0-9]{4}$",
       ]
+
+      [type.asc]
+      extend-glob = ["*.asc"]
+      check-file = false
     '';
   };
 

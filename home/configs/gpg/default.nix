@@ -11,6 +11,12 @@
 
   programs.gpg = {
     enable = true;
+    publicKeys = [
+      {
+        source = ./public.asc;
+        trust = 5;
+      }
+    ];
     settings = {
       use-agent = true;
       auto-key-retrieve = true;
