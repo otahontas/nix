@@ -2,7 +2,6 @@
   pkgs,
   lib,
   pi-mcp-adapter,
-  pi-web-access,
   ...
 }:
 
@@ -89,6 +88,7 @@ in
         if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
           export GEMINI_API_KEY="$(${pkgs.pass}/bin/pass show api/gemini-pi-coding-agent-web-search 2>/dev/null || true)"
           export ZAI_API_KEY="$(${pkgs.pass}/bin/pass show api/z-pi-coding-agent 2>/dev/null || true)"
+          export FIRECRAWL_API_KEY="$(${pkgs.pass}/bin/pass show api/firecrawl 2>/dev/null || true)"
         fi
         exec ${pi-coding-agent}/bin/pi "$@"
       '')
@@ -101,9 +101,6 @@ in
 
       # Pi MCP adapter extension - built with deps
       ".pi/agent/extensions/pi-mcp-adapter".source = pi-mcp-adapter;
-
-      # Pi web access extension - built with deps
-      ".pi/agent/extensions/pi-web-access".source = pi-web-access;
 
       # Subagent extension (multi-file, from pi-mono examples)
       ".pi/agent/extensions/subagent".source = ./extensions/subagent;
