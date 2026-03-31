@@ -4,7 +4,15 @@
       "baseUrl": "https://api.z.ai/api/coding/paas/v4",
       "apiKey": "ZAI_API_KEY",
       "api": "openai-completions",
-      "models": [{ "id": "glm-5.1" }]
+      "models": [
+        {
+          "id": "glm-5.1",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 204800,
+          "maxTokens": 131072
+        }
+      ]
     }
   }
 }
