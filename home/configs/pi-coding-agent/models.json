@@ -2,7 +2,17 @@
   "providers": {
     "zai": {
       "baseUrl": "https://api.z.ai/api/coding/paas/v4",
-      "apiKey": "ZAI_API_KEY"
+      "apiKey": "ZAI_API_KEY",
+      "models": [
+        {
+          "id": "glm-5-turbo",
+          "name": "GLM 5 Turbo",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        }
+      ]
     }
   }
 }

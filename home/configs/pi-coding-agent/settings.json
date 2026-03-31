@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "anthropic",
-  "defaultModel": "claude-opus-4-6",
+  "defaultProvider": "zai",
+  "defaultModel": "glm-5-turbo",
   "defaultThinkingLevel": "xhigh",
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
@@ -9,7 +9,7 @@
     "anthropic/claude-sonnet-4-6",
     "github-copilot/claude-opus-4.5",
     "github-copilot/gpt-5.3-codex",
-    "zai/glm-4.7"
+    "zai/glm-5-turbo"
   ],
   "hideThinkingBlock": true,
   "shellCommandPrefix": "export GIT_EDITOR=true\nexport GIT_SEQUENCE_EDITOR=true\nexport GIT_TERMINAL_PROMPT=0"
