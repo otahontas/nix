@@ -1,15 +1,11 @@
 # nix config
 
-nix-darwin + home-manager based nix setup for macos. System config and user config are separate — system needs sudo, user config doesn't.
+nix-darwin + home-manager based nix setup for macos. main goodies: devenv, neovim, fish, pi-coding assistant, catppuccin, gpg based git & ssh setup.
 
-main goodies: neovim, fish, pi-coding assistant, catppuccin, gpg based git & ssh setup.
+config is separated to two folders:
 
-configs can be found from:
-
-- **`home/`** - home-manager config for CLI and GUI apps (no sudo needed)
-- **`system/`** - nix-darwin config for system settings (needs sudo)
-
-All CLI and GUI apps are managed through home-manager.
+- **`home/`** - home-manager config for CLI and GUI apps for single user
+- **`system/`** - nix-darwin config for system settings / global installs
 
 dev setup is handled with devenv.
 

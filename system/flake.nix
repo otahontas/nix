@@ -1,13 +1,5 @@
-# How to use:
-# - Enable firevault
-# - Install nix (e.g. https://lix.systems/install/)
-# - Install software tools
-# - Apply this setup
-# - Apply home manager stuff
-# - Apply stuff from https://github.com/drduh/macOS-Security-and-Privacy-Guide
 {
   description = "system config, run with sudo";
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nix-darwin = {
@@ -15,7 +7,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-
   outputs =
     {
       self,
@@ -26,10 +17,8 @@
     let
       username = "otahontas";
       hostname = "otabook";
-
     in
     {
-
       darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
         modules = [
@@ -102,7 +91,6 @@
                   "flakes"
                 ];
                 trusted-users = [ username ];
-
                 substituters = [
                   "https://cache.nixos.org/"
                   "https://nix-community.cachix.org"
@@ -113,26 +101,21 @@
                   "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
                   "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
                 ];
-
                 accept-flake-config = false;
               };
             };
-
             security.pam.services.sudo_local.touchIdAuth = true;
             security.sudo.extraConfig = ''
               ${username} ALL=(root) NOPASSWD: \
                 /run/current-system/sw/bin/mas install *
             '';
-
             programs.fish.enable = true;
-
             environment = {
               systemPackages = with nixpkgs.legacyPackages.aarch64-darwin; [
                 home-manager
               ];
               shells = [ nixpkgs.legacyPackages.aarch64-darwin.fish ];
             };
-
             users = {
               knownUsers = [ username ];
               users.${username} = {
@@ -141,7 +124,6 @@
                 shell = nixpkgs.legacyPackages.aarch64-darwin.fish;
               };
             };
-
             networking = {
               hostName = hostname;
               localHostName = hostname;

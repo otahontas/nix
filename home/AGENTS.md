@@ -2,11 +2,10 @@ home-manager user-level config for macOS, includes:
 
 - User environment settings
 - Tool configurations (in `./configs`) for shells, CLI tools, editor etc.
-- GUI apps
-- Catppuccin theme (macchiato flavor, blue accent)
+- some GUI apps
+- Catppuccin theme
 
 Applied per-user, no sudo needed.
-All CLI and GUI apps are managed through home-manager.
 When applying use `devenv tasks run home:apply` from repo root.
 If you add new files to configuration, you need to stage them before applying.
 Don't stage modified files, just new ones.

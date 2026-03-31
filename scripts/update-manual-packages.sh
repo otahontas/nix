@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Update manually-pinned packages that aren't covered by `nix flake update`.
 # - pi-coding-agent: npm package with local package.json wrapper
-# - pi-mcp-adapter, pi-web-access: GitHub npm packages exposed via home flake
+# - pi-mcp-adapter: GitHub npm package exposed via home flake
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -44,7 +44,7 @@ update_pi_coding_agent() {
   echo "pi-coding-agent: updated to $latest"
 }
 
-# --- GitHub npm packages (pi-mcp-adapter, pi-web-access) ---
+# --- GitHub npm packages (pi-mcp-adapter) ---
 
 update_github_npm_package() {
   local name="$1"
@@ -133,5 +133,4 @@ compute_npm_deps_hash() {
 echo "=== Updating manually-pinned packages ==="
 update_pi_coding_agent
 update_github_npm_package pi-mcp-adapter nicobailon pi-mcp-adapter
-update_github_npm_package pi-web-access nicobailon pi-web-access
 echo "=== Done ==="
