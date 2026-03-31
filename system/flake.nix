@@ -129,7 +129,6 @@
             environment = {
               systemPackages = with nixpkgs.legacyPackages.aarch64-darwin; [
                 home-manager
-                mas
               ];
               shells = [ nixpkgs.legacyPackages.aarch64-darwin.fish ];
             };
