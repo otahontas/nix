@@ -18,6 +18,15 @@
       url = "github:otahontas/kanttiinit-cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    brew-nix = {
+      url = "github:BatteredBunny/brew-nix";
+      inputs.brew-api.follows = "brew-api";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    brew-api = {
+      url = "github:BatteredBunny/brew-api";
+      flake = false;
+    };
   };
   outputs =
     {
@@ -26,6 +35,7 @@
       catppuccin,
       pi-catppuccin,
       kanttiinit-cli,
+      brew-nix,
       ...
     }:
     let
@@ -35,6 +45,7 @@
         inherit system;
         config.allowUnfree = true;
         overlays = [
+          brew-nix.overlays.default
           # https://github.com/NixOS/nixpkgs/pull/485980
           (_: prev: {
             dbus = prev.dbus.overrideAttrs (old: {
