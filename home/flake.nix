@@ -61,11 +61,6 @@
       pi-web-access = pkgs.callPackage ./packages/pi-web-access.nix { };
     in
     {
-      # Expose manual packages for nix-update
-      packages.${system} = {
-        inherit pi-mcp-adapter pi-web-access;
-      };
-
       homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = {

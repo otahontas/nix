@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
 # Update manually-pinned packages that aren't covered by `nix flake update`.
 # - pi-coding-agent: npm package with local package.json wrapper
-# - pi-mcp-adapter, pi-web-access: GitHub packages exposed via home flake
+# - pi-mcp-adapter, pi-web-access: GitHub npm packages exposed via home flake
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PI_PKG_DIR="$REPO_ROOT/home/configs/pi-coding-agent"
-PI_NIX="$PI_PKG_DIR/default.nix"
-PI_PACKAGE_JSON="$PI_PKG_DIR/pi-package/package.json"
+
+# --- pi-coding-agent (npm registry) ---
 
 update_pi_coding_agent() {
+  local pkg_dir="$REPO_ROOT/home/configs/pi-coding-agent"
+  local nix_file="$pkg_dir/default.nix"
+  local pkg_json="$pkg_dir/pi-package/package.json"
+
   local current latest
-  current=$(jq -r '.dependencies["@mariozechner/pi-coding-agent"]' "$PI_PACKAGE_JSON")
+  current=$(jq -r '.dependencies["@mariozechner/pi-coding-agent"]' "$pkg_json")
   latest=$(npm view @mariozechner/pi-coding-agent version)
 
   if [[ $current == "$latest" ]]; then
@@ -22,49 +25,113 @@ update_pi_coding_agent() {
   echo "pi-coding-agent: $current -> $latest"
 
   # Update package.json
-  jq --arg v "$latest" '.version = $v | .dependencies["@mariozechner/pi-coding-agent"] = $v' \
-    "$PI_PACKAGE_JSON" >"$PI_PACKAGE_JSON.tmp"
-  mv "$PI_PACKAGE_JSON.tmp" "$PI_PACKAGE_JSON"
+  jq --arg v "$latest" \
+    '.version = $v | .dependencies["@mariozechner/pi-coding-agent"] = $v' \
+    "$pkg_json" >"$pkg_json.tmp"
+  mv "$pkg_json.tmp" "$pkg_json"
 
   # Update version in nix file
-  sed -i '' "s/version = \"$current\"/version = \"$latest\"/" "$PI_NIX"
+  sed -i '' "s/version = \"$current\"/version = \"$latest\"/" "$nix_file"
 
   # Regenerate lockfile
-  (cd "$PI_PKG_DIR/pi-package" && npm install --package-lock-only)
+  (cd "$pkg_dir/pi-package" && npm install --package-lock-only)
 
-  # Compute new npmDepsHash with a dummy hash to get the real one
-  local real_hash
-  real_hash=$(
-    nix build --no-link --impure --expr "
-      let pkgs = import <nixpkgs> {};
-      in pkgs.buildNpmPackage {
-        pname = \"pi-wrapper\";
-        version = \"$latest\";
-        src = $PI_PKG_DIR/pi-package;
-        npmDepsHash = \"sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\";
-        dontNpmBuild = true;
-      }
-    " 2>&1 | grep 'got:' | awk '{print $2}'
-  )
+  # Compute new npmDepsHash
+  local npm_hash
+  npm_hash=$(compute_npm_deps_hash "$pkg_dir/pi-package" "$latest")
+  sed -i '' "s|npmDepsHash = \".*\"|npmDepsHash = \"$npm_hash\"|" "$nix_file"
 
-  if [[ -z $real_hash ]]; then
+  echo "pi-coding-agent: updated to $latest"
+}
+
+# --- GitHub npm packages (pi-mcp-adapter, pi-web-access) ---
+
+update_github_npm_package() {
+  local name="$1"
+  local owner="$2"
+  local repo="$3"
+  local nix_file="$REPO_ROOT/home/packages/$name.nix"
+
+  local current latest
+  current=$(grep 'version = ' "$nix_file" | head -1 | sed 's/.*"\(.*\)".*/\1/')
+  latest=$(gh api "repos/$owner/$repo/releases/latest" --jq '.tag_name' | sed 's/^v//')
+
+  if [[ $current == "$latest" ]]; then
+    echo "$name: already at $current"
+    return
+  fi
+
+  echo "$name: $current -> $latest"
+
+  # Get new src hash
+  local src_hash
+  src_hash=$(nix-prefetch-url --unpack \
+    "https://github.com/$owner/$repo/archive/refs/tags/v$latest.tar.gz" 2>/dev/null)
+  src_hash=$(nix hash convert --hash-algo sha256 --to sri "$src_hash")
+
+  # Update version, rev, hash in nix file
+  sed -i '' "s/version = \"$current\"/version = \"$latest\"/" "$nix_file"
+  sed -i '' "s/rev = \"v$current\"/rev = \"v$latest\"/" "$nix_file"
+  sed -i '' "s|hash = \"sha256-.*\"|hash = \"$src_hash\"|" "$nix_file"
+
+  # Compute new npmDepsHash
+  local npm_hash
+  npm_hash=$(nix build --no-link --impure --expr "
+    let pkgs = import <nixpkgs> {};
+    in (pkgs.buildNpmPackage {
+      pname = \"$name\";
+      version = \"$latest\";
+      src = pkgs.fetchFromGitHub {
+        owner = \"$owner\";
+        repo = \"$repo\";
+        rev = \"v$latest\";
+        hash = \"$src_hash\";
+      };
+      npmDepsHash = \"sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\";
+      dontNpmBuild = true;
+    }).npmDeps
+  " 2>&1 | grep 'got:' | awk '{print $2}')
+
+  if [[ -z $npm_hash ]]; then
+    echo "ERROR: failed to compute npmDepsHash for $name" >&2
+    return 1
+  fi
+
+  sed -i '' "s|npmDepsHash = \".*\"|npmDepsHash = \"$npm_hash\"|" "$nix_file"
+
+  echo "$name: updated to $latest"
+}
+
+# --- Helpers ---
+
+compute_npm_deps_hash() {
+  local src_path="$1"
+  local version="$2"
+
+  local hash
+  hash=$(nix build --no-link --impure --expr "
+    let pkgs = import <nixpkgs> {};
+    in pkgs.buildNpmPackage {
+      pname = \"pi-wrapper\";
+      version = \"$version\";
+      src = $src_path;
+      npmDepsHash = \"sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\";
+      dontNpmBuild = true;
+    }
+  " 2>&1 | grep 'got:' | awk '{print $2}')
+
+  if [[ -z $hash ]]; then
     echo "ERROR: failed to compute npmDepsHash" >&2
     return 1
   fi
 
-  # Update npmDepsHash in nix file
-  sed -i '' "s|npmDepsHash = \".*\"|npmDepsHash = \"$real_hash\"|" "$PI_NIX"
-  echo "pi-coding-agent: updated to $latest"
+  echo "$hash"
 }
 
-update_flake_packages() {
-  local pkg="$1"
-  echo "Updating $pkg via nix-update..."
-  (cd "$REPO_ROOT/home" && nix-update --flake "$pkg")
-}
+# --- Main ---
 
 echo "=== Updating manually-pinned packages ==="
 update_pi_coding_agent
-update_flake_packages pi-mcp-adapter
-update_flake_packages pi-web-access
+update_github_npm_package pi-mcp-adapter nicobailon pi-mcp-adapter
+update_github_npm_package pi-web-access nicobailon pi-web-access
 echo "=== Done ==="

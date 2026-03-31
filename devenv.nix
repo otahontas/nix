@@ -1,8 +1,4 @@
-{
-  pkgs,
-  ...
-}:
-{
+_: {
   files = {
     ".typos.toml".text = ''
       [default.extend-words]
@@ -38,10 +34,6 @@
       stylua.enable = true;
     };
   };
-
-  packages = [
-    pkgs.nix-update
-  ];
 
   tasks = {
     "home:apply" = {
