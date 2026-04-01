@@ -56,6 +56,8 @@ in
 {
   home = {
     packages = [
+      (pkgs.writeShellScriptBin "work-tickets" (builtins.readFile ./scripts/work-tickets.sh))
+
       (pkgs.writeShellScriptBin "pi" ''
         export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:$PATH"
 
