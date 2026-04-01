@@ -183,15 +183,6 @@ export default function (pi: ExtensionAPI) {
     }
   }
 
-  function providerSupportsQuota(provider: Provider): boolean {
-    return (
-      provider === "anthropic" ||
-      provider === "openai-codex" ||
-      provider === "github-copilot" ||
-      provider === "zai"
-    );
-  }
-
   async function refreshQuotaForActiveModel(
     ctx: any,
     options: { force?: boolean; notify?: boolean } = {},
@@ -201,24 +192,11 @@ export default function (pi: ExtensionAPI) {
 
     const seq = ++refreshSeq;
 
-    if (!providerSupportsQuota(activeProvider)) {
-      ctx.ui.setStatus(
-        "model-quota",
-        themed(ctx.ui.theme, "dim", "model quota not implemented"),
-      );
-      return;
-    }
-
     if (options.force) {
       clearCachesForProvider(activeProvider);
     }
 
-    const quota = await getQuotaForProvider(
-      activeProvider,
-      ctx.ui.theme,
-      activeModelId,
-      ctx,
-    );
+    const quota = await getQuotaForProvider(activeProvider, ctx.ui.theme);
 
     // Only apply the latest refresh.
     if (seq !== refreshSeq) return;
@@ -312,10 +290,10 @@ export default function (pi: ExtensionAPI) {
       // pi extensions don't get direct access to the selected provider inside commands.
       // So we show all providers if available.
       const [anthropic, codex, copilot, zai] = await Promise.all([
-        getQuotaForProvider("anthropic", ctx.ui.theme, undefined, ctx),
-        getQuotaForProvider("openai-codex", ctx.ui.theme, undefined, ctx),
-        getQuotaForProvider("github-copilot", ctx.ui.theme, undefined, ctx),
-        getQuotaForProvider("zai", ctx.ui.theme, undefined, ctx),
+        getQuotaForProvider("anthropic", ctx.ui.theme),
+        getQuotaForProvider("openai-codex", ctx.ui.theme),
+        getQuotaForProvider("github-copilot", ctx.ui.theme),
+        getQuotaForProvider("zai", ctx.ui.theme),
       ]);
 
       const lines: string[] = [];
@@ -340,15 +318,52 @@ export default function (pi: ExtensionAPI) {
   async function getQuotaForProvider(
     provider: Provider,
     theme: ThemeLike | undefined,
-    modelId: string | undefined,
-    ctx: any,
   ): Promise<QuotaInfo | null> {
     if (provider === "anthropic") return getAnthropicQuota(theme);
     if (provider === "openai-codex") return getCodexQuota(theme);
     if (provider === "github-copilot") return getGitHubCopilotQuota(theme);
     if (provider === "zai") return getZaiQuota(theme);
-
     return null;
+  }
+
+  function getQuotaNotification(
+    percent: number,
+    providerName: string,
+  ): QuotaInfo["notify"] {
+    if (percent >= 100) return undefined;
+    if (percent > 95)
+      return {
+        message: `${providerName} quota nearly exhausted!`,
+        type: "error",
+      };
+    if (percent > 85)
+      return { message: `${providerName} quota warning`, type: "warning" };
+    return undefined;
+  }
+
+  function formatTimeUntil(timestamp: number | string): string {
+    const reset =
+      typeof timestamp === "string"
+        ? new Date(timestamp).getTime()
+        : timestamp < 1e12
+          ? timestamp * 1000 // unix seconds
+          : timestamp; // unix ms
+    const diffMs = reset - Date.now();
+    if (diffMs <= 0) return "now";
+
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffDays > 0) {
+      const hours = diffHours % 24;
+      return hours > 0 ? `${diffDays}d ${hours}h` : `${diffDays}d`;
+    }
+    if (diffHours > 0) {
+      const mins = diffMins % 60;
+      return mins > 0 ? `${diffHours}h ${mins}m` : `${diffHours}h`;
+    }
+    return `${diffMins}m`;
   }
 
   function themed(
@@ -386,8 +401,8 @@ export default function (pi: ExtensionAPI) {
     const sessionPercent = Math.round(usage.five_hour.utilization);
     const weeklyPercent = Math.round(usage.seven_day.utilization);
 
-    const sessionReset = formatTimeUntilIso(usage.five_hour.resets_at);
-    const weeklyReset = formatTimeUntilIso(usage.seven_day.resets_at);
+    const sessionReset = formatTimeUntil(usage.five_hour.resets_at);
+    const weeklyReset = formatTimeUntil(usage.seven_day.resets_at);
 
     const sessionLabel = themed(theme, "muted", "session: ");
     const weeklyLabel = themed(theme, "muted", "weekly: ");
@@ -397,18 +412,12 @@ export default function (pi: ExtensionAPI) {
 
     const status = `${sessionLabel}${formatUsedPercent(theme, sessionPercent)}${sessionTime}${separator}${weeklyLabel}${formatUsedPercent(theme, weeklyPercent)}${weeklyTime}`;
 
-    let notify: QuotaInfo["notify"];
-    if (sessionPercent >= 100 || weeklyPercent >= 100) {
-      // No notification if quota is exhausted
-    } else if (sessionPercent > 95 || weeklyPercent > 95) {
-      notify = { message: "Anthropic quota nearly exhausted!", type: "error" };
-    } else if (sessionPercent > 85 || weeklyPercent > 85) {
-      notify = { message: "Anthropic quota warning", type: "warning" };
-    }
-
     return {
       statusText: status,
-      notify,
+      notify: getQuotaNotification(
+        Math.max(sessionPercent, weeklyPercent),
+        "Anthropic",
+      ),
     };
   }
 
@@ -421,10 +430,8 @@ export default function (pi: ExtensionAPI) {
     const primary = usage.rate_limit.primary_window;
     const secondary = usage.rate_limit.secondary_window;
 
-    const primaryLeft = formatTimeUntilUnixSeconds(primary.reset_at);
-    const secondaryLeft = secondary
-      ? formatTimeUntilUnixSeconds(secondary.reset_at)
-      : "";
+    const primaryLeft = formatTimeUntil(primary.reset_at);
+    const secondaryLeft = secondary ? formatTimeUntil(secondary.reset_at) : "";
 
     const sessionLabel = themed(theme, "muted", "session: ");
     const weeklyLabel = themed(theme, "muted", "weekly: ");
@@ -444,30 +451,12 @@ export default function (pi: ExtensionAPI) {
 
     const status = `${sessionLabel}${formatUsedPercent(theme, primary.used_percent)}${sessionTime}${weeklyPart}${credits}`;
 
-    let notify: QuotaInfo["notify"];
-    if (
-      primary.used_percent >= 100 ||
-      (secondary && secondary.used_percent >= 100)
-    ) {
-      // No notification if exhausted
-    } else if (
-      primary.used_percent > 95 ||
-      (secondary && secondary.used_percent > 95)
-    ) {
-      notify = {
-        message: "OpenAI/Codex quota nearly exhausted!",
-        type: "error",
-      };
-    } else if (
-      primary.used_percent > 85 ||
-      (secondary && secondary.used_percent > 85)
-    ) {
-      notify = { message: "OpenAI/Codex quota warning", type: "warning" };
-    }
-
     return {
       statusText: status,
-      notify,
+      notify: getQuotaNotification(
+        Math.max(primary.used_percent, secondary?.used_percent ?? 0),
+        "OpenAI/Codex",
+      ),
     };
   }
 
@@ -479,7 +468,7 @@ export default function (pi: ExtensionAPI) {
     if (!user || !premium) return null;
 
     const resetText = user.quota_reset_date_utc
-      ? formatTimeUntilIso(user.quota_reset_date_utc)
+      ? formatTimeUntil(user.quota_reset_date_utc)
       : null;
 
     const monthlyLabel = themed(theme, "muted", "monthly: ");
@@ -509,19 +498,10 @@ export default function (pi: ExtensionAPI) {
 
     const status = `${monthlyLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
 
-    let notify: QuotaInfo["notify"];
-    if (usedPercent >= 100) {
-      // No notification if exhausted
-    } else if (usedPercent > 95) {
-      notify = {
-        message: "GitHub Copilot quota nearly exhausted!",
-        type: "error",
-      };
-    } else if (usedPercent > 85) {
-      notify = { message: "GitHub Copilot quota warning", type: "warning" };
-    }
-
-    return { statusText: status, notify };
+    return {
+      statusText: status,
+      notify: getQuotaNotification(usedPercent, "GitHub Copilot"),
+    };
   }
 
   async function getZaiQuota(
@@ -540,7 +520,7 @@ export default function (pi: ExtensionAPI) {
 
     const sessionPercent = Math.round(sessionWindow.percentage);
     const sessionReset = sessionWindow.nextResetTime
-      ? formatTimeUntilUnixMs(sessionWindow.nextResetTime)
+      ? formatTimeUntil(sessionWindow.nextResetTime)
       : null;
 
     const sessionLabel = themed(theme, "muted", "session: ");
@@ -555,7 +535,7 @@ export default function (pi: ExtensionAPI) {
     if (weeklyWindow) {
       weeklyPercent = Math.round(weeklyWindow.percentage);
       const weeklyReset = weeklyWindow.nextResetTime
-        ? formatTimeUntilUnixMs(weeklyWindow.nextResetTime)
+        ? formatTimeUntil(weeklyWindow.nextResetTime)
         : null;
       const weeklyLabel = themed(theme, "muted", "weekly: ");
       const weeklyTime = weeklyReset
@@ -564,54 +544,13 @@ export default function (pi: ExtensionAPI) {
       status += `${separator}${weeklyLabel}${formatUsedPercent(theme, weeklyPercent)}${weeklyTime}`;
     }
 
-    let notify: QuotaInfo["notify"];
-    const maxPercent = Math.max(sessionPercent, weeklyPercent ?? 0);
-    if (maxPercent >= 100) {
-      // No notification if quota is exhausted
-    } else if (maxPercent > 95) {
-      notify = { message: "Z.ai quota nearly exhausted!", type: "error" };
-    } else if (maxPercent > 85) {
-      notify = { message: "Z.ai quota warning", type: "warning" };
-    }
-
     return {
       statusText: status,
-      notify,
+      notify: getQuotaNotification(
+        Math.max(sessionPercent, weeklyPercent ?? 0),
+        "Z.ai",
+      ),
     };
-  }
-
-  function formatTimeUntilIso(isoString: string): string {
-    const now = Date.now();
-    const reset = new Date(isoString).getTime();
-    return formatDiffMs(reset - now);
-  }
-
-  function formatTimeUntilUnixSeconds(unixSeconds: number): string {
-    const now = Date.now();
-    const reset = unixSeconds * 1000;
-    return formatDiffMs(reset - now);
-  }
-
-  function formatTimeUntilUnixMs(unixMs: number): string {
-    return formatDiffMs(unixMs - Date.now());
-  }
-
-  function formatDiffMs(diffMs: number): string {
-    if (diffMs <= 0) return "now";
-
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffDays > 0) {
-      const hours = diffHours % 24;
-      return hours > 0 ? `${diffDays}d ${hours}h` : `${diffDays}d`;
-    }
-    if (diffHours > 0) {
-      const mins = diffMins % 60;
-      return mins > 0 ? `${diffHours}h ${mins}m` : `${diffHours}h`;
-    }
-    return `${diffMins}m`;
   }
 
   // Very small helper so /model-quota output doesn't contain theme escape sequences.
