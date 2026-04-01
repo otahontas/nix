@@ -1,6 +1,6 @@
 /**
- * Custom footer that removes cost/subscription info from the default footer.
- * Everything else matches the built-in footer behavior.
+ * Custom footer that removes cost/subscription info from the default footer
+ * and uses starship prompt instead of plain cwd.
  */
 
 import type { AssistantMessage } from "@mariozechner/pi-ai";
@@ -16,11 +16,48 @@ function formatTokens(count: number): string {
   return `${Math.round(count / 1000000)}M`;
 }
 
-function sanitizeStatusText(text: string): string {
-  return text
-    .replace(/[\r\n\t]/g, " ")
-    .replace(/ +/g, " ")
-    .trim();
+function rightAlign(
+  left: string,
+  right: string,
+  width: number,
+  minPad = 2,
+): string {
+  const leftW = visibleWidth(left);
+  const rightW = visibleWidth(right);
+  if (leftW + minPad + rightW <= width) {
+    return left + " ".repeat(width - leftW - rightW) + right;
+  }
+  const available = width - leftW - minPad;
+  if (available > 3) {
+    const truncRight = truncateToWidth(right, available);
+    const truncRightW = visibleWidth(truncRight);
+    return left + " ".repeat(width - leftW - truncRightW) + truncRight;
+  }
+  return left;
+}
+
+function getStarshipLine(cwd: string, dim: (s: string) => string): string {
+  try {
+    const raw = execSync(
+      "starship prompt --status=0 --cmd-duration=0 --jobs=0",
+      {
+        cwd,
+        encoding: "utf-8",
+        timeout: 500,
+        env: { ...process.env, TERM_PROGRAM: "ghostty" },
+      },
+    );
+    const cleaned = raw.replace(/\x1b\[[0-9]*[JKHG]/g, "");
+    const line = cleaned.split("\n").find((l) => visibleWidth(l) > 2) ?? "";
+    return line.replace(/^\s+/, "").replace(/\s+$/, "");
+  } catch {
+    let fallback = cwd;
+    const home = process.env.HOME || process.env.USERPROFILE;
+    if (home && fallback.startsWith(home)) {
+      fallback = `~${fallback.slice(home.length)}`;
+    }
+    return dim(fallback);
+  }
 }
 
 export default function (pi: ExtensionAPI) {
@@ -32,7 +69,7 @@ export default function (pi: ExtensionAPI) {
         dispose: unsub,
         invalidate() {},
         render(width: number): string[] {
-          // Calculate cumulative usage from all session entries
+          // Cumulative usage from all session entries
           let totalInput = 0;
           let totalOutput = 0;
           let totalCacheRead = 0;
@@ -51,72 +88,18 @@ export default function (pi: ExtensionAPI) {
             }
           }
 
-          // Context usage from API
-          const contextUsage = ctx.getContextUsage();
-          const contextPercentValue = contextUsage?.percent ?? 0;
-          const contextWindow = contextUsage?.contextWindow ?? 0;
-          const contextPercent = contextPercentValue.toFixed(1);
-
-          // Starship prompt as first footer line
-          let starshipLine: string;
-          try {
-            const raw = execSync(
-              "starship prompt --status=0 --cmd-duration=0 --jobs=0",
-              {
-                cwd: ctx.cwd,
-                encoding: "utf-8",
-                timeout: 500,
-                env: { ...process.env, TERM_PROGRAM: "ghostty" },
-              },
-            );
-            // Strip terminal control sequences (clear screen, cursor moves, etc.)
-            const cleaned = raw.replace(/\x1b\[[0-9]*[JKHG]/g, "");
-            // Take first line with visible content (skip empty lines and prompt char)
-            starshipLine =
-              cleaned.split("\n").find((l) => visibleWidth(l) > 2) ?? "";
-            // Strip leading/trailing whitespace but preserve ANSI
-            starshipLine = starshipLine.replace(/^\s+/, "").replace(/\s+$/, "");
-          } catch {
-            // Fallback to plain cwd if starship fails
-            let fallback = ctx.cwd;
-            const home = process.env.HOME || process.env.USERPROFILE;
-            if (home && fallback.startsWith(home)) {
-              fallback = `~${fallback.slice(home.length)}`;
-            }
-            starshipLine = theme.fg("dim", fallback);
-          }
-
-          // Right-align session name on the starship line
+          // Line 1: starship prompt with session name right-aligned
+          const starship = getStarshipLine(ctx.cwd, (s) => theme.fg("dim", s));
           const sessionName = ctx.sessionManager.getSessionName();
-          const starshipWidth = visibleWidth(starshipLine);
-          if (sessionName) {
-            const sessionStr = theme.fg("dim", sessionName);
-            const sessionWidth = visibleWidth(sessionStr);
-            const minPad = 2;
-            if (starshipWidth + minPad + sessionWidth <= width) {
-              const padding = " ".repeat(width - starshipWidth - sessionWidth);
-              starshipLine = starshipLine + padding + sessionStr;
-            } else {
-              // Not enough room — truncate starship to make space
-              const available = width - minPad - sessionWidth;
-              if (available > 10) {
-                starshipLine =
-                  truncateToWidth(starshipLine, available) +
-                  " ".repeat(
-                    width -
-                      visibleWidth(truncateToWidth(starshipLine, available)) -
-                      sessionWidth,
-                  ) +
-                  sessionStr;
-              } else {
-                starshipLine = truncateToWidth(starshipLine, width);
-              }
-            }
-          }
+          const line1 = sessionName
+            ? rightAlign(starship, theme.fg("dim", sessionName), width)
+            : starship;
 
-          const pwdColored = truncateToWidth(starshipLine, width);
+          // Line 2 left: token stats + context usage
+          const contextUsage = ctx.getContextUsage();
+          const contextPct = contextUsage?.percent ?? 0;
+          const contextWindow = contextUsage?.contextWindow ?? 0;
 
-          // Build stats — muted by default
           const statsParts: string[] = [];
           if (totalInput)
             statsParts.push(theme.fg("muted", `↑${formatTokens(totalInput)}`));
@@ -131,87 +114,54 @@ export default function (pi: ExtensionAPI) {
               theme.fg("muted", `W${formatTokens(totalCacheWrite)}`),
             );
 
-          // Context percentage: green normally, warning >50%, error >75%
-          const contextPercentDisplay = `${contextPercent}%/${formatTokens(contextWindow)}`;
-          let contextPercentStr: string;
-          if (contextPercentValue > 75) {
-            contextPercentStr = theme.fg("error", contextPercentDisplay);
-          } else if (contextPercentValue > 50) {
-            contextPercentStr = theme.fg("warning", contextPercentDisplay);
-          } else {
-            contextPercentStr = theme.fg("success", contextPercentDisplay);
-          }
-          statsParts.push(contextPercentStr);
+          const contextDisplay = `${contextPct.toFixed(1)}%/${formatTokens(contextWindow)}`;
+          const contextColor =
+            contextPct > 75 ? "error" : contextPct > 50 ? "warning" : "success";
+          statsParts.push(theme.fg(contextColor, contextDisplay));
 
           let statsLeft = statsParts.join(" ");
-          let statsLeftWidth = visibleWidth(statsLeft);
-
-          if (statsLeftWidth > width) {
-            const plain = statsLeft.replace(/\x1b\[[0-9;]*m/g, "");
-            statsLeft = `${plain.substring(0, width - 3)}...`;
-            statsLeftWidth = visibleWidth(statsLeft);
+          if (visibleWidth(statsLeft) > width) {
+            statsLeft = truncateToWidth(statsLeft, width, "...");
           }
 
-          // Right side: provider muted, model accent, thinking level mdQuote (pink/mauve)
+          // Line 2 right: model + thinking level
           const modelName = ctx.model?.id || "no-model";
-          let rightSideWithoutProvider = theme.fg("accent", modelName);
+          let rightSide = theme.fg("accent", modelName);
           if (ctx.model?.reasoning) {
-            const thinkingLevel = pi.getThinkingLevel() || "off";
-            const thinkingStr =
-              thinkingLevel === "off" ? "thinking off" : thinkingLevel;
-            rightSideWithoutProvider =
-              theme.fg("accent", modelName) +
+            const level = pi.getThinkingLevel() || "off";
+            rightSide +=
               theme.fg("dim", " • ") +
-              theme.fg("mdQuote", thinkingStr);
+              theme.fg("mdQuote", level === "off" ? "thinking off" : level);
           }
 
-          // Provider prefix if multiple providers
-          let rightSide = rightSideWithoutProvider;
-          const minPadding = 2;
+          // Prepend provider if multiple available
           if (footerData.getAvailableProviderCount() > 1 && ctx.model) {
             const withProvider =
-              theme.fg("muted", `(${ctx.model.provider}) `) +
-              rightSideWithoutProvider;
+              theme.fg("muted", `(${ctx.model.provider}) `) + rightSide;
             if (
-              statsLeftWidth + minPadding + visibleWidth(withProvider) <=
+              visibleWidth(statsLeft) + 2 + visibleWidth(withProvider) <=
               width
             ) {
               rightSide = withProvider;
             }
           }
 
-          const rightSideWidth = visibleWidth(rightSide);
-          const totalNeeded = statsLeftWidth + minPadding + rightSideWidth;
-
-          let statsLine: string;
-          if (totalNeeded <= width) {
-            const padding = " ".repeat(width - statsLeftWidth - rightSideWidth);
-            statsLine = statsLeft + padding + rightSide;
-          } else {
-            const availableForRight = width - statsLeftWidth - minPadding;
-            if (availableForRight > 3) {
-              const plainRight = rightSide.replace(/\x1b\[[0-9;]*m/g, "");
-              const truncated = plainRight.substring(0, availableForRight);
-              const padding = " ".repeat(
-                width - statsLeftWidth - truncated.length,
-              );
-              statsLine = statsLeft + padding + truncated;
-            } else {
-              statsLine = statsLeft;
-            }
-          }
-
-          // Stats already have per-part colors, just combine
-          const remainder = statsLine.slice(statsLeft.length);
-
-          const lines = [pwdColored, statsLeft + remainder];
+          const lines = [
+            truncateToWidth(line1, width),
+            rightAlign(statsLeft, rightSide, width),
+          ];
 
           // Extension statuses
           const extensionStatuses = footerData.getExtensionStatuses();
           if (extensionStatuses.size > 0) {
             const statusLine = Array.from(extensionStatuses.entries())
               .sort(([a], [b]) => a.localeCompare(b))
-              .map(([, text]) => sanitizeStatusText(text))
+              .map(([, text]) =>
+                text
+                  .replace(/[\r\n\t]/g, " ")
+                  .replace(/ +/g, " ")
+                  .trim(),
+              )
               .join(" ");
             lines.push(
               truncateToWidth(statusLine, width, theme.fg("dim", "...")),
