@@ -10,5 +10,8 @@
     ${pkgs.mas}/bin/mas install 1263070803 # Lungo
     ${pkgs.mas}/bin/mas install 634159523  # MainStage
     ${pkgs.mas}/bin/mas install 1607635845 # Velja
+    ${pkgs.mas}/bin/mas install 747648890  # Telegram
+    ${pkgs.mas}/bin/mas install 803453959  # Slack for Desktop
+    ${pkgs.mas}/bin/mas install 310633997  # WhatsApp Messenger
   '';
 }
