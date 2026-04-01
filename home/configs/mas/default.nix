@@ -13,5 +13,6 @@
     ${pkgs.mas}/bin/mas install 747648890  # Telegram
     ${pkgs.mas}/bin/mas install 803453959  # Slack for Desktop
     ${pkgs.mas}/bin/mas install 310633997  # WhatsApp Messenger
+    ${pkgs.mas}/bin/mas install 1276493162 # reMarkable desktop
   '';
 }
