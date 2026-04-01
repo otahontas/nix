@@ -2,14 +2,15 @@
 set -euo pipefail
 
 MAX_TICKETS="${1:-10}"
+TAG="${2:-ready-for-development}"
 COMPLETED=0
 SKIPPED=0
 
-echo "Starting ticket runner (max: $MAX_TICKETS)"
+echo "Starting ticket runner (max: $MAX_TICKETS, tag: $TAG)"
 
 while [ "$COMPLETED" -lt "$MAX_TICKETS" ]; do
-  # Get next ready ticket
-  TICKET=$(tk ready 2>/dev/null | head -1 | awk '{print $1}')
+  # Get next ready ticket with matching tag
+  TICKET=$(tk ready -T "$TAG" 2>/dev/null | head -1 | awk '{print $1}')
 
   if [ -z "$TICKET" ]; then
     echo "No more ready tickets. Done."

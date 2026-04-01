@@ -15,7 +15,13 @@ Work on a single ticket from start to finish. Follow each step in order. Do not 
 tk show <id>
 ```
 
-Understand the title, description, acceptance criteria, and any file hints.
+Check that the ticket has the `ready-for-development` tag. If it doesn't, **stop** — the ticket is not refined enough for automated work. Add a note and exit:
+
+```bash
+tk add-note <id> "Skipped: ticket not tagged ready-for-development. Needs refinement before work can start."
+```
+
+If the tag is present, understand the title, description, acceptance criteria, and any file hints.
 
 ### 2. Explore the codebase
 

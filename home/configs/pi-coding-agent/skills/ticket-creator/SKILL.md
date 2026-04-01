@@ -1,6 +1,6 @@
 ---
 name: ticket-creator
-description: Create agent-friendly tickets for the tk ticket system. Use when the user says 'create tickets for X', 'break this into tickets', 'seed tickets from plan', or anything about creating tk tickets.
+description: Create and refine tickets for the tk ticket system. Use when the user says 'create tickets for X', 'refine ticket X', 'break this into tickets', 'seed tickets from plan', or anything about creating or refining tk tickets.
 ---
 
 # Ticket creator
@@ -49,6 +49,12 @@ No acceptance criteria, no file hints, no verification command. The agent will w
 - For refactors: "behavior unchanged" + "tests pass" is sufficient
 - Never use vague criteria like "code is clean" or "well-structured"
 
+## Tagging rule
+
+Only add `--tags ready-for-development` when the ticket is fully refined: description, acceptance criteria, and file hints are all present. Vague or wishlist tickets should have **no tag** — they live in the backlog until refined.
+
+Refining is done via Mode 4 — do not hand-edit YAML frontmatter.
+
 ## Size rule
 
 A single ticket should be completable in one agent session (~30 min of agent work). If a task is larger, split it into multiple tickets with dependencies.
@@ -57,12 +63,16 @@ A single ticket should be completable in one agent session (~30 min of agent wor
 
 ### Mode 1: single ticket
 
-User says: "create a ticket for X"
+User says: "create a ticket for X" or "add a ticket for X"
 
 1. Clarify scope if ambiguous
 2. Explore the codebase to find relevant files
-3. Create one ticket with all fields populated
+3. Create the ticket
 4. Show the created ticket to the user
+
+If the request is vague ("add a ticket for that auth thing I mentioned"), create a backlog ticket: brief title, minimal description, **no tag**. The user or a later refine session will fill in the details.
+
+If the request is specific enough to write proper acceptance criteria and file hints, create a fully-formed ticket **with** `--tags ready-for-development`.
 
 ### Mode 2: decompose
 
@@ -83,6 +93,28 @@ User says: "seed tickets from this plan" or provides a plan file path
 2. Identify discrete work items
 3. Create tickets for each, preserving the plan's ordering via dependencies
 4. Show the created tickets
+
+### Mode 4: refine
+
+User says: "refine ticket X" or "refine backlog tickets"
+
+Turn a vague backlog ticket into a workable one. If the ticket is too large, split it first (Mode 2).
+
+1. Read the ticket: `tk show <id>`
+2. If the ticket already has `ready-for-development` tag, tell the user it's already refined and stop
+3. Explore the codebase to find relevant files, understand scope, and gather context
+4. If the ticket is unclear, ask the user for clarification before proceeding
+5. Rewrite the ticket file with:
+   - Clear title (imperative, scoped)
+   - Description with what to do, why, and file hints
+   - Numbered acceptance criteria (each independently verifiable)
+   - Correct type if the current one is wrong
+6. Add the `ready-for-development` tag to the frontmatter
+7. Show the refined ticket to the user
+
+Batch refine: if the user says "refine backlog tickets" or "refine all", repeat for each untagged open ticket. Stop on the first one that needs user clarification — don't guess.
+
+To rewrite a ticket file, use the `write` tool on the file path shown by `tk show`. Preserve the existing YAML frontmatter fields (id, created, deps, links, parent) and only update: title, description, acceptance criteria, type, tags.
 
 ## Workflow
 
