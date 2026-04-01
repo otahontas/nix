@@ -71,7 +71,6 @@ in
       autowrapRuntimeDeps = true;
       initLua = builtins.readFile ./nvim/init.lua;
       extraPackages = with pkgs; [
-        copilot-node-server
         imagemagick
         mermaid-cli
         google-chrome
@@ -96,9 +95,6 @@ in
 
         # Fuzzy finding
         fzf-lua
-
-        # AI assistance
-        copilot-lua
 
         # Markdown
         markview-nvim
