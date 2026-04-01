@@ -8,63 +8,17 @@
 import type {
   ExtensionAPI,
   ToolCallEvent,
-  AgentResponseEvent,
   ExtensionContext,
 } from "@mariozechner/pi-coding-agent";
 
 type Guard = (
-  event: ToolCallEvent | AgentResponseEvent,
+  event: ToolCallEvent,
   ctx: ExtensionContext,
 ) => { block: true; reason: string } | undefined;
-
-// Helper to extract text from agent responses
-function getResponseText(event: AgentResponseEvent): string {
-  return event.response.content
-    .filter((c) => c.type === "text")
-    .map((c) => c.text)
-    .join("\n");
-}
 
 // =============================================================================
 // Guards
 // =============================================================================
-
-/**
- * Block corporate buzzwords
- *
- * Banned words: comprehensive, robust, utilize, optimize, optimized, streamline,
- * enhance, leverage, leverages, leveraging
- * Banned AI phrases: dive into, diving into, dives into
- */
-const blockCorporateBuzzwords: Guard = (event) => {
-  if (event.toolName !== "agent_response") return;
-
-  const text = getResponseText(event as AgentResponseEvent);
-
-  const buzzwordsPattern =
-    /\b(comprehensive|robust|utilize|optimize|optimized|streamline|enhance|leverage|leverages|leveraging)\b/i;
-  const aiPhrasesPattern = /\b(dive into|diving into|dives into)\b/i;
-
-  if (buzzwordsPattern.test(text) || aiPhrasesPattern.test(text)) {
-    return {
-      block: true,
-      reason:
-        "⚠️ **Corporate buzzword or AI phrase detected**\n\n" +
-        "You're using banned corporate speak or AI phrases.\n\n" +
-        "**Banned words:** comprehensive, robust, utilize, optimize, streamline, enhance, leverage\n" +
-        "**Banned AI phrases:** dive into / diving into\n\n" +
-        "**Plain language alternatives:**\n" +
-        "- comprehensive → complete, full, detailed\n" +
-        "- robust → strong, reliable, solid\n" +
-        "- utilize → use\n" +
-        "- optimize → improve, make faster, tune\n" +
-        "- streamline → simplify, make easier\n" +
-        "- enhance → improve, make better\n" +
-        "- leverage → use, take advantage of\n" +
-        "- dive into → explore, look at, examine",
-    };
-  }
-};
 
 /**
  * Block local git config
@@ -74,7 +28,7 @@ const blockCorporateBuzzwords: Guard = (event) => {
 const blockLocalGitConfig: Guard = (event) => {
   if (event.toolName !== "bash") return;
 
-  const cmd = (event as ToolCallEvent).input.command;
+  const cmd = event.input.command;
   const localGitConfigPattern =
     /git\s+config\s+(user\.name|user\.email|commit\.gpgsign)/;
 
@@ -109,7 +63,7 @@ const blockLocalGitConfig: Guard = (event) => {
 const blockNonConventionalCommits: Guard = (event) => {
   if (event.toolName !== "bash") return;
 
-  const cmd = (event as ToolCallEvent).input.command;
+  const cmd = event.input.command;
   const gitCommitPattern = /git\s+commit.*-m\s+['"](.+?)['"]/;
   const match = cmd.match(gitCommitPattern);
 
@@ -149,7 +103,7 @@ const blockNonConventionalCommits: Guard = (event) => {
 const blockNpxBunx: Guard = (event) => {
   if (event.toolName !== "bash") return;
 
-  const cmd = (event as ToolCallEvent).input.command;
+  const cmd = event.input.command;
   const npxBunxPattern = /\b(npx|bunx)\s+/;
 
   if (npxBunxPattern.test(cmd)) {
@@ -178,7 +132,7 @@ const blockNpxBunx: Guard = (event) => {
 const blockRmCommand: Guard = (event) => {
   if (event.toolName !== "bash") return;
 
-  const cmd = (event as ToolCallEvent).input.command;
+  const cmd = event.input.command;
 
   // Match rm or rmdir command:
   // - At start of line or after whitespace/semicolon/pipe/&&/||
@@ -214,7 +168,7 @@ const blockRmCommand: Guard = (event) => {
 const blockNonStandardWorktreePath: Guard = (event) => {
   if (event.toolName !== "bash") return;
 
-  const cmd = (event as ToolCallEvent).input.command;
+  const cmd = event.input.command;
   const isWorktreeAdd = /\bgit\b[^\n;|&]*\bworktree\s+add\b/.test(cmd);
 
   if (!isWorktreeAdd) return;
@@ -248,7 +202,7 @@ const blockNonStandardWorktreePath: Guard = (event) => {
 const blockSecretTools: Guard = (event) => {
   if (event.toolName !== "bash") return;
 
-  const cmd = (event as ToolCallEvent).input.command;
+  const cmd = event.input.command;
 
   // Match pass/gpg in command invocation positions:
   // - Start of line/command
@@ -280,65 +234,26 @@ const blockSecretTools: Guard = (event) => {
   }
 };
 
-/**
- * Block title case headers
- *
- * Enforces sentence case in markdown headers.
- */
-const blockTitleCaseHeaders: Guard = (event) => {
-  if (event.toolName !== "agent_response") return;
-
-  const text = getResponseText(event as AgentResponseEvent);
-
-  // Pattern matches headers with multiple title-cased words
-  // Like "# Next Steps" or "## Plan Overview"
-  const titleCaseHeaderPattern = /^#+\s+(?:[A-Z][a-z]*\s+)+[A-Z][a-z]+/m;
-
-  if (titleCaseHeaderPattern.test(text)) {
-    return {
-      block: true,
-      reason:
-        "⚠️ **Title case header detected**\n\n" +
-        'You\'re using title case in a header (like "Next Steps" instead of "Next steps").\n\n' +
-        'Your AGENTS.md says: "Headers: always use sentence case"\n\n' +
-        "Examples:\n" +
-        '- ❌ "Next Steps" → ✅ "Next steps"\n' +
-        '- ❌ "Plan Overview" → ✅ "Plan overview"\n' +
-        '- ❌ "API Key Setup" → ✅ "API key setup"',
-    };
-  }
-};
-
-// =============================================================================
-// Extension entry point
-// =============================================================================
-
 const guards: Guard[] = [
-  blockCorporateBuzzwords,
   blockLocalGitConfig,
   blockNonConventionalCommits,
   blockNpxBunx,
   blockRmCommand,
   blockNonStandardWorktreePath,
   blockSecretTools,
-  blockTitleCaseHeaders,
 ];
 
 export default function (pi: ExtensionAPI) {
-  const events = ["tool_call", "agent_response"] as const;
-
-  for (const eventType of events) {
-    pi.on(eventType, async (event, ctx) => {
-      for (const guard of guards) {
-        try {
-          const result = guard(event, ctx);
-          if (result?.block) {
-            return result;
-          }
-        } catch (error) {
-          console.error(`Error in guard:`, error);
+  pi.on("tool_call", async (event, ctx) => {
+    for (const guard of guards) {
+      try {
+        const result = guard(event, ctx);
+        if (result?.block) {
+          return result;
         }
+      } catch (error) {
+        console.error(`Error in guard:`, error);
       }
-    });
-  }
+    }
+  });
 }

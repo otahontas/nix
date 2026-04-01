@@ -1,7 +1,6 @@
 ## Tools
 
 - Always use `trash` instead of `rm` for file deletion
-- Always use `web_search` and `fetch_content` tools for web searches
 - Always use `devenv` for developer environments
   - When `devenv.nix` exists: `devenv shell -- <cmd>`, `devenv up`, `devenv tasks run <task>`
   - When `devenv.nix` doesn't exist and a tool is missing: `devenv --option languages.<lang>.enable:bool true shell`
@@ -16,6 +15,15 @@
 - When actually editing or creating text to be read by humans use skill `writing-clearly-and-concisely`.
 - Prefer bullet points over paragraphs
 - Never include time estimations (e.g., "day 1: do X, day 2: do Y", "this takes 1 week") unless the user specifically asks for them
+- Avoid corporate buzzwords and AI phrases, use plain alternatives:
+  - comprehensive → complete, full, detailed
+  - robust → strong, reliable, solid
+  - utilize → use
+  - optimize → improve, speed up, tune
+  - streamline → simplify
+  - enhance → improve
+  - leverage → use
+  - dive into → explore, examine, look at
 
 ## Git
 
