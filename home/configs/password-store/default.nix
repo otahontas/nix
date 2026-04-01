@@ -1,6 +1,5 @@
 { config, pkgs, ... }:
 let
-  appId = "com.github.browserpass.native";
   pass-passkey = pkgs.stdenvNoCC.mkDerivation {
     pname = "pass-extension-passkey";
     version = "1.0.1";
@@ -15,12 +14,7 @@ in
 {
   home.packages = [
     pkgs.zbar # needed for pass-otp QR code scanning
-    pkgs.browserpass
   ];
-
-  # Browserpass native host manifest for Firefox.app (Homebrew) on macOS
-  home.file."Library/Application Support/Mozilla/NativeMessagingHosts/${appId}.json".source =
-    "${pkgs.browserpass}/lib/mozilla/native-messaging-hosts/${appId}.json";
 
   programs.password-store = {
     enable = true;

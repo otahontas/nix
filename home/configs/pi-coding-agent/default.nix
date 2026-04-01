@@ -61,7 +61,6 @@ in
 
         # Load API keys from pass
         if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
-          export GEMINI_API_KEY="$(${pkgs.pass}/bin/pass show api/gemini-pi-coding-agent-web-search 2>/dev/null || true)"
           export ZAI_API_KEY="$(${pkgs.pass}/bin/pass show api/z-pi-coding-agent 2>/dev/null || true)"
           export FIRECRAWL_API_KEY="$(${pkgs.pass}/bin/pass show api/firecrawl 2>/dev/null || true)"
         fi
