@@ -46,7 +46,7 @@ while [ "$COMPLETED" -lt "$MAX_TICKETS" ]; do
   fi
 
   # Check if ticket was closed by the agent
-  STATUS=$(tk query ".[] | select(.id == \"$TICKET\") | .status" 2>/dev/null | tr -d '"')
+  STATUS=$(tk show "$TICKET" 2>/dev/null | grep '^status:' | awk '{print $2}')
 
   if [ "$STATUS" = "closed" ]; then
     echo "✅ $TICKET closed"
