@@ -1,6 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Auto-enter devenv if tk is not on PATH
+if ! command -v tk &>/dev/null; then
+  # Find project root with devenv.nix
+  dir="$(pwd)"
+  while [ "$dir" != / ]; do
+    [ -f "$dir/devenv.nix" ] && break
+    dir="$(dirname "$dir")"
+  done
+  if [ "$dir" = / ]; then
+    echo "Error: no devenv.nix found in any parent directory" >&2
+    exit 1
+  fi
+  cd "$dir"
+  exec devenv shell -- "$0" "$@"
+fi
+
 MAX_TICKETS="${1:-10}"
 TAG="${2:-ready-for-development}"
 COMPLETED=0
