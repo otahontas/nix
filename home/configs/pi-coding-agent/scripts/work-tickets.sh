@@ -39,7 +39,7 @@ while [ "$COMPLETED" -lt "$MAX_TICKETS" ]; do
   # Run pi with ticket-worker skill
   if pi -p \
     --skill ~/.pi/agent/skills/ticket-worker \
-    "Work on ticket $TICKET. Start by running 'tk show $TICKET' to read the ticket details."; then
+    "Work on ticket $TICKET. Start by running 'tk show $TICKET' to read the ticket details. After committing, always close the ticket with 'tk close $TICKET'."; then
     PI_EXIT=0
   else
     PI_EXIT=$?
