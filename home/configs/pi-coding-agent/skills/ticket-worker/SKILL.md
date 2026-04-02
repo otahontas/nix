@@ -21,7 +21,13 @@ Check that the ticket has the `ready-for-development` tag. If it doesn't, **stop
 tk add-note <id> "Skipped: ticket not tagged ready-for-development. Needs refinement before work can start."
 ```
 
-If the tag is present, understand the title, description, acceptance criteria, and any file hints.
+If the tag is present, mark the ticket as in progress:
+
+```bash
+tk start <id>
+```
+
+Understand the title, description, acceptance criteria, and any file hints.
 
 ### 2. Explore the codebase
 
@@ -34,7 +40,7 @@ If the tag is present, understand the title, description, acceptance criteria, a
 
 Check these files in order to find how to build, test, and lint:
 
-1. `devenv.nix` — look for `scripts`, `git-hooks`, test commands
+1. `devenv.nix` — look for `scripts`, `tasks`, `processes`, `git-hooks`, test commands
 2. `package.json` — look for `scripts.test`, `scripts.lint`, `scripts.build`
 3. `Makefile` — look for `test`, `lint`, `check`, `build` targets
 4. `flake.nix` — look for `checks`
@@ -64,8 +70,8 @@ Do not declare victory until every criterion is verified.
 
 If all acceptance criteria pass:
 
-1. Commit using conventional commit format with GPG signing: `git commit -S -m "type(scope): description"`
-2. Close the ticket: `tk close <id>`
+1. Commit using the conventions in the `git-commit` skill (`git commit -S -m "type(scope): description"`)
+2. Close the ticket: `tk close <id>` (not `done` — `done` is not a valid status)
 3. Add a summary note: `tk add-note <id> "Summary of what was done"`
 
 ### 7. If stuck
@@ -84,5 +90,5 @@ If you cannot complete the ticket:
 - **No bonus refactoring.** Fix what the ticket asks, nothing more.
 - **Weak acceptance criteria?** Fall back to: description satisfied + existing tests pass.
 - **One ticket per session.** Don't carry context from unrelated work.
-- **Work in the current worktree.** No branch creation needed.
+- **Work in the current checkout.** No branch creation or worktree setup needed. The worktree conventions in AGENTS.md apply to manual branch work, not ticket automation.
 - **Commit message format.** Always use conventional commits, single line, GPG-signed, no AI attribution.

@@ -17,15 +17,15 @@ if ! command -v tk &>/dev/null; then
   exec devenv shell -- "$0" "$@"
 fi
 
-MAX_TICKETS="${1:-10}"
-TAG="${2:-ready-for-development}"
+TAG="ready-for-development"
 MAX_RETRIES=3
 COMPLETED=0
 SKIPPED=0
 
-echo "Starting ticket runner (max: $MAX_TICKETS, tag: $TAG, retries: $MAX_RETRIES)"
+echo "Starting ticket runner (tag: $TAG, retries: $MAX_RETRIES)"
+# Note: not safe to run concurrently against the same .tickets directory.
 
-while [ "$COMPLETED" -lt "$MAX_TICKETS" ]; do
+while true; do
   # Get next ready ticket with matching tag
   TICKET=$(tk ready -T "$TAG" 2>/dev/null | head -1 | awk '{print $1}')
 
@@ -43,9 +43,7 @@ while [ "$COMPLETED" -lt "$MAX_TICKETS" ]; do
     echo "=== Working on $TICKET (attempt $ATTEMPT/$MAX_RETRIES) ==="
 
     # Run pi with ticket-worker skill
-    if pi -p \
-      --skill ~/.pi/agent/skills/ticket-worker \
-      "Work on ticket $TICKET. Start by running 'tk show $TICKET' to read the ticket details. After committing, always close the ticket with 'tk close $TICKET'."; then
+    if pi -p "Work on ticket $TICKET using your ticket-worker skill"; then
       PI_EXIT=0
     else
       PI_EXIT=$?

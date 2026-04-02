@@ -18,6 +18,7 @@ Every ticket must have:
 | Acceptance criteria | Yes                | Numbered, each independently verifiable. Prefer criteria that map to a command |
 | Type                | Yes                | `bug`, `feature`, `task`, `epic`, `chore`                                      |
 | Dependencies        | When order matters | `tk dep <id> <blocks-id>` — the second arg depends on the first                |
+| Parent              | For subtasks       | `--parent <epic-id>` — ticket is a subtask of an epic                          |
 
 ### Good ticket example
 
@@ -48,6 +49,12 @@ No acceptance criteria, no file hints, no verification command. The agent will w
 - Always include "existing tests still pass" as one criterion (unless no tests exist)
 - For refactors: "behavior unchanged" + "tests pass" is sufficient
 - Never use vague criteria like "code is clean" or "well-structured"
+
+## Parent vs dependency
+
+Use `--parent` when one ticket is a logical subtask of an epic (e.g., "implement login form" under "add auth system"). Use `dep` when two tickets are independent work items where one must finish before the other starts. When in doubt, use `dep` — it's the more common relationship.
+
+Only add `dep` when there is a real ordering constraint (e.g., ticket B requires code that ticket A will create). If two tickets could be worked on in parallel, do not link them with deps.
 
 ## Tagging rule
 
@@ -83,7 +90,8 @@ User says: "break this goal into tickets" or "create tickets for refactoring X"
 3. Break into small, independently completable tickets
 4. Create tickets in dependency order (create the prerequisite tickets first so you have their IDs)
 5. Set dependencies: `tk dep <downstream-id> <upstream-id>` (downstream depends on upstream)
-6. Show all created tickets and their dependency chain
+6. Validate the dep graph: `tk dep cycle` and `tk ready` — if there are cycles or no ready tickets, fix before proceeding
+7. Show all created tickets and their dependency chain
 
 ### Mode 3: seed from plan
 
@@ -121,6 +129,6 @@ To rewrite a ticket file, use the `write` tool on the file path shown by `tk sho
 1. Read the user's request
 2. Explore the codebase to understand relevant files and context
 3. Draft ticket(s) mentally — title, description with file hints, acceptance criteria
-4. Create tickets via `tk create` with all fields populated
+4. Create tickets via `tk create` with all fields populated. Use real newlines in `-d` and `--acceptance` arguments — never pass literal `\n` characters
 5. If multiple tickets: set dependencies via `tk dep <id> <dep-id>`
 6. Present created tickets for review
