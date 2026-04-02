@@ -30,8 +30,6 @@ _: {
     ];
     programs = {
       fish_indent.enable = true;
-      shfmt.enable = true;
-      stylua.enable = true;
     };
   };
 
@@ -52,10 +50,6 @@ _: {
         devenv update
         bash scripts/update-manual-packages.sh
       '';
-    };
-    "nix:format" = {
-      description = "Run treefmt formatters";
-      exec = "treefmt -v";
     };
   };
 }

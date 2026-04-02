@@ -1,11 +1,11 @@
+### devenv-base gitignore
 .devenv*
-.direnv
 .gitignore
 .nvim.lua
 .pre-commit-config.yaml
-.claude/
-.mcp.json
 .pi/mcp.json
+.pi/extensions/post-edit-hook.ts
 devenv.local.nix
 devenv.local.yaml
 result
+### end
