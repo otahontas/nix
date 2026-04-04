@@ -55,16 +55,21 @@
 - KISS, YAGNI - prefer duplication over wrong abstraction
 - Prefer unix tools for single task scripts
 - Only fix what's asked - no bonus improvements, refactoring, or extra comments unless requested
+- Don't reorganize imports or rename variables unless explicitly asked to
+- Use existing patterns and conventions in the codebase — same error shapes, same file structure, same naming. Don't invent new approaches when there's already a working one.
+- Place tests next to the files they test, not in a separate test directory. Integration tests can be next to the stack/module they test.
 
 ## Multi-step task workflow:
 
 - For complex tasks: write plan in markdown file first. Use your judgment to determine if a task is "complex": if it involves multiple steps, file modifications, or research, it's better to plan first.
 - Always clarify users intention unless request is completely clear
 - If uncertain, say so immediately - don't guess what to implement
+- When debugging, run diagnostic commands and present findings before proposing a fix. Don't jump to solutions.
 - Work incrementally:
   1. complete step
   2. explicitly run verification commands (e.g., build, lint, test).
   3. if verification passes, commit and mark step as done. If not, fix and verify. Only commit when a step is fully working.
+- When user says "investigate" or "check", only investigate and report findings. Don't implement changes unless explicitly told to.
 - Don't create plans/markdown for simple single-step tasks
 
 ## Local development scripts:
