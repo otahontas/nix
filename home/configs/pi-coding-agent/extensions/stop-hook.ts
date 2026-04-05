@@ -21,10 +21,19 @@ export default function (pi: ExtensionAPI) {
     }
   });
 
-  pi.on("agent_end", async (_event, _ctx) => {
+  pi.on("agent_end", async (event, _ctx) => {
     if (followupCount >= MAX_FOLLOWUPS) return;
-    followupCount++;
 
+    // Skip nudge when agent made no tool calls (simple Q&A)
+    const hasToolUse = event.messages.some(
+      (m: any) =>
+        m.role === "assistant" &&
+        Array.isArray(m.content) &&
+        m.content.some((b: any) => b.type === "toolCall"),
+    );
+    if (!hasToolUse) return;
+
+    followupCount++;
     pi.sendUserMessage(STOP_CHECK_PROMPT, { deliverAs: "followUp" });
   });
 }
