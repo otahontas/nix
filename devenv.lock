@@ -20,11 +20,11 @@
     "devenv-base": {
       "flake": false,
       "locked": {
-        "lastModified": 1775378221,
-        "narHash": "sha256-cj3cZB89jF5NgDNpnojhFuEd00sM1mgau/Azvsa5qMc=",
+        "lastModified": 1775381842,
+        "narHash": "sha256-RKd3QTQ9lbnzDDxTSJt7KpNjpJ9B77mR9Enwrwo7CKo=",
         "owner": "otahontas",
         "repo": "devenv-base",
-        "rev": "644cc3d0783dc47dd75efdd5b13ff90ccd856ded",
+        "rev": "8aff8882053fa88dfa64144eb402b7d3278b79f9",
         "type": "github"
       },
       "original": {

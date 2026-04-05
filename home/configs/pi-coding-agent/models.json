@@ -6,11 +6,11 @@
       "api": "openai-completions",
       "models": [
         {
-          "id": "qwen3.5:0.8b",
+          "id": "gemma4:e2b",
           "reasoning": false,
           "input": ["text"],
-          "contextWindow": 32768,
-          "maxTokens": 4096
+          "contextWindow": 128000,
+          "maxTokens": 8192
         }
       ]
     },
