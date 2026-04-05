@@ -1,4 +1,9 @@
-_: {
+{ pkgs, ... }:
+{
+  packages = [
+    pkgs.ollama
+  ];
+
   files = {
     ".typos.toml".text = ''
       [default.extend-words]

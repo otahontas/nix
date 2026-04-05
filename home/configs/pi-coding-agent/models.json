@@ -1,5 +1,19 @@
 {
   "providers": {
+    "ollama": {
+      "baseUrl": "http://localhost:11434/v1",
+      "apiKey": "ollama",
+      "api": "openai-completions",
+      "models": [
+        {
+          "id": "qwen3.5:0.8b",
+          "reasoning": false,
+          "input": ["text"],
+          "contextWindow": 32768,
+          "maxTokens": 4096
+        }
+      ]
+    },
     "zai": {
       "baseUrl": "https://api.z.ai/api/coding/paas/v4",
       "apiKey": "ZAI_API_KEY",
