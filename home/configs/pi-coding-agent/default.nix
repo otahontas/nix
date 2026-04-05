@@ -59,7 +59,7 @@ in
       (pkgs.writeShellScriptBin "work-tickets" (builtins.readFile ./scripts/work-tickets.sh))
 
       (pkgs.writeShellScriptBin "pi" ''
-        export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:$PATH"
+        export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:${pkgs.ast-grep}/bin:$PATH"
 
         # Load API keys from pass
         if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
