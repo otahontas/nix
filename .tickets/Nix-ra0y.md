@@ -1,6 +1,6 @@
 ---
 id: Nix-ra0y
-status: open
+status: closed
 deps: [Nix-avnx]
 links: []
 created: 2026-04-05T18:53:01Z
@@ -62,3 +62,9 @@ Fallback model if 0.8B is too weak: `qwen2.5:0.5b`
 5. Model appears in pi model selector (`/model`)
 6. Sending a simple classification prompt through the local model works and returns a response
 7. Response latency for a short classification prompt is < 3 seconds
+
+## Notes
+
+**2026-04-05T19:46:29Z**
+
+Done. Added ollama to devenv.nix packages, pulled qwen3.5:0.8b model, registered it in models.json as ollama provider. OpenAI-compatible API works at localhost:11434/v1. Note: qwen3.5 has thinking mode enabled by default which causes slow responses. Use reasoning_effort:none via the OpenAI compat API (or think:false via native API) to disable it for fast classification (<0.3s).

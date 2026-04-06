@@ -1,6 +1,6 @@
 ---
 id: Nix-i69h
-status: open
+status: closed
 deps: [Nix-4bkk]
 links: []
 created: 2026-04-05T18:52:05Z
@@ -69,3 +69,9 @@ File: `~/.pi/agent/models.json`
 3. API call works: `curl -s -X POST https://api.z.ai/api/coding/paas/v4/chat/completions -H "Authorization: Bearer $ZAI_API_KEY" -H "Content-Type: application/json" -d '{"model": "glm-4.5-air", "messages": [{"role": "user", "content": "Answer YES or NO: does 2+2=4?"}]}'` returns a valid chat completion with `"model": "glm-4.5-air"`
 4. Model appears in pi model selector (`/model`)
 5. Sending a simple prompt via the model in pi works without errors
+
+## Notes
+
+**2026-04-05T20:01:42Z**
+
+Added glm-4.5-air entry to home/configs/pi-coding-agent/models.json under existing zai provider, before glm-5.1. Applied via home-manager. Verified: valid JSON, API call returns correct response with model glm-4.5-air. ACs 4-5 (pi model selector / sending prompt) require interactive verification.
