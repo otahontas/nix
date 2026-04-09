@@ -27,10 +27,6 @@
       url = "github:BatteredBunny/brew-api";
       flake = false;
     };
-    nix-audio-casks = {
-      url = "github:otahontas/nix-audio-casks";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
   outputs =
     {
@@ -40,7 +36,6 @@
       pi-catppuccin,
       kanttiinit-cli,
       brew-nix,
-      nix-audio-casks,
       ...
     }:
     let
@@ -70,7 +65,6 @@
         extraSpecialArgs = {
           inherit
             kanttiinit-cli
-            nix-audio-casks
             system
             pi-mcp-adapter
             ;

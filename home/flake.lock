@@ -100,26 +100,6 @@
         "type": "github"
       }
     },
-    "nix-audio-casks": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1775160778,
-        "narHash": "sha256-la2PDiYdgwjfu3mr59gi1igXw5ORNuDlggHk7KTQohs=",
-        "owner": "otahontas",
-        "repo": "nix-audio-casks",
-        "rev": "638f4968429ca38a0284fc564344c442a0337c0f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "otahontas",
-        "repo": "nix-audio-casks",
-        "type": "github"
-      }
-    },
     "nix-darwin": {
       "inputs": {
         "nixpkgs": [
@@ -184,7 +164,6 @@
         "catppuccin": "catppuccin",
         "home-manager": "home-manager",
         "kanttiinit-cli": "kanttiinit-cli",
-        "nix-audio-casks": "nix-audio-casks",
         "nixpkgs": "nixpkgs",
         "pi-catppuccin": "pi-catppuccin"
       }
