@@ -5,8 +5,8 @@
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
   "enabledModels": [
-    "anthropic/claude-opus-4-6",
-    "anthropic/claude-sonnet-4-6",
+    "ollama/gemma4:e2b",
+    "zai/glm-4.5-air",
     "github-copilot/claude-opus-4.5",
     "github-copilot/gpt-5.3-codex",
     "zai/glm-5.1"

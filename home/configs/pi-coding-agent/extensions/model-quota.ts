@@ -3,49 +3,6 @@ import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-// Anthropic OAuth usage API response format
-interface LimitWindow {
-  utilization: number; // Percent in range 0-100
-  resets_at: string; // ISO timestamp
-}
-
-interface UsageLimitData {
-  five_hour: LimitWindow;
-  seven_day: LimitWindow;
-}
-
-// OpenAI Codex (ChatGPT subscription) usage endpoint format
-// GET https://chatgpt.com/backend-api/wham/usage
-interface CodexUsageWindow {
-  used_percent: number;
-  limit_window_seconds: number;
-  reset_after_seconds: number;
-  reset_at: number; // unix seconds
-}
-
-interface CodexUsageResponse {
-  plan_type?: string;
-  rate_limit?: {
-    allowed: boolean;
-    limit_reached: boolean;
-    primary_window: CodexUsageWindow;
-    secondary_window: CodexUsageWindow | null;
-  };
-  code_review_rate_limit?: {
-    allowed: boolean;
-    limit_reached: boolean;
-    primary_window: CodexUsageWindow;
-    secondary_window: CodexUsageWindow | null;
-  };
-  credits?: {
-    has_credits: boolean;
-    unlimited: boolean;
-    balance: string;
-    approx_local_messages?: [number, number];
-    approx_cloud_messages?: [number, number];
-  };
-}
-
 // GitHub Copilot quota endpoint
 interface GitHubCopilotQuotaSnapshot {
   entitlement?: number;
@@ -63,12 +20,7 @@ interface GitHubCopilotUserResponse {
     completions?: GitHubCopilotQuotaSnapshot;
   };
 }
-type Provider =
-  | "anthropic"
-  | "openai-codex"
-  | "github-copilot"
-  | "zai"
-  | string;
+type Provider = "github-copilot" | "zai" | string;
 
 // Z.ai quota endpoint response
 interface ZaiQuotaWindow {
@@ -110,14 +62,6 @@ const FETCH_TIMEOUT_MS = 10_000;
 const MODEL_QUOTA_DEBUG = process.env.PI_MODEL_QUOTA_DEBUG === "1";
 
 export default function (pi: ExtensionAPI) {
-  // Anthropic cache
-  let cachedAnthropicUsage: UsageLimitData | null = null;
-  let lastAnthropicFetched = 0;
-
-  // Codex cache
-  let cachedCodexUsage: CodexUsageResponse | null = null;
-  let lastCodexFetched = 0;
-
   // GitHub Copilot cache
   let cachedGitHubCopilotUser: GitHubCopilotUserResponse | null = null;
   let lastGitHubCopilotFetched = 0;
@@ -158,18 +102,6 @@ export default function (pi: ExtensionAPI) {
   let lastSuccessfulModelId: string | null = null;
 
   function clearCachesForProvider(provider: Provider) {
-    if (provider === "anthropic") {
-      cachedAnthropicUsage = null;
-      lastAnthropicFetched = 0;
-      return;
-    }
-
-    if (provider === "openai-codex") {
-      cachedCodexUsage = null;
-      lastCodexFetched = 0;
-      return;
-    }
-
     if (provider === "github-copilot") {
       cachedGitHubCopilotUser = null;
       lastGitHubCopilotFetched = 0;
@@ -272,13 +204,11 @@ export default function (pi: ExtensionAPI) {
   // Manual command
   pi.registerCommand("model-quota", {
     description:
-      "Show model quota for the current provider (Anthropic + OpenAI Codex + GitHub Copilot + Z.ai supported)",
+      "Show model quota for the current provider (GitHub Copilot + Z.ai supported)",
     handler: async (_args, ctx) => {
       if (!ctx.hasUI) return;
 
       // Clear caches to get fresh data
-      cachedAnthropicUsage = null;
-      cachedCodexUsage = null;
       cachedGitHubCopilotUser = null;
       cachedZaiQuota = null;
       lastZaiFetched = 0;
@@ -289,23 +219,18 @@ export default function (pi: ExtensionAPI) {
 
       // pi extensions don't get direct access to the selected provider inside commands.
       // So we show all providers if available.
-      const [anthropic, codex, copilot, zai] = await Promise.all([
-        getQuotaForProvider("anthropic", ctx.ui.theme),
-        getQuotaForProvider("openai-codex", ctx.ui.theme),
+      const [copilot, zai] = await Promise.all([
         getQuotaForProvider("github-copilot", ctx.ui.theme),
         getQuotaForProvider("zai", ctx.ui.theme),
       ]);
 
       const lines: string[] = [];
-      if (anthropic)
-        lines.push(`Anthropic: ${stripAnsiLike(anthropic.statusText)}`);
-      if (codex) lines.push(`OpenAI/Codex: ${stripAnsiLike(codex.statusText)}`);
       if (copilot)
         lines.push(`GitHub Copilot: ${stripAnsiLike(copilot.statusText)}`);
       if (zai) lines.push(`Z.ai: ${stripAnsiLike(zai.statusText)}`);
       if (lines.length === 0) {
         ctx.ui.notify(
-          "No quota info available. Make sure you are logged in (OAuth) for Anthropic, ChatGPT (Codex), or GitHub Copilot, or have configured Z.ai API key in models.json",
+          "No quota info available. Make sure you are logged in (OAuth) for GitHub Copilot, or have configured Z.ai API key in models.json",
           "info",
         );
         return;
@@ -319,8 +244,6 @@ export default function (pi: ExtensionAPI) {
     provider: Provider,
     theme: ThemeLike | undefined,
   ): Promise<QuotaInfo | null> {
-    if (provider === "anthropic") return getAnthropicQuota(theme);
-    if (provider === "openai-codex") return getCodexQuota(theme);
     if (provider === "github-copilot") return getGitHubCopilotQuota(theme);
     if (provider === "zai") return getZaiQuota(theme);
     return null;
@@ -384,80 +307,6 @@ export default function (pi: ExtensionAPI) {
     if (pct > 95) return theme.fg("error", text);
     if (pct > 85) return theme.fg("warning", text);
     return theme.fg("success", text);
-  }
-
-  function isZeroNumberString(text: string): boolean {
-    const n = Number(text);
-    return Number.isFinite(n) && n <= 0;
-  }
-
-  async function getAnthropicQuota(
-    theme: ThemeLike | undefined,
-  ): Promise<QuotaInfo | null> {
-    const usage = await fetchAnthropicUsage();
-    if (!usage) return null;
-
-    // NOTE: Anthropic returns utilization as a percent in range 0-100.
-    const sessionPercent = Math.round(usage.five_hour.utilization);
-    const weeklyPercent = Math.round(usage.seven_day.utilization);
-
-    const sessionReset = formatTimeUntil(usage.five_hour.resets_at);
-    const weeklyReset = formatTimeUntil(usage.seven_day.resets_at);
-
-    const sessionLabel = themed(theme, "muted", "session: ");
-    const weeklyLabel = themed(theme, "muted", "weekly: ");
-    const separator = themed(theme, "dim", " | ");
-    const sessionTime = themed(theme, "dim", ` (${sessionReset})`);
-    const weeklyTime = themed(theme, "dim", ` (${weeklyReset})`);
-
-    const status = `${sessionLabel}${formatUsedPercent(theme, sessionPercent)}${sessionTime}${separator}${weeklyLabel}${formatUsedPercent(theme, weeklyPercent)}${weeklyTime}`;
-
-    return {
-      statusText: status,
-      notify: getQuotaNotification(
-        Math.max(sessionPercent, weeklyPercent),
-        "Anthropic",
-      ),
-    };
-  }
-
-  async function getCodexQuota(
-    theme: ThemeLike | undefined,
-  ): Promise<QuotaInfo | null> {
-    const usage = await fetchCodexUsage();
-    if (!usage?.rate_limit) return null;
-
-    const primary = usage.rate_limit.primary_window;
-    const secondary = usage.rate_limit.secondary_window;
-
-    const primaryLeft = formatTimeUntil(primary.reset_at);
-    const secondaryLeft = secondary ? formatTimeUntil(secondary.reset_at) : "";
-
-    const sessionLabel = themed(theme, "muted", "session: ");
-    const weeklyLabel = themed(theme, "muted", "weekly: ");
-    const separator = themed(theme, "dim", " | ");
-
-    const sessionTime = themed(theme, "dim", ` (${primaryLeft})`);
-
-    const weeklyPart = secondary
-      ? `${separator}${weeklyLabel}${formatUsedPercent(theme, secondary.used_percent)}${themed(theme, "dim", ` (${secondaryLeft})`)}`
-      : "";
-
-    const creditsBalance = usage.credits?.balance;
-    const credits =
-      creditsBalance && !isZeroNumberString(creditsBalance)
-        ? themed(theme, "dim", ` | credits: ${creditsBalance}`)
-        : "";
-
-    const status = `${sessionLabel}${formatUsedPercent(theme, primary.used_percent)}${sessionTime}${weeklyPart}${credits}`;
-
-    return {
-      statusText: status,
-      notify: getQuotaNotification(
-        Math.max(primary.used_percent, secondary?.used_percent ?? 0),
-        "OpenAI/Codex",
-      ),
-    };
   }
 
   async function getGitHubCopilotQuota(
@@ -596,84 +445,6 @@ export default function (pi: ExtensionAPI) {
       return await fetch(url, { ...options, signal: controller.signal });
     } finally {
       clearTimeout(timeoutId);
-    }
-  }
-
-  async function fetchAnthropicUsage(): Promise<UsageLimitData | null> {
-    // Cache for 5 minutes
-    const now = Date.now();
-    if (cachedAnthropicUsage && now - lastAnthropicFetched < 5 * 60 * 1000) {
-      return cachedAnthropicUsage;
-    }
-
-    try {
-      const authData = await readAuthData();
-      const anthropicAuth = authData?.anthropic;
-      if (!anthropicAuth?.access) return null;
-
-      const response = await fetchWithTimeout(
-        "https://api.anthropic.com/api/oauth/usage",
-        {
-          headers: {
-            Authorization: `Bearer ${anthropicAuth.access}`,
-            "anthropic-beta": "oauth-2025-04-20",
-            "User-Agent": "claude-code/2.0.32",
-            Accept: "application/json",
-          },
-        },
-      );
-
-      if (!response.ok) {
-        logDebug("OAuth usage API error:", response.status);
-        return null;
-      }
-
-      cachedAnthropicUsage = await response.json();
-      lastAnthropicFetched = now;
-      return cachedAnthropicUsage;
-    } catch (error) {
-      logDebug("Failed to fetch OAuth usage:", error);
-      return null;
-    }
-  }
-
-  async function fetchCodexUsage(): Promise<CodexUsageResponse | null> {
-    // Cache for 60 seconds
-    const now = Date.now();
-    if (cachedCodexUsage && now - lastCodexFetched < 60 * 1000) {
-      return cachedCodexUsage;
-    }
-
-    try {
-      const authData = await readAuthData();
-      const codexAuth = authData?.["openai-codex"];
-      if (!codexAuth?.access) return null;
-
-      const token = codexAuth.access as string;
-
-      // ChatGPT web client sends a bunch of OAI-* headers, but this endpoint appears
-      // to work with just Authorization.
-      const response = await fetchWithTimeout(
-        "https://chatgpt.com/backend-api/wham/usage",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        },
-      );
-
-      if (!response.ok) {
-        return null;
-      }
-
-      cachedCodexUsage = (await response.json()) as CodexUsageResponse;
-      lastCodexFetched = now;
-      return cachedCodexUsage;
-    } catch (error) {
-      logDebug("Failed to fetch OpenAI/Codex usage:", error);
-      return null;
     }
   }
 
