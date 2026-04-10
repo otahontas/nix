@@ -1,6 +1,6 @@
 ---
 id: Nix-osdd
-status: open
+status: closed
 deps: [Nix-2eqw]
 links: []
 created: 2026-04-10T10:28:21Z
@@ -44,3 +44,9 @@ Context in plans/.ticket-context.md
 5. Commands already prefixed with 'rtk' are not double-rewritten
 6. If rtk binary is missing, commands pass through unchanged (graceful degradation)
 7. spawnHook handles errors without crashing the bash tool
+
+## Notes
+
+**2026-04-10T11:31:16Z**
+
+Created ~/.pi/agent/extensions/rtk.ts using createBashTool + spawnHook pattern. Interceptts bash commands, calls rtk rewrite via execSync, passes through on failure. All 7 acceptance criteria verified.
