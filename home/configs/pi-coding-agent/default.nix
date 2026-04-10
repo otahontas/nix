@@ -23,6 +23,20 @@ let
       cp -r node_modules $out/lib/node_modules
       mkdir -p $out/bin
       ln -s $out/lib/node_modules/@mariozechner/pi-coding-agent/dist/cli.js $out/bin/pi
+
+      # Patch agent-session.js: unlimited 429 retries + capped backoff
+      TARGET=$out/lib/node_modules/@mariozechner/pi-coding-agent/dist/core/agent-session.js
+
+      # 1. Skip maxRetries cap for 429/rate-limit errors
+      substituteInPlace "$TARGET" \
+        --replace-fail 'if (this._retryAttempt > settings.maxRetries) {' \
+        'const _is429 = /429|rate.?limit|too many requests/i.test(message.errorMessage || ""); if (!_is429 && this._retryAttempt > settings.maxRetries) {'
+
+      # 2. Cap delay at maxDelayMs (set to 900000/15min in settings.json)
+      substituteInPlace "$TARGET" \
+        --replace-fail 'const delayMs = settings.baseDelayMs * 2 ** (this._retryAttempt - 1);' \
+        'const delayMs = Math.min(settings.baseDelayMs * 2 ** (this._retryAttempt - 1), settings.maxDelayMs);'
+
       runHook postInstall
     '';
   };

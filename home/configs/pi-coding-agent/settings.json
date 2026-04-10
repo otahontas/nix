@@ -1,4 +1,8 @@
 {
+  "retry": {
+    "baseDelayMs": 1000,
+    "maxDelayMs": 900000
+  },
   "defaultProvider": "zai",
   "defaultModel": "glm-5.1",
   "defaultThinkingLevel": "xhigh",
