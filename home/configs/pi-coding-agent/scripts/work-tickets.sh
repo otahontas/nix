@@ -18,8 +18,6 @@ if ! command -v tk &>/dev/null; then
 fi
 
 TAG="ready-for-development"
-MAX_RETRIES=3
-RATE_LIMIT_BACKOFFS=(5 10 30 60 120 300)
 COMPLETED=0
 SKIPPED=0
 
@@ -38,7 +36,7 @@ if [ -f "plans/.ticket-context.md" ]; then
   echo "Loaded context from plans/.ticket-context.md"
 fi
 
-echo "Starting ticket runner (tag: $TAG, retries: $MAX_RETRIES, verification: on)"
+echo "Starting ticket runner (tag: $TAG, verification: on)"
 # Note: not safe to run concurrently against the same .tickets directory.
 
 while true; do
@@ -51,74 +49,48 @@ while true; do
   fi
 
   tk start "$TICKET"
-  ATTEMPT=0
-  DONE=false
-  RATE_LIMIT_ATTEMPT=0
+  echo "=== Working on $TICKET ==="
 
-  while [ "$ATTEMPT" -lt "$MAX_RETRIES" ] && [ "$DONE" = "false" ]; do
-    ATTEMPT=$((ATTEMPT + 1))
-    echo "=== Working on $TICKET (attempt $ATTEMPT/$MAX_RETRIES) ==="
+  # Run pi with ticket-worker skill
+  WORK_PROMPT="Work on ticket $TICKET using your ticket-worker skill"
+  if [ -n "$CONTEXT" ]; then
+    WORK_PROMPT="Project context:\n\n$CONTEXT\n\n---\n\n$WORK_PROMPT"
+  fi
+  PI_STDERR_FILE=$(mktemp)
+  if pi -p "$WORK_PROMPT" 2>"$PI_STDERR_FILE"; then
+    PI_EXIT=0
+  else
+    PI_EXIT=$?
+  fi
+  cat "$PI_STDERR_FILE" >&2
+  rm -f "$PI_STDERR_FILE"
 
-    # Run pi with ticket-worker skill
-    WORK_PROMPT="Work on ticket $TICKET using your ticket-worker skill"
-    if [ -n "$CONTEXT" ]; then
-      WORK_PROMPT="Project context:\n\n$CONTEXT\n\n---\n\n$WORK_PROMPT"
-    fi
-    PI_STDERR_FILE=$(mktemp)
-    if pi -p "$WORK_PROMPT" 2>"$PI_STDERR_FILE"; then
-      PI_EXIT=0
+  # Check if ticket was closed by the agent
+  STATUS=$(tk show "$TICKET" 2>/dev/null | grep '^status:' | awk '{print $2}')
+
+  if [ "$STATUS" = "closed" ]; then
+    echo "✅ $TICKET closed — running verification"
+
+    # Run verification pass
+    VERIFY_PROMPT_EXPANDED="${VERIFY_PROMPT//TICKET/$TICKET}"
+    if pi -p "$VERIFY_PROMPT_EXPANDED"; then
+      VERIFY_EXIT=0
     else
-      PI_EXIT=$?
+      VERIFY_EXIT=$?
     fi
-    PI_STDERR_CONTENT=$(cat "$PI_STDERR_FILE")
-    cat "$PI_STDERR_FILE" >&2
-    rm -f "$PI_STDERR_FILE"
 
-    # Check if ticket was closed by the agent
+    # Re-check status after verification
     STATUS=$(tk show "$TICKET" 2>/dev/null | grep '^status:' | awk '{print $2}')
 
     if [ "$STATUS" = "closed" ]; then
-      RATE_LIMIT_ATTEMPT=0
-      echo "✅ $TICKET closed — running verification"
-
-      # Run verification pass (once per closure, not retried independently)
-      VERIFY_PROMPT_EXPANDED="${VERIFY_PROMPT//TICKET/$TICKET}"
-      if pi -p "$VERIFY_PROMPT_EXPANDED"; then
-        VERIFY_EXIT=0
-      else
-        VERIFY_EXIT=$?
-      fi
-
-      # Re-check status after verification
-      STATUS=$(tk show "$TICKET" 2>/dev/null | grep '^status:' | awk '{print $2}')
-
-      if [ "$STATUS" = "closed" ]; then
-        echo "✅ $TICKET verified"
-        COMPLETED=$((COMPLETED + 1))
-        DONE=true
-      else
-        echo "⚠️  $TICKET reopened during verification (status: $STATUS, pi exit: $VERIFY_EXIT)"
-        # DONE stays false — retry loop continues with another work attempt
-      fi
-    elif [ "$PI_EXIT" -ne 0 ] && echo "$PI_STDERR_CONTENT" | grep -qiE "429|rate.?limit|too many requests"; then
-      # Rate limited — retry with exponential backoff, don't count against MAX_RETRIES
-      RATE_LIMIT_ATTEMPT=$((RATE_LIMIT_ATTEMPT + 1))
-      BACKOFF_IDX=$((RATE_LIMIT_ATTEMPT - 1))
-      NUM_BACKOFFS=${#RATE_LIMIT_BACKOFFS[@]}
-      if [ "$BACKOFF_IDX" -ge "$NUM_BACKOFFS" ]; then
-        BACKOFF_IDX=$((NUM_BACKOFFS - 1))
-      fi
-      WAIT_SECONDS=${RATE_LIMIT_BACKOFFS[$BACKOFF_IDX]}
-      echo "⏳ Rate limited, waiting ${WAIT_SECONDS}s before retry..."
-      sleep "$WAIT_SECONDS"
-      ATTEMPT=$((ATTEMPT - 1))
+      echo "✅ $TICKET verified"
+      COMPLETED=$((COMPLETED + 1))
     else
-      echo "⚠️  $TICKET not closed (status: $STATUS, pi exit: $PI_EXIT)"
+      echo "⚠️  $TICKET reopened during verification (status: $STATUS, pi exit: $VERIFY_EXIT)"
+      SKIPPED=$((SKIPPED + 1))
     fi
-  done
-
-  if [ "$DONE" = "false" ]; then
-    echo "❌ $TICKET failed after $MAX_RETRIES attempts. Skipping."
+  else
+    echo "⚠️  $TICKET not closed (status: $STATUS, pi exit: $PI_EXIT). Skipping."
     SKIPPED=$((SKIPPED + 1))
   fi
 
