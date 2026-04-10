@@ -19,6 +19,7 @@ fi
 
 TAG="ready-for-development"
 MAX_RETRIES=3
+RATE_LIMIT_BACKOFFS=(5 10 30 60 120 300)
 COMPLETED=0
 SKIPPED=0
 
@@ -52,6 +53,7 @@ while true; do
   tk start "$TICKET"
   ATTEMPT=0
   DONE=false
+  RATE_LIMIT_ATTEMPT=0
 
   while [ "$ATTEMPT" -lt "$MAX_RETRIES" ] && [ "$DONE" = "false" ]; do
     ATTEMPT=$((ATTEMPT + 1))
@@ -62,16 +64,21 @@ while true; do
     if [ -n "$CONTEXT" ]; then
       WORK_PROMPT="Project context:\n\n$CONTEXT\n\n---\n\n$WORK_PROMPT"
     fi
-    if pi -p "$WORK_PROMPT"; then
+    PI_STDERR_FILE=$(mktemp)
+    if pi -p "$WORK_PROMPT" 2>"$PI_STDERR_FILE"; then
       PI_EXIT=0
     else
       PI_EXIT=$?
     fi
+    PI_STDERR_CONTENT=$(cat "$PI_STDERR_FILE")
+    cat "$PI_STDERR_FILE" >&2
+    rm -f "$PI_STDERR_FILE"
 
     # Check if ticket was closed by the agent
     STATUS=$(tk show "$TICKET" 2>/dev/null | grep '^status:' | awk '{print $2}')
 
     if [ "$STATUS" = "closed" ]; then
+      RATE_LIMIT_ATTEMPT=0
       echo "✅ $TICKET closed — running verification"
 
       # Run verification pass (once per closure, not retried independently)
@@ -93,6 +100,18 @@ while true; do
         echo "⚠️  $TICKET reopened during verification (status: $STATUS, pi exit: $VERIFY_EXIT)"
         # DONE stays false — retry loop continues with another work attempt
       fi
+    elif [ "$PI_EXIT" -ne 0 ] && echo "$PI_STDERR_CONTENT" | grep -qiE "429|rate.?limit|too many requests"; then
+      # Rate limited — retry with exponential backoff, don't count against MAX_RETRIES
+      RATE_LIMIT_ATTEMPT=$((RATE_LIMIT_ATTEMPT + 1))
+      BACKOFF_IDX=$((RATE_LIMIT_ATTEMPT - 1))
+      NUM_BACKOFFS=${#RATE_LIMIT_BACKOFFS[@]}
+      if [ "$BACKOFF_IDX" -ge "$NUM_BACKOFFS" ]; then
+        BACKOFF_IDX=$((NUM_BACKOFFS - 1))
+      fi
+      WAIT_SECONDS=${RATE_LIMIT_BACKOFFS[$BACKOFF_IDX]}
+      echo "⏳ Rate limited, waiting ${WAIT_SECONDS}s before retry..."
+      sleep "$WAIT_SECONDS"
+      ATTEMPT=$((ATTEMPT - 1))
     else
       echo "⚠️  $TICKET not closed (status: $STATUS, pi exit: $PI_EXIT)"
     fi
