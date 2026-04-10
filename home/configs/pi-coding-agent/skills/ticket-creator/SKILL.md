@@ -87,20 +87,23 @@ User says: "break this goal into tickets" or "create tickets for refactoring X"
 
 1. Understand the full goal
 2. Explore the codebase to understand scope and relevant files
-3. Break into small, independently completable tickets
-4. Create tickets in dependency order (create the prerequisite tickets first so you have their IDs)
-5. Set dependencies: `tk dep <downstream-id> <upstream-id>` (downstream depends on upstream)
-6. Validate the dep graph: `tk dep cycle` and `tk ready` — if there are cycles or no ready tickets, fix before proceeding
-7. Show all created tickets and their dependency chain
+3. Seed context file if it doesn't exist (see "Context seeding" below)
+4. Break into small, independently completable tickets
+5. Create tickets in dependency order (create the prerequisite tickets first so you have their IDs)
+6. Set dependencies: `tk dep <downstream-id> <upstream-id>` (downstream depends on upstream)
+7. Validate the dep graph: `tk dep cycle` and `tk ready` — if there are cycles or no ready tickets, fix before proceeding
+8. Show all created tickets and their dependency chain
 
 ### Mode 3: seed from plan
 
 User says: "seed tickets from this plan" or provides a plan file path
 
 1. Read the plan file
-2. Identify discrete work items
-3. Create tickets for each, preserving the plan's ordering via dependencies
-4. Show the created tickets
+2. Explore the codebase to understand scope and relevant files
+3. Seed context file if it doesn't exist (see "Context seeding" below)
+4. Identify discrete work items
+5. Create tickets for each, preserving the plan's ordering via dependencies
+6. Show the created tickets
 
 ### Mode 4: refine
 
@@ -123,6 +126,42 @@ Turn a vague backlog ticket into a workable one. If the ticket is too large, spl
 Batch refine: if the user says "refine backlog tickets" or "refine all", repeat for each untagged open ticket. Stop on the first one that needs user clarification — don't guess.
 
 To rewrite a ticket file, use the `write` tool on the file path shown by `tk show`. Preserve the existing YAML frontmatter fields (id, created, deps, links, parent) and only update: title, description, acceptance criteria, type, tags.
+
+## Context seeding
+
+Modes 2 and 3 create a context file to avoid redundant discovery in each ticket-worker session.
+
+After exploring the codebase (step 2 in both modes), check if `plans/.ticket-context.md` exists. If it does, skip — the context is already seeded. If not, create it:
+
+```bash
+mkdir -p plans
+```
+
+Write `plans/.ticket-context.md` with three sections:
+
+```markdown
+## Verification commands
+
+- Build: <command>
+- Test: <command>
+- Lint: <command>
+
+## Key directories
+
+- path/ — description
+
+## Conventions
+
+- Description of relevant patterns
+```
+
+Fill in each section from what you discovered during exploration:
+
+- **Verification commands**: look in `devenv.nix` (scripts, tasks, git-hooks), `package.json` (scripts.test, scripts.lint, scripts.build), `Makefile` (test, lint, check, build targets), `flake.nix` (checks)
+- **Key directories**: list directories relevant to the batch of tickets being created
+- **Conventions**: notable patterns found during exploration (error handling style, file structure, naming)
+
+The context file is project-local and reusable across all tickets in the batch.
 
 ## Workflow
 

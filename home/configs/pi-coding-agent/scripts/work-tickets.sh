@@ -30,6 +30,13 @@ VERIFY_PROMPT="Verify the changes made for ticket TICKET. Do the following steps
 If you find any issues: run 'tk reopen TICKET' then 'tk add-note TICKET \"Verification failed: <details>\"'.
 If everything looks good: do nothing, the ticket stays closed."
 
+# Load context file if available
+CONTEXT=""
+if [ -f "plans/.ticket-context.md" ]; then
+  CONTEXT=$(cat "plans/.ticket-context.md")
+  echo "Loaded context from plans/.ticket-context.md"
+fi
+
 echo "Starting ticket runner (tag: $TAG, retries: $MAX_RETRIES, verification: on)"
 # Note: not safe to run concurrently against the same .tickets directory.
 
@@ -51,7 +58,11 @@ while true; do
     echo "=== Working on $TICKET (attempt $ATTEMPT/$MAX_RETRIES) ==="
 
     # Run pi with ticket-worker skill
-    if pi -p "Work on ticket $TICKET using your ticket-worker skill"; then
+    WORK_PROMPT="Work on ticket $TICKET using your ticket-worker skill"
+    if [ -n "$CONTEXT" ]; then
+      WORK_PROMPT="Project context:\n\n$CONTEXT\n\n---\n\n$WORK_PROMPT"
+    fi
+    if pi -p "$WORK_PROMPT"; then
       PI_EXIT=0
     else
       PI_EXIT=$?
