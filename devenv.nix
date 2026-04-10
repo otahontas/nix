@@ -18,6 +18,7 @@ in
 {
   packages = [
     ollama-bin
+    pkgs.rtk
   ];
 
   files = {
