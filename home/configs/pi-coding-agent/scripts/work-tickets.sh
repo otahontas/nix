@@ -22,7 +22,15 @@ MAX_RETRIES=3
 COMPLETED=0
 SKIPPED=0
 
-echo "Starting ticket runner (tag: $TAG, retries: $MAX_RETRIES)"
+VERIFY_PROMPT="Verify the changes made for ticket TICKET. Do the following steps in order:
+1. Run 'tk show TICKET' and re-read the acceptance criteria.
+2. Run 'git diff HEAD~1' to see what changed.
+3. Run the project test and lint commands.
+4. Check for common issues: unused imports, debug prints (console.log, print(), fmt.Println), leftover TODO comments in changed lines.
+If you find any issues: run 'tk reopen TICKET' then 'tk add-note TICKET \"Verification failed: <details>\"'.
+If everything looks good: do nothing, the ticket stays closed."
+
+echo "Starting ticket runner (tag: $TAG, retries: $MAX_RETRIES, verification: on)"
 # Note: not safe to run concurrently against the same .tickets directory.
 
 while true; do
@@ -53,9 +61,27 @@ while true; do
     STATUS=$(tk show "$TICKET" 2>/dev/null | grep '^status:' | awk '{print $2}')
 
     if [ "$STATUS" = "closed" ]; then
-      echo "✅ $TICKET closed"
-      COMPLETED=$((COMPLETED + 1))
-      DONE=true
+      echo "✅ $TICKET closed — running verification"
+
+      # Run verification pass (once per closure, not retried independently)
+      VERIFY_PROMPT_EXPANDED="${VERIFY_PROMPT//TICKET/$TICKET}"
+      if pi -p "$VERIFY_PROMPT_EXPANDED"; then
+        VERIFY_EXIT=0
+      else
+        VERIFY_EXIT=$?
+      fi
+
+      # Re-check status after verification
+      STATUS=$(tk show "$TICKET" 2>/dev/null | grep '^status:' | awk '{print $2}')
+
+      if [ "$STATUS" = "closed" ]; then
+        echo "✅ $TICKET verified"
+        COMPLETED=$((COMPLETED + 1))
+        DONE=true
+      else
+        echo "⚠️  $TICKET reopened during verification (status: $STATUS, pi exit: $VERIFY_EXIT)"
+        # DONE stays false — retry loop continues with another work attempt
+      fi
     else
       echo "⚠️  $TICKET not closed (status: $STATUS, pi exit: $PI_EXIT)"
     fi
