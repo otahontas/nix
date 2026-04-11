@@ -96,7 +96,7 @@ let
       local pr_number
       pr_number=$(gh pr list --state open --head "$branch_name" --json number --jq '.[0].number' 2>/dev/null)
       if [ -z "$pr_number" ] || [ "$pr_number" = "null" ]; then
-        echo "Error: Could not find an open PR for branch '$branch_name'"
+        echo "Error: Could not find an open PR for branch ''${branch_name}"
         return 1
       fi
 
@@ -162,7 +162,7 @@ let
       local worktree_path="$repo_root/.worktrees/$branch_name"
 
       if [ ! -d "$worktree_path" ]; then
-        echo "Error: Could not find worktree for branch '$branch_name'"
+        echo "Error: Could not find worktree for branch ''${branch_name}"
         echo ""
         echo "Available worktrees:"
         git worktree list
@@ -172,10 +172,26 @@ let
       cd "$worktree_path" || return 1
     }
   '';
+
+  # Devenv auto-activation for bash - override cd to check for devenv.nix
+  devenvAutoActivation = ''
+    __devenv_auto() {
+      if [ -f "$PWD/devenv.nix" ] && [ -z "''${IN_NIX_SHELL:-}" ]; then
+        devenv shell
+      fi
+    }
+
+    __cd_with_devenv() {
+      builtin cd "$@" || return $?
+      __devenv_auto
+    }
+
+    alias cd=__cd_with_devenv
+  '';
 in
 {
   programs.bash = {
     enable = true;
-    bashrcExtra = worktreeBashFunctions;
+    bashrcExtra = worktreeBashFunctions + devenvAutoActivation;
   };
 }
