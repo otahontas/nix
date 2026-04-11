@@ -18,6 +18,15 @@ function __git_worktree_names
     end
 end
 
+function __git_pr_branches
+    set -l prs (gh pr list --state open --json number,title,author,createdAt,headRefName --limit 50 2>/dev/null)
+    if test -z "$prs"
+        return
+    end
+
+    echo $prs | jq -r '.[] | "\(.headRefName)\t#\(.number) \(.author.login) \(.createdAt | split("T")[0]) \(.title)"'
+end
+
 function git-worktree-new --description "Create a new git worktree with a new branch"
     if test (count $argv) -lt 1
         echo "Usage: git-worktree-new <branch_name>"
@@ -159,3 +168,5 @@ end
 # Completions for worktree commands
 complete -c git-worktree-cd -f -a "(__git_worktree_names)"
 complete -c git-worktree-new -f -a "(__git_worktree_names)"
+complete -c git-worktree-prune -f -a "(__git_worktree_names)"
+complete -c git-worktree-pr -f -a "(__git_pr_branches)"

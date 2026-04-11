@@ -188,10 +188,33 @@ let
 
     alias cd=__cd_with_devenv
   '';
+
+  # Bash completions for worktree commands
+  worktreeCompletions = ''
+    __git_pr_branches_bash() {
+      local prs
+      prs=$(gh pr list --state open --json number,title,author,createdAt,headRefName --limit 50 2>/dev/null)
+      [ -z "$prs" ] && return
+      echo "$prs" | jq -r '.[] | "\(.headRefName)"'
+    }
+
+    _worktree_name_complete() {
+      COMPREPLY=($(compgen -W "$(__git_worktree_names)" -- "''${COMP_WORDS[COMP_CWORD]}"))
+    }
+
+    _pr_branch_complete() {
+      COMPREPLY=($(compgen -W "$(__git_pr_branches_bash)" -- "''${COMP_WORDS[COMP_CWORD]}"))
+    }
+
+    complete -F _worktree_name_complete git-worktree-cd
+    complete -F _worktree_name_complete git-worktree-new
+    complete -F _worktree_name_complete git-worktree-prune
+    complete -F _pr_branch_complete git-worktree-pr
+  '';
 in
 {
   programs.bash = {
     enable = true;
-    bashrcExtra = worktreeBashFunctions + devenvAutoActivation;
+    bashrcExtra = worktreeBashFunctions + devenvAutoActivation + worktreeCompletions;
   };
 }
