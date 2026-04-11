@@ -1,6 +1,6 @@
 ---
 id: sscfb-b5ji
-status: in_progress
+status: closed
 deps: [sscfb-njl8, sscfb-ql3f, sscfb-u6el, sscfb-pm9f]
 links: []
 created: 2026-04-10T20:56:56Z
@@ -83,3 +83,9 @@ Keep:
 - sscfb-ql3f [open] Convert fish functions to writeShellScriptBin scripts
 - sscfb-u6el [open] Add bash implementations for cd-dependent worktree functions
 - sscfb-pm9f [open] Add devenv auto-activation for bash
+
+## Notes
+
+**2026-04-11T02:04:45Z**
+
+All cleanup verified: orphaned .fish files already deleted, config.fish contains only fish-specific init, all nix modules cleaned of redundant fish references, build and lint pass.
