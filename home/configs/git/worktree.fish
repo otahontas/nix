@@ -18,15 +18,6 @@ function __git_worktree_names
     end
 end
 
-function __git_pr_branches
-    set -l prs (gh pr list --state open --json number,title,author,createdAt,headRefName --limit 50 2>/dev/null)
-    if test -z "$prs"
-        return
-    end
-
-    echo $prs | jq -r '.[] | "\(.headRefName)\t#\(.number) \(.author.login) \(.createdAt | split("T")[0]) \(.title)"'
-end
-
 function git-worktree-new --description "Create a new git worktree with a new branch"
     if test (count $argv) -lt 1
         echo "Usage: git-worktree-new <branch_name>"
@@ -138,41 +129,6 @@ function git-worktree-pr --description "Create a worktree from a GitHub PR branc
     echo "Location: $worktree_path"
 end
 
-function git-worktree-prune --description "Remove a git worktree and its branch"
-    if test (count $argv) -lt 1
-        echo "Usage: git-worktree-prune <branch_name>"
-        return 1
-    end
-
-    set -l branch_name $argv[1]
-
-    set -l repo_root (git rev-parse --show-toplevel 2>/dev/null | string trim)
-    if test -z "$repo_root"
-        echo "Error: Not in a git repository"
-        return 1
-    end
-
-    set -l worktree_path "$repo_root/.worktrees/$branch_name"
-
-    if not test -d "$worktree_path"
-        echo "Error: Could not find worktree for branch '$branch_name'"
-        echo ""
-        echo "Available worktrees:"
-        git worktree list
-        return 1
-    end
-
-    echo "Removing worktree: $worktree_path"
-    git worktree remove "$worktree_path" --force
-    echo "✓ Worktree removed"
-
-    if git show-ref --verify --quiet "refs/heads/$branch_name"
-        echo "Deleting branch: $branch_name"
-        git branch -D "$branch_name"
-        echo "✓ Branch deleted"
-    end
-end
-
 function git-worktree-cd --description "Change directory to a git worktree"
     if test (count $argv) -lt 1
         echo "Usage: git-worktree-cd <branch_name>"
@@ -201,6 +157,5 @@ function git-worktree-cd --description "Change directory to a git worktree"
 end
 
 # Completions for worktree commands
-complete -c git-worktree-prune -f -a "(__git_worktree_names)"
 complete -c git-worktree-cd -f -a "(__git_worktree_names)"
-complete -c git-worktree-pr -f -a "(__git_pr_branches)"
+complete -c git-worktree-new -f -a "(__git_worktree_names)"
