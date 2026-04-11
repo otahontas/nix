@@ -101,6 +101,8 @@ in
         if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
           export ZAI_API_KEY="$(${pkgs.pass}/bin/pass show api/z-pi-coding-agent 2>/dev/null || true)"
           export FIRECRAWL_API_KEY="$(${pkgs.pass}/bin/pass show api/firecrawl 2>/dev/null || true)"
+          export CONTEXT7_API_KEY="$(${pkgs.pass}/bin/pass show api/context7 2>/dev/null || true)"
+          export GITHITS_API_KEY="$(${pkgs.pass}/bin/pass show api/githits 2>/dev/null || true)"
         fi
         exec ${pi-coding-agent}/bin/pi "$@"
       '')
