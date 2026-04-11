@@ -243,8 +243,59 @@ const guards: Guard[] = [
   blockSecretTools,
 ];
 
+// =============================================================================
+// Session-aware guards (ticket gating + investigation mode)
+// =============================================================================
+
+/**
+ * Ticket-gated editing
+ *
+ * When user mentions a tk ticket ID (e.g. Nix-2eqw) in their prompt,
+ * blocks edit/write until the agent has run `tk show <id>`.
+ * Lifts automatically once the ticket is read.
+ */
+const TICKET_ID_RE = /\b([a-z]+-[a-z0-9]{4})\b/i;
+const TK_SHOW_RE = /tk\s+show\s+/;
+
+/**
+ * Investigation mode
+ *
+ * When user says "investigate" or "review" without "and fix" / "then fix",
+ * blocks edit/write for that agent run. Auto-lifts on next user prompt.
+ */
+const INVESTIGATE_RE = /\b(investigate|review)\b/i;
+const FIX_INTENT_RE = /\b(and\s+fix|then\s+fix)\b/i;
+
 export default function (pi: ExtensionAPI) {
+  let pendingTicketId: string | null = null;
+  let ticketRead = false;
+  let investigationMode = false;
+
+  pi.on("input", async (event) => {
+    // Always reset investigation mode on new input
+    investigationMode = false;
+
+    const text = event.text;
+
+    // Detect investigation mode
+    if (INVESTIGATE_RE.test(text) && !FIX_INTENT_RE.test(text)) {
+      investigationMode = true;
+    }
+
+    // Detect ticket reference
+    const ticketMatch = text.match(TICKET_ID_RE);
+    if (ticketMatch) {
+      pendingTicketId = ticketMatch[1];
+      ticketRead = false;
+    } else {
+      // No ticket in this prompt — clear ticket gating
+      pendingTicketId = null;
+      ticketRead = false;
+    }
+  });
+
   pi.on("tool_call", async (event, ctx) => {
+    // Run static guards first
     for (const guard of guards) {
       try {
         const result = guard(event, ctx);
@@ -254,6 +305,48 @@ export default function (pi: ExtensionAPI) {
       } catch (error) {
         console.error(`Error in guard:`, error);
       }
+    }
+
+    // Ticket gate: detect when agent reads the ticket
+    if (
+      pendingTicketId &&
+      !ticketRead &&
+      event.toolName === "bash" &&
+      typeof event.input.command === "string" &&
+      TK_SHOW_RE.test(event.input.command) &&
+      event.input.command.includes(pendingTicketId)
+    ) {
+      ticketRead = true;
+      return;
+    }
+
+    // Ticket gate: block edit/write until ticket is read
+    if (
+      pendingTicketId &&
+      !ticketRead &&
+      (event.toolName === "edit" || event.toolName === "write")
+    ) {
+      return {
+        block: true,
+        reason:
+          `📋 **Read the ticket first**\n\n` +
+          `You referenced ticket \`${pendingTicketId}\` but haven't read it yet.\n\n` +
+          `Run \`tk show ${pendingTicketId}\` before making changes.`,
+      };
+    }
+
+    // Investigation mode: block edit/write
+    if (
+      investigationMode &&
+      (event.toolName === "edit" || event.toolName === "write")
+    ) {
+      return {
+        block: true,
+        reason:
+          "🔍 **Investigation mode active**\n\n" +
+          "The user asked you to investigate, not to make changes.\n" +
+          "Report your findings. The user will tell you when to fix things.",
+      };
     }
   });
 }
