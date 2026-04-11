@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  config,
   pi-mcp-adapter,
   ...
 }:
@@ -112,6 +113,22 @@ in
         done
         [ -d "$ext_dir/node_modules" ] && run rm -rf "$ext_dir/node_modules"
       '';
+    };
+  };
+
+  launchd.agents.pi-session-indexer = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        "${pkgs.bash}/bin/bash"
+        "${./scripts/build-session-index.sh}"
+      ];
+      StartInterval = 7200;
+      RunAtLoad = true;
+      StandardOutPath = "${config.home.homeDirectory}/.cache/pi-session-indexer.log";
+      StandardErrorPath = "${config.home.homeDirectory}/.cache/pi-session-indexer.log";
+      ProcessType = "Background";
+      LowPriorityIO = true;
     };
   };
 
