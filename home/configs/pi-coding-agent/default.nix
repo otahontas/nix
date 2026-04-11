@@ -42,6 +42,27 @@ let
     '';
   };
 
+  # lat.md CLI - Agent Lattice knowledge graph
+  lat-md = pkgs.buildNpmPackage {
+    pname = "lat-md";
+    version = "0.11.0";
+
+    src = ./lat-md-package;
+
+    npmDepsHash = "sha256-gGRPqE7hWv51Zd5Sv5hOcepZToZfl1G/3FPLRrBSnko=";
+
+    dontNpmBuild = true;
+
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out/lib
+      cp -r node_modules $out/lib/node_modules
+      mkdir -p $out/bin
+      ln -s $out/lib/node_modules/lat.md/dist/src/cli/index.js $out/bin/lat
+      runHook postInstall
+    '';
+  };
+
   # Auto-discover extensions (.ts files)
   extensionFiles = builtins.filter (name: lib.hasSuffix ".ts" name) (
     builtins.attrNames (builtins.readDir ./extensions)
@@ -74,7 +95,7 @@ in
       (pkgs.writeShellScriptBin "work-tickets" (builtins.readFile ./scripts/work-tickets.sh))
 
       (pkgs.writeShellScriptBin "pi" ''
-        export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:${pkgs.ast-grep}/bin:$PATH"
+        export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:${pkgs.ast-grep}/bin:${lat-md}/bin:$PATH"
 
         # Load API keys from pass
         if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
