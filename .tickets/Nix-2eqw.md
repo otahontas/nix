@@ -1,6 +1,6 @@
 ---
 id: Nix-2eqw
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-04-10T10:28:05Z
@@ -23,3 +23,9 @@ File: devenv.nix (packages list)
 1. pkgs.rtk is in the packages list in devenv.nix
 2. devenv shell -- rtk --version returns a version string
 3. Existing devenv tasks still work (devenv tasks list)
+
+## Notes
+
+**2026-04-10T11:00:24Z**
+
+Added pkgs.rtk to devenv.nix packages list. Verified: rtk --version returns 0.30.0, devenv tasks list works, pre-commit hooks pass.
