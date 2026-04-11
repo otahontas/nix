@@ -35,6 +35,9 @@ let
 in
 {
   home = {
-    packages = [ pkgs.qpdf combine-pdfs-in-folder ];
+    packages = [
+      pkgs.qpdf
+      combine-pdfs-in-folder
+    ];
   };
 }

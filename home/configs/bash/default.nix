@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+_:
 let
   # Bash implementations for cd-dependent worktree functions
   # These must be shell functions (not scripts) because they change directory

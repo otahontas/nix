@@ -48,7 +48,11 @@ let
   '';
 in
 {
-  home.packages = [ listening nukeport trash-empty ];
+  home.packages = [
+    listening
+    nukeport
+    trash-empty
+  ];
 
   programs.fish = {
     enable = true;

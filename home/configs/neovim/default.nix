@@ -130,7 +130,12 @@ in
   };
 
   home = {
-    packages = [ todo_path daily_path todo daily ];
+    packages = [
+      todo_path
+      daily_path
+      todo
+      daily
+    ];
 
     sessionVariables = {
       TODO_FILE_LOCATION = "$HOME/Documents/todo/todo.txt";
