@@ -1,6 +1,6 @@
 ---
 id: sscfb-u6el
-status: open
+status: closed
 deps: [sscfb-cjbq]
 links: []
 created: 2026-04-10T20:56:27Z
@@ -32,3 +32,9 @@ The gwprune function does NOT cd — it will be converted to a script in the scr
 2. Fish versions unchanged
 3. home-manager build succeeds
 
+
+## Notes
+
+**2026-04-11T01:31:37Z**
+
+Added bash implementations for git-worktree-new, git-worktree-pr, git-worktree-cd via programs.bash.bashrcExtra. Fish versions unchanged.

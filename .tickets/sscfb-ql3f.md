@@ -1,6 +1,6 @@
 ---
 id: sscfb-ql3f
-status: in_progress
+status: closed
 deps: [sscfb-cjbq]
 links: []
 created: 2026-04-10T20:56:15Z
@@ -36,3 +36,9 @@ Note: todo and daily call todo_path/daily_path — these can just call the scrip
 3. Scripts behave identically to the fish functions they replace
 4. home-manager build succeeds
 
+
+## Notes
+
+**2026-04-11T01:29:43Z**
+
+Converted listening, nukeport, trash-empty, todo, daily, todo_path, daily_path, find-and-prune, combine-pdfs-in-folder, yk-status, format-duration, gh-pr-select, gh-pr-get-url, gh-pr-copy-url, gh-repo-get-url, gh-repo-copy-url, gh-pr-review, gh-pr-approve-and-merge, gh-run-view, gh-release-slack, git-worktree-prune to writeShellScriptBin scripts. Removed corresponding fish function definitions. Build passes.
