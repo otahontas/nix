@@ -26,6 +26,7 @@ VERIFY_PROMPT="Verify the changes made for ticket TICKET. Do the following steps
 2. Run 'git diff HEAD~1' to see what changed.
 3. Run the project test and lint commands.
 4. Check for common issues: unused imports, debug prints (console.log, print(), fmt.Println), leftover TODO comments in changed lines.
+5. If lat.md/ exists in the project, run lat check. If it reports errors, run 'tk reopen TICKET' and add a note with the errors.
 If you find any issues: run 'tk reopen TICKET' then 'tk add-note TICKET \"Verification failed: <details>\"'.
 If everything looks good: do nothing, the ticket stays closed."
 
