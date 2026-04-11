@@ -1,6 +1,6 @@
 ---
 id: sscfb-pm9f
-status: open
+status: closed
 deps: [sscfb-cjbq]
 links: []
 created: 2026-04-10T20:56:38Z
@@ -32,3 +32,9 @@ Add to home/configs/bash/default.nix or home/configs/devenv/default.nix.
 3. No double-activation when already in a nix shell
 4. home-manager build succeeds
 
+
+## Notes
+
+**2026-04-11T01:33:42Z**
+
+Added bash devenv auto-activation that overrides cd with __cd_with_devenv which checks for devenv.nix after each directory change. Skips if IN_NIX_SHELL is set.
