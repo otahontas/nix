@@ -1,6 +1,6 @@
 ---
 id: sscfb-cjbq
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-04-10T20:55:46Z
@@ -40,3 +40,9 @@ See `plans/.ticket-context.md` for full context.
 - sscfb-ql3f [open] Convert fish functions to writeShellScriptBin scripts
 - sscfb-u6el [open] Add bash implementations for cd-dependent worktree functions
 - sscfb-b5ji [open] Clean up fish config and remove redundant definitions
+
+## Notes
+
+**2026-04-11T02:05:31Z**
+
+All 5 child tickets closed. Build and lint pass. Both fish and bash now share: aliases via sharedAliases module, non-cd functions via writeShellScriptBin scripts, cd-dependent worktree functions via shell-specific implementations, devenv auto-activation via PWD hook (fish) and cd override (bash).
