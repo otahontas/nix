@@ -58,6 +58,7 @@
 - Don't reorganize imports or rename variables unless explicitly asked to
 - Use existing patterns and conventions in the codebase — same error shapes, same file structure, same naming. Don't invent new approaches when there's already a working one.
 - Place tests next to the files they test, not in a separate test directory. Integration tests can be next to the stack/module they test.
+- When `lat.md/` exists in the project root, use `lat search` to understand the codebase before making changes. Update `lat.md/` to reflect any changes you make, and run `lat check` before finishing.
 
 ## Multi-step task workflow:
 
