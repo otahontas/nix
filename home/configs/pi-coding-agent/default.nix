@@ -116,11 +116,6 @@ in
   };
 
   programs = {
-    fish.shellAliases = {
-      pic = "pi -c";
-      pir = "pi -r";
-    };
-
     # Catppuccin theme (follows global catppuccin.flavor)
     pi.catppuccin.enable = true;
   };

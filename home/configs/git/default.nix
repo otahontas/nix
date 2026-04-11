@@ -119,13 +119,6 @@
     };
     fish = {
       interactiveShellInit = builtins.readFile ./worktree.fish + builtins.readFile ./gh.fish;
-      shellAliases = {
-        gsw = "git sw";
-        gwcd = "git-worktree-cd";
-        gwnew = "git-worktree-new";
-        gwpr = "git-worktree-pr";
-        gwprune = "git-worktree-prune";
-      };
     };
   };
 }
