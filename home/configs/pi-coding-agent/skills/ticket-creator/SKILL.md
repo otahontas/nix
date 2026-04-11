@@ -86,7 +86,7 @@ If the request is specific enough to write proper acceptance criteria and file h
 User says: "break this goal into tickets" or "create tickets for refactoring X"
 
 1. Understand the full goal
-2. Explore the codebase to understand scope and relevant files
+2. Explore the codebase to understand scope and relevant files. If `lat.md/` exists at project root, run `lat search "<goal description>"` to discover relevant context from the knowledge graph
 3. Seed context file if it doesn't exist (see "Context seeding" below)
 4. Break into small, independently completable tickets
 5. Create tickets in dependency order (create the prerequisite tickets first so you have their IDs)
@@ -99,7 +99,7 @@ User says: "break this goal into tickets" or "create tickets for refactoring X"
 User says: "seed tickets from this plan" or provides a plan file path
 
 1. Read the plan file
-2. Explore the codebase to understand scope and relevant files
+2. Explore the codebase to understand scope and relevant files. If `lat.md/` exists at project root, run `lat search "<goal description>"` to discover relevant context from the knowledge graph
 3. Seed context file if it doesn't exist (see "Context seeding" below)
 4. Identify discrete work items
 5. Create tickets for each, preserving the plan's ordering via dependencies
@@ -130,6 +130,8 @@ To rewrite a ticket file, use the `write` tool on the file path shown by `tk sho
 ## Context seeding
 
 Modes 2 and 3 create a context file to avoid redundant discovery in each ticket-worker session.
+
+**Prerequisite**: if a `lat.md/` directory exists at the project root, skip context seeding entirely. The `lat search` command (run in step 2) provides living, queryable context that makes a static context file redundant.
 
 After exploring the codebase (step 2 in both modes), check if `plans/.ticket-context.md` exists. If it does, skip — the context is already seeded. If not, create it:
 
