@@ -31,6 +31,7 @@ Understand the title, description, acceptance criteria, and any file hints.
 
 ### 2. Explore the codebase
 
+- If `lat.md/` exists at project root: run `lat search` with keywords from the ticket title and description. Read relevant sections with `lat section` to understand the architecture before exploring code files.
 - Read the files mentioned in the description
 - grep for relevant patterns, function names, imports
 - Understand the scope of changes needed
@@ -64,13 +65,15 @@ Go through the acceptance criteria one by one. For each criterion:
 - If it is behavioral: verify by reading the changed code or running relevant commands
 - Explicitly state whether each criterion passes or fails
 
+If `lat.md/` exists at project root: run `lat check`. If it fails, update `lat.md/` to reflect your changes and re-run until it passes. The ticket is not complete with a failing `lat check`.
+
 Do not declare victory until every criterion is verified.
 
 ### 6. Commit and close
 
 If all acceptance criteria pass:
 
-1. Commit using the conventions in the `git-commit` skill (`git commit -S -m "type(scope): description"`)
+1. Commit using the conventions in the `git-commit` skill (`git commit -S -m "type(scope): description"`). If `lat.md/` was updated, include those changes in the same commit.
 2. Close the ticket: `tk close <id>` (not `done` — `done` is not a valid status)
 3. Add a summary note: `tk add-note <id> "Summary of what was done"`
 
