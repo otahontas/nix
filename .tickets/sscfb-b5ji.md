@@ -7,27 +7,68 @@ created: 2026-04-10T20:56:56Z
 type: task
 priority: 2
 assignee: Otto Ahoniemi
-parent: sscfb-cjbq
+parent: sscfb-cjbq  # Share shell config between fish and bash
+tags: [ready-for-development]
 ---
 # Clean up fish config and remove redundant definitions
 
-After aliases, functions, and scripts are migrated:
+Remove all fish-only definitions that are now provided by shared aliases, writeShellScriptBin scripts, or bash-specific implementations from the other tickets.
 
-1. Remove fish-only function definitions that are now scripts (listening, nukeport, trash-empty, todo, daily, todo_path, daily_path, find-and-prune, combine-pdfs-in-folder, yk-status, all gh-* functions, format-duration, gwprune)
-2. Remove fish-only aliases that are now shared (cat, pic, pir, gsw, gwcd, gwnew, gwpr, gwprune)
-3. Remove programs.fish.shellAliases from bat, pi-coding-agent, git modules
-4. Remove programs.fish.functions from yubikey-manager module
-5. Remove programs.fish.interactiveShellInit from fd, qpdf, neovim, git modules (for migrated functions)
-6. Keep fish-specific init: vi key bindings, SHELL export, greeting clear, __devenv_auto
-7. Keep fish completions (devenv-tasks-run.fish, git worktree completions)
+## Files to clean up
 
-This must be done LAST after all other migration tickets are complete.
+### `home/configs/fish/config.fish`
+Remove these function definitions (now writeShellScriptBin scripts from sscfb-ql3f):
+- `listening`
+- `nukeport`
+- `trash-empty`
+- `__devenv_auto` (moved to bash equiv in sscfb-pm9f; fish version stays as-is actually — keep this)
+
+Keep in fish/config.fish:
+- `set -gx SHELL (which fish)`
+- `fish_vi_key_bindings`
+- `set -g fish_greeting` + `printf '\33c\e[3J'`
+- `__devenv_auto` (fish-native, stays)
+
+### `home/configs/neovim/default.nix`
+Remove `programs.fish.interactiveShellInit` (config.fish content), `programs.fish.functions.todo_path`, `programs.fish.functions.daily_path` — all now scripts.
+
+### `home/configs/fd/default.nix`
+Remove `programs.fish.interactiveShellInit` (config.fish content for `find-and-prune`, now a script).
+
+### `home/configs/qpdf/default.nix`
+Remove `programs.fish.interactiveShellInit` (config.fish content for `combine-pdfs-in-folder`, now a script).
+
+### `home/configs/yubikey-manager/default.nix`
+Remove `programs.fish.functions.yk-status` — now a writeShellScriptBin script.
+
+### `home/configs/git/default.nix`
+Remove `programs.fish.interactiveShellInit` (worktree.fish + gh.fish content). Worktree functions that cd stay as fish functions via separate mechanism; gh-* functions are now scripts.
+
+### Delete orphaned .fish files
+- `home/configs/fd/config.fish` (find-and-prune migrated)
+- `home/configs/qpdf/config.fish` (combine-pdfs-in-folder migrated)
+- `home/configs/neovim/config.fish` (todo/daily migrated)
+- `home/configs/neovim/todo_path_function_body.fish` (migrated)
+- `home/configs/neovim/daily_path_function_body.fish` (migrated)
+- `home/configs/yubikey-manager/yk-status.fish` (migrated)
+- `home/configs/git/gh.fish` (all gh-* functions migrated to scripts)
+
+Keep:
+- `home/configs/fish/config.fish` (fish-specific init)
+- `home/configs/git/worktree.fish` (cd-dependent, fish versions stay)
+- `home/configs/devenv/devenv-tasks-run.fish` (fish completion)
 
 ## Acceptance Criteria
 
-1. No redundant fish-only definitions remain for migrated features
-2. Fish shell still works identically to before
-3. Bash shell has feature parity for all migrated items
-4. home-manager build succeeds
-5. No dead code or orphaned .fish files
+1. `home-manager build --flake .#otahontas` succeeds
+2. No deleted `.fish` files are referenced from any `.nix` file
+3. `home/configs/fish/config.fish` only contains fish-specific init (SHELL export, vi bindings, greeting, __devenv_auto)
+4. All migrated commands still work in fish (they resolve to the writeShellScriptBin binaries)
+5. All migrated commands work in bash
 
+## Blockers
+
+- sscfb-njl8 [open] Share aliases between fish and bash
+- sscfb-ql3f [open] Convert fish functions to writeShellScriptBin scripts
+- sscfb-u6el [open] Add bash implementations for cd-dependent worktree functions
+- sscfb-pm9f [open] Add devenv auto-activation for bash

@@ -31,6 +31,45 @@ let
       args = [ "--no-sandbox" ];
     }
   );
+
+  todo_path = pkgs.writeShellScriptBin "todo_path" ''
+    if [ -z "$TODO_FILE_LOCATION" ]; then
+      echo "Error: TODO_FILE_LOCATION environment variable not set" >&2
+      exit 1
+    fi
+    echo "$TODO_FILE_LOCATION"
+  '';
+
+  daily_path = pkgs.writeShellScriptBin "daily_path" ''
+    if [ -z "$DAILY_FOLDER_LOCATION" ]; then
+      echo "Error: DAILY_FOLDER_LOCATION environment variable not set" >&2
+      exit 1
+    fi
+
+    today=$(date "+%F")
+    daily_file="$DAILY_FOLDER_LOCATION/$today.md"
+    template_file="$DAILY_FOLDER_LOCATION/daily_template.txt"
+
+    if [ ! -e "$daily_file" ]; then
+      if [ ! -e "$template_file" ]; then
+        echo "Error: daily template not found at $template_file" >&2
+        exit 1
+      fi
+      sed "s/<YYYY-MM-DD>/$today/g" "$template_file" > "$daily_file"
+    fi
+
+    echo "$daily_file"
+  '';
+
+  todo = pkgs.writeShellScriptBin "todo" ''
+    p=$(todo_path) || exit 1
+    nvim "$p"
+  '';
+
+  daily = pkgs.writeShellScriptBin "daily" ''
+    p=$(daily_path) || exit 1
+    nvim "$p"
+  '';
 in
 {
   xdg.configFile = {
@@ -45,22 +84,6 @@ in
   };
 
   programs = {
-    fish = {
-      interactiveShellInit = builtins.readFile ./config.fish;
-
-      functions = {
-        todo_path = {
-          description = "Print TODO file path";
-          body = builtins.readFile ./todo_path_function_body.fish;
-        };
-
-        daily_path = {
-          description = "Create/get today's daily note path";
-          body = builtins.readFile ./daily_path_function_body.fish;
-        };
-      };
-    };
-
     neovim = {
       enable = true;
       defaultEditor = true;
@@ -105,7 +128,10 @@ in
       ];
     };
   };
+
   home = {
+    packages = [ todo_path daily_path todo daily ];
+
     sessionVariables = {
       TODO_FILE_LOCATION = "$HOME/Documents/todo/todo.txt";
       DAILY_FOLDER_LOCATION = "$HOME/Documents/journal/daily";

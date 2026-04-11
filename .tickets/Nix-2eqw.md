@@ -1,6 +1,6 @@
 ---
 id: Nix-2eqw
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-04-10T10:28:05Z
