@@ -36,6 +36,14 @@ if [ -f "plans/.ticket-context.md" ]; then
   echo "Loaded context from plans/.ticket-context.md"
 fi
 
+# Set up logging — capture all stdout/stderr to log file
+LOG_DIR=".tickets/logs"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/$(date -u +%Y-%m-%dT%H-%M-%S).log"
+
+# Duplicate all output to log file while still printing to terminal
+exec > >(tee -a "$LOG_FILE") 2>&1
+
 echo "Starting ticket runner (tag: $TAG, verification: on)"
 # Note: not safe to run concurrently against the same .tickets directory.
 
@@ -98,3 +106,24 @@ while true; do
 done
 
 echo "Done. Completed: $COMPLETED, Skipped: $SKIPPED"
+
+# Final review: have pi analyze the full log for issues
+REVIEW_PROMPT="Review the following work-tickets run log. For each ticket, report:
+- Whether it completed and verified successfully
+- Any issues found (compilation errors, test failures, verification failures, reopened tickets)
+- Any patterns or problems that need follow-up
+Keep the report concise. End with a one-line overall status.
+
+Log content:
+$(cat "$LOG_FILE")"
+
+echo ""
+echo "=== Running final review ==="
+if pi -p "$REVIEW_PROMPT"; then
+  true
+else
+  echo "Review agent exited with error (non-fatal)"
+fi
+
+echo ""
+echo "Log saved to $LOG_FILE"
