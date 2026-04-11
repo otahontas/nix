@@ -31,6 +31,9 @@ let
 in
 {
   home = {
-    packages = [ pkgs.yubikey-manager yk-status ];
+    packages = [
+      pkgs.yubikey-manager
+      yk-status
+    ];
   };
 }

@@ -7,25 +7,26 @@ created: 2026-04-10T20:55:59Z
 type: task
 priority: 2
 assignee: Otto Ahoniemi
-parent: sscfb-cjbq  # Share shell config between fish and bash
+parent: sscfb-cjbq # Share shell config between fish and bash
 tags: [ready-for-development]
 ---
+
 # Share aliases between fish and bash
 
 Create `home/configs/aliases/default.nix` with a single `let` binding that defines all aliases, then apply them to both `programs.bash.shellAliases` and `programs.fish.shellAliases`.
 
 ## Current fish-only aliases to consolidate
 
-| Alias | Expansion | Current location |
-|-------|-----------|-----------------|
-| `cat` | `bat` | `home/configs/bat/default.nix` |
-| `pic` | `pi -c` | `home/configs/pi-coding-agent/default.nix` |
-| `pir` | `pi -r` | `home/configs/pi-coding-agent/default.nix` |
-| `gsw` | `git sw` | `home/configs/git/default.nix` |
-| `gwcd` | `git-worktree-cd` | `home/configs/git/default.nix` |
-| `gwnew` | `git-worktree-new` | `home/configs/git/default.nix` |
-| `gwpr` | `git-worktree-pr` | `home/configs/git/default.nix` |
-| `gwprune` | `git-worktree-prune` | `home/configs/git/default.nix` |
+| Alias     | Expansion            | Current location                           |
+| --------- | -------------------- | ------------------------------------------ |
+| `cat`     | `bat`                | `home/configs/bat/default.nix`             |
+| `pic`     | `pi -c`              | `home/configs/pi-coding-agent/default.nix` |
+| `pir`     | `pi -r`              | `home/configs/pi-coding-agent/default.nix` |
+| `gsw`     | `git sw`             | `home/configs/git/default.nix`             |
+| `gwcd`    | `git-worktree-cd`    | `home/configs/git/default.nix`             |
+| `gwnew`   | `git-worktree-new`   | `home/configs/git/default.nix`             |
+| `gwpr`    | `git-worktree-pr`    | `home/configs/git/default.nix`             |
+| `gwprune` | `git-worktree-prune` | `home/configs/git/default.nix`             |
 
 ## Steps
 

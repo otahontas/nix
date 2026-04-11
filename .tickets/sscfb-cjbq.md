@@ -9,6 +9,7 @@ priority: 2
 assignee: Otto Ahoniemi
 tags: [ready-for-development]
 ---
+
 # Share shell config between fish and bash
 
 Many aliases, functions, and tools are fish-only but should also work in bash (used by pi-coding-agent).
