@@ -49,7 +49,7 @@ let
 
     src = ./lat-md-package;
 
-    npmDepsHash = "sha256-gGRPqE7hWv51Zd5Sv5hOcepZToZfl1G/3FPLRrBSnko=";
+    npmDepsHash = "sha256-mRv0DpCKXTdY1f/9AtbgqRcPzZ59/4Zr7tzgfD624oo=";
 
     dontNpmBuild = true;
 
@@ -154,6 +154,11 @@ in
   };
 
   programs = {
+    fish.shellAliases = {
+      pic = "pi -c";
+      pir = "pi -r";
+    };
+
     # Catppuccin theme (follows global catppuccin.flavor)
     pi.catppuccin.enable = true;
   };
