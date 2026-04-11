@@ -117,6 +117,7 @@ in
       ".pi/agent/extensions/pi-mcp-adapter".source = pi-mcp-adapter;
 
       ".pi/agent/models.json".source = ./models.json;
+      ".pi/agent/mcp.json".source = ./mcp.json;
     }
     // extensionSymlinks
     // skillSymlinks;
