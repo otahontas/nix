@@ -91,7 +91,7 @@ function loadIndex(): Index {
     return cachedIndex;
   } catch {
     throw new Error(
-      "Session index not found. Run: bash ~/.pi/agent/extensions/../../home/configs/pi-coding-agent/scripts/build-session-index.sh " +
+      "Session index not found. Run build-session-index manually or wait for the launchd timer. " +
         "or wait for the launchd timer to build it.",
     );
   }

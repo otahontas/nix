@@ -110,13 +110,7 @@ The user reviews and iterates. Do not proceed to tickets until the user explicit
 2. Explore the codebase for file hints and verification commands
 3. Seed `plans/.ticket-context.md` if it doesn't exist (see context seeding in ticket-creator skill)
 4. Create one ticket per plan step using ticket-creator skill Mode 3
-5. **Self-validate** (mandatory, every time):
-   - `tk list` — check all tickets are open
-   - For each ticket: `tk show <id>` — verify description has file hints, acceptance criteria are numbered and independently verifiable
-   - Refine any weak tickets immediately
-   - `tk dep cycle` — no cycles allowed
-   - `tk ready -T ready-for-development` — at least one ticket must be unblocked
-6. Report what was created
+5. **Self-validate** (see ticket-creator skill for checklist):
 
 ## Phase transitions
 

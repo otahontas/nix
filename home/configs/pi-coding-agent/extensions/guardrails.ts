@@ -111,7 +111,6 @@ const blockNpxBunx: Guard = (event) => {
       block: true,
       reason:
         "⚠️ **npx/bunx usage detected**\n\n" +
-        'Your AGENTS.md says: "Node/Deno/Bun: use package.json scripts, then node_modules/.bin/, avoid npx/bunx"\n\n' +
         "**Preferred alternatives:**\n" +
         "1. Check if there's a package.json script for this\n" +
         "2. Use `./node_modules/.bin/<command>` directly\n" +
@@ -263,7 +262,7 @@ const TK_SHOW_RE = /tk\s+show\s+/;
  * When user says "investigate" or "review" without "and fix" / "then fix",
  * blocks edit/write for that agent run. Auto-lifts on next user prompt.
  */
-const INVESTIGATE_RE = /\b(investigate|review)\b/i;
+const INVESTIGATE_RE = /\b(investigate|inspect|audit)\b/i;
 const FIX_INTENT_RE = /\b(and\s+fix|then\s+fix)\b/i;
 
 export default function (pi: ExtensionAPI) {

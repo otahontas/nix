@@ -25,20 +25,6 @@ Use this skill whenever you write prose for humans:
 
 ## All rules
 
-### Elementary rules of usage (grammar/punctuation)
-
-1. Form possessive singular by adding 's
-2. Use comma after each term in series except last
-3. Enclose parenthetic expressions between commas
-4. Comma before conjunction introducing co-ordinate clause
-5. Don't join independent clauses by comma
-6. Don't break sentences in two
-7. Participial phrase at beginning refers to grammatical subject
-
-### Elementary principles of composition
-
-8. One paragraph per topic
-9. Begin paragraph with topic sentence
 10. **Use active voice**
 11. **Put statements in positive form**
 12. **Use definite, specific, concrete language**
