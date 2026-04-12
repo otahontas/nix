@@ -49,7 +49,7 @@ let
 
     src = ./lat-md-package;
 
-    npmDepsHash = "sha256-mRv0DpCKXTdY1f/9AtbgqRcPzZ59/4Zr7tzgfD624oo=";
+    npmDepsHash = "sha256-gGRPqE7hWv51Zd5Sv5hOcepZToZfl1G/3FPLRrBSnko=";
 
     dontNpmBuild = true;
 
