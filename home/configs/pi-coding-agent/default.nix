@@ -87,6 +87,19 @@ let
     }) skillDirs
   );
 
+  # Auto-discover prompt templates (.md files in prompts/)
+  promptFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
+    builtins.attrNames (builtins.readDir ./prompts)
+  );
+  promptSymlinks = builtins.listToAttrs (
+    map (name: {
+      name = ".pi/agent/prompts/${name}";
+      value = {
+        source = ./prompts/${name};
+      };
+    }) promptFiles
+  );
+
 in
 
 {
@@ -120,7 +133,8 @@ in
       ".pi/agent/mcp.json".source = ./mcp.json;
     }
     // extensionSymlinks
-    // skillSymlinks;
+    // skillSymlinks
+    // promptSymlinks;
 
     # Activation script to merge settings into settings.json
     # This preserves all other settings managed by pi itself

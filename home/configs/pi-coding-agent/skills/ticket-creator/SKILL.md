@@ -165,6 +165,21 @@ Fill in each section from what you discovered during exploration:
 
 The context file is project-local and reusable across all tickets in the batch.
 
+## Self-validation (always run after Mode 2/3)
+
+After creating all tickets, run these checks:
+
+1. `tk list` — confirm all tickets are open
+2. For each ticket: `tk show <id>` — verify:
+   - Description has file hints
+   - Acceptance criteria are numbered and independently verifiable
+   - If any are vague, refine immediately (Mode 4)
+3. `tk dep cycle` — no cycles allowed. If found, fix.
+4. `tk ready -T ready-for-development` — at least one ticket must be unblocked
+5. If no tickets are ready, fix dependency ordering
+
+Report: number of tickets created, any issues found and fixed, whether tickets are ready for work.
+
 ## Workflow
 
 1. Read the user's request
@@ -172,4 +187,5 @@ The context file is project-local and reusable across all tickets in the batch.
 3. Draft ticket(s) mentally — title, description with file hints, acceptance criteria
 4. Create tickets via `tk create` with all fields populated. Use real newlines in `-d` and `--acceptance` arguments — never pass literal `\n` characters
 5. If multiple tickets: set dependencies via `tk dep <id> <dep-id>`
-6. Present created tickets for review
+6. Run self-validation (see above)
+7. Present created tickets for review
