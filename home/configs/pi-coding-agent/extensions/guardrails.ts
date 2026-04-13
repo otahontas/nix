@@ -274,6 +274,11 @@ export default function (pi: ExtensionAPI) {
     // Always reset investigation mode on new input
     investigationMode = false;
 
+    // Only gate on real user input, not extension-generated messages
+    // (e.g. subagent output sent via sendUserMessage contains arbitrary text
+    // that can false-positive match ticket IDs like "read-only")
+    if (event.source === "extension") return;
+
     const text = event.text;
 
     // Detect investigation mode
