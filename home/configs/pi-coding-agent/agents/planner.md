@@ -28,7 +28,7 @@ Produce your plan in this exact markdown format:
 ```
 # Plan: <task description>
 
-Research: `plans/<slug>.md`
+Research: `plans/task.md`
 
 ## Steps
 
