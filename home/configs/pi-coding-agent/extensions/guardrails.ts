@@ -64,11 +64,11 @@ const blockNonConventionalCommits: Guard = (event) => {
   if (event.toolName !== "bash") return;
 
   const cmd = event.input.command;
-  const gitCommitPattern = /git\s+commit.*-m\s+['"](.+?)['"]/;
+  const gitCommitPattern = /git\s+commit.*-m\s+(['"])(.+?)\1/;
   const match = cmd.match(gitCommitPattern);
 
   if (match) {
-    const message = match[1];
+    const message = match[2];
     const conventionalPattern =
       /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([\w-]+\))?: /;
 

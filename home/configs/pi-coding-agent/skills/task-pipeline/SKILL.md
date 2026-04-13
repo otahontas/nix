@@ -9,40 +9,26 @@ A phased workflow for complex tasks. State lives in files, not session memory. A
 
 ## File structure
 
-All work happens in a worktree at `<repo>/.worktrees/<slug>/`. Docs go in `plans/`:
+All work happens in a worktree at `<repo>/.worktrees/<branch>/`. Docs go in `plans/`:
 
 ```
 plans/
-  <slug>.md          # research findings
-  <slug>.plan.md     # implementation plan
+  task.md     # research findings (fixed filename)
+  plan.md     # implementation plan (fixed filename)
 ```
 
-One research doc, one plan doc. Never create alternatives or numbered versions. Update in place.
-
-## Slug naming
-
-Derived from the task description: lowercase, hyphens, short. Examples:
-
-- "add redis caching to session store" → `redis-caching`
-- "fix token refresh returning 401" → `token-refresh-fix`
-- "lat.md integration" → `lat-md-integration`
+Fixed filenames because worktrees already isolate tasks — no need for unique slugs. Overwrite if exists.
 
 ## Phase 1: Research
 
-**Entry:** `/task <description>` or `/task <slug>` (to continue)
+**Entry:** `/task <description>` or `/task` (to continue existing research)
 
-This phase runs in an **isolated subagent** (`researcher`) that physically cannot modify files. The main agent's only jobs are: worktree creation, invoking the subagent, and saving output.
+This phase runs in an **isolated subagent** (`researcher`) that physically cannot modify files. The main agent's only jobs are: invoking the subagent and saving output.
 
-1. Main agent creates worktree if it doesn't exist:
-   ```bash
-   repo_root=$(git rev-parse --show-toplevel)
-   mkdir -p "$repo_root/.worktrees"
-   git worktree add "$repo_root/.worktrees/<slug>" -b "<slug>"
-   ```
-2. If `plans/<slug>.md` exists: main agent reads it and passes contents as context to the researcher subagent
-3. Main agent invokes the subagent tool: `{ agent: "researcher", task: "<research task with context>" }`
-4. The researcher subagent runs in isolation — it can read, search, and run read-only commands, but **cannot edit, write, or modify anything**
-5. Main agent saves the subagent output to `plans/<slug>.md`
+1. If `plans/task.md` exists: main agent reads it and passes contents as context to the researcher subagent
+2. Main agent invokes the subagent tool: `{ agent: "researcher", task: "<research task with context>" }`
+3. The researcher subagent runs in isolation — it can read, search, and run read-only commands, but **cannot edit, write, or modify anything**
+4. Main agent saves the subagent output to `plans/task.md`
 
 ### Research doc format
 
@@ -69,22 +55,22 @@ Keep writing until you can't find more. The user will tell you when to move on.
 
 ## Phase 2: Plan
 
-**Entry:** `/plan <slug>`
+**Entry:** `/plan` (no arguments needed)
 
 This phase runs in an **isolated subagent** (`planner`) that physically cannot modify files.
 
-1. Main agent reads `plans/<slug>.md` — the research findings
-2. If `plans/<slug>.md` doesn't exist: tell the user to run `/task` first
+1. Main agent reads `plans/task.md` — the research findings
+2. If `plans/task.md` doesn't exist: tell the user to run `/task` first
 3. Main agent invokes the subagent tool: `{ agent: "planner", task: "<research findings>" }`
 4. The planner subagent runs in isolation — it can read files but **cannot edit or write anything**
-5. Main agent saves the subagent output to `plans/<slug>.plan.md`
+5. Main agent saves the subagent output to `plans/plan.md`
 
 ### Plan doc format
 
 ```markdown
 # Plan: <task description>
 
-Research: `plans/<slug>.md`
+Research: `plans/task.md`
 
 ## Steps
 
@@ -111,9 +97,9 @@ The user reviews and iterates. Do not proceed to tickets until the user explicit
 
 ## Phase 3: Tickets
 
-**Entry:** `/tickets <slug>`
+**Entry:** `/tickets`
 
-1. Read `plans/<slug>.plan.md`
+1. Read `plans/plan.md`
 2. Explore the codebase for file hints and verification commands
 3. Seed `plans/.ticket-context.md` if it doesn't exist (see context seeding in ticket-creator skill)
 4. Create one ticket per plan step using ticket-creator skill Mode 3
@@ -130,13 +116,13 @@ The user reviews and iterates. Do not proceed to tickets until the user explicit
 | From     | To       | Trigger                        |
 | -------- | -------- | ------------------------------ |
 | —        | Research | `/task <description>`          |
-| Research | Research | `/task <slug>` (continue)      |
-| Research | Plan     | `/plan <slug>`                 |
-| Plan     | Plan     | `/plan <slug>` (iterate)       |
-| Plan     | Tickets  | `/tickets <slug>`              |
+| Research | Research | `/task` (continue)             |
+| Research | Plan     | `/plan`                        |
+| Plan     | Plan     | `/plan` (iterate)              |
+| Plan     | Tickets  | `/tickets`                     |
 | Tickets  | Work     | `work-tickets` in the worktree |
 
-You can go back: run `/plan <slug>` after tickets exist to revise, then `/tickets <slug>` to recreate. Clean up old tickets first (`tk close` or recreate with new deps).
+You can go back: run `/plan` after tickets exist to revise, then `/tickets` to recreate. Clean up old tickets first (`tk close` or recreate with new deps).
 
 ## Rules
 
