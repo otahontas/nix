@@ -3,6 +3,7 @@
   lib,
   config,
   pi-mcp-adapter,
+  pi-web-access,
   ...
 }:
 
@@ -140,8 +141,8 @@ in
 
         # Load API keys from pass
         if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
+          export GEMINI_API_KEY="$(${pkgs.pass}/bin/pass show api/gemini-pi-coding-agent-web-search 2>/dev/null || true)"
           export ZAI_API_KEY="$(${pkgs.pass}/bin/pass show api/z-pi-coding-agent 2>/dev/null || true)"
-          export FIRECRAWL_API_KEY="$(${pkgs.pass}/bin/pass show api/firecrawl 2>/dev/null || true)"
           export CONTEXT7_API_KEY="$(${pkgs.pass}/bin/pass show api/context7 2>/dev/null || true)"
           export GITHITS_API_KEY="$(${pkgs.pass}/bin/pass show api/githits 2>/dev/null || true)"
         fi
@@ -157,6 +158,9 @@ in
 
       # Pi MCP adapter extension - built with deps
       ".pi/agent/extensions/pi-mcp-adapter".source = pi-mcp-adapter;
+
+      # Pi web access extension - built with deps
+      ".pi/agent/extensions/pi-web-access".source = pi-web-access;
 
       ".pi/agent/models.json".source = ./models.json;
       ".pi/agent/mcp.json".source = ./mcp.json;

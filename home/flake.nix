@@ -58,6 +58,7 @@
         ];
       };
       pi-mcp-adapter = pkgs.callPackage ./packages/pi-mcp-adapter.nix { };
+      pi-web-access = pkgs.callPackage ./packages/pi-web-access.nix { };
     in
     {
       homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
@@ -67,6 +68,7 @@
             kanttiinit-cli
             system
             pi-mcp-adapter
+            pi-web-access
             ;
         };
         modules = [
