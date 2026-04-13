@@ -149,6 +149,7 @@ in
       '')
 
       pkgs."poppler-utils"
+      lat-md
     ];
 
     file = {
