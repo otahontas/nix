@@ -50,7 +50,7 @@
   3. if verification passes, commit and mark step as done. If not, fix and verify. Only commit when a step is fully working.
 - When user says "investigate", "check", "inspect", or "audit", only investigate and report findings. Don't implement changes unless explicitly told to.
 - Don't create plans/markdown for simple single-step tasks
-- Research and planning phase docs go in `plans/` folder at repo root. Name them after the investigation theme (e.g. `parallel-ticket-working-with-pi-agent-and-tk.md`), never include "plan" or "research" in the filename
+- Research and planning phase docs go in `plans/` folder at repo root.
 
 ## Local development scripts:
 

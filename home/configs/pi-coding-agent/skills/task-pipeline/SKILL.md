@@ -23,6 +23,8 @@ Fixed filenames because worktrees already isolate tasks — no need for unique s
 
 **Entry:** `/task <description>` or `/task` (to continue existing research)
 
+Any text after `/task` is the research context — the problem to investigate, requirements, constraints, etc. The agent passes this directly to the researcher subagent.
+
 This phase runs in an **isolated subagent** (`researcher`) that physically cannot modify files. The main agent's only jobs are: invoking the subagent and saving output.
 
 1. If `plans/task.md` exists: main agent reads it and passes contents as context to the researcher subagent
@@ -55,15 +57,16 @@ Keep writing until you can't find more. The user will tell you when to move on.
 
 ## Phase 2: Plan
 
-**Entry:** `/plan` (no arguments needed)
+**Entry:** `/plan` or `/plan <context>`
 
 This phase runs in an **isolated subagent** (`planner`) that physically cannot modify files.
 
 1. Main agent reads `plans/task.md` — the research findings
 2. If `plans/task.md` doesn't exist: tell the user to run `/task` first
-3. Main agent invokes the subagent tool: `{ agent: "planner", task: "<research findings>" }`
-4. The planner subagent runs in isolation — it can read files but **cannot edit or write anything**
-5. Main agent saves the subagent output to `plans/plan.md`
+3. If the user passed inline context (`/plan <context>`), prepend it to the research findings before passing to the planner
+4. Main agent invokes the subagent tool: `{ agent: "planner", task: "<user context + research findings>" }`
+5. The planner subagent runs in isolation — it can read files but **cannot edit or write anything**
+6. Main agent saves the subagent output to `plans/plan.md`
 
 ### Plan doc format
 
@@ -117,8 +120,8 @@ The user reviews and iterates. Do not proceed to tickets until the user explicit
 | -------- | -------- | ------------------------------ |
 | —        | Research | `/task <description>`          |
 | Research | Research | `/task` (continue)             |
-| Research | Plan     | `/plan`                        |
-| Plan     | Plan     | `/plan` (iterate)              |
+| Research | Plan     | `/plan` or `/plan <context>`   |
+| Plan     | Plan     | `/plan <context>` (iterate)    |
 | Plan     | Tickets  | `/tickets`                     |
 | Tickets  | Work     | `work-tickets` in the worktree |
 
