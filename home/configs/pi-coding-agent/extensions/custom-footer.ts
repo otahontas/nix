@@ -6,7 +6,10 @@
 import type { AssistantMessage } from "@mariozechner/pi-ai";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@mariozechner/pi-tui";
-import { execFile } from "node:child_process/promises";
+import { execFile as execFileCb } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFile = promisify(execFileCb);
 
 function formatTokens(count: number): string {
   if (count < 1000) return count.toString();
