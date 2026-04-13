@@ -31,15 +31,18 @@ Derived from the task description: lowercase, hyphens, short. Examples:
 
 **Entry:** `/task <description>` or `/task <slug>` (to continue)
 
-1. If worktree doesn't exist: create it
+This phase runs in an **isolated subagent** (`researcher`) that physically cannot modify files. The main agent's only jobs are: worktree creation, invoking the subagent, and saving output.
+
+1. Main agent creates worktree if it doesn't exist:
    ```bash
    repo_root=$(git rev-parse --show-toplevel)
    mkdir -p "$repo_root/.worktrees"
    git worktree add "$repo_root/.worktrees/<slug>" -b "<slug>"
    ```
-2. If `plans/<slug>.md` exists: read it, continue research
-3. Research the codebase, web, past sessions — be thorough
-4. Write/update `plans/<slug>.md`
+2. If `plans/<slug>.md` exists: main agent reads it and passes contents as context to the researcher subagent
+3. Main agent invokes the subagent tool: `{ agent: "researcher", task: "<research task with context>" }`
+4. The researcher subagent runs in isolation — it can read, search, and run read-only commands, but **cannot edit, write, or modify anything**
+5. Main agent saves the subagent output to `plans/<slug>.md`
 
 ### Research doc format
 
@@ -68,9 +71,13 @@ Keep writing until you can't find more. The user will tell you when to move on.
 
 **Entry:** `/plan <slug>`
 
-1. Read `plans/<slug>.md` — this is your input
-2. If `plans/<slug>.plan.md` exists: read it, iterate based on user feedback
-3. Write/update `plans/<slug>.plan.md`
+This phase runs in an **isolated subagent** (`planner`) that physically cannot modify files.
+
+1. Main agent reads `plans/<slug>.md` — the research findings
+2. If `plans/<slug>.md` doesn't exist: tell the user to run `/task` first
+3. Main agent invokes the subagent tool: `{ agent: "planner", task: "<research findings>" }`
+4. The planner subagent runs in isolation — it can read files but **cannot edit or write anything**
+5. Main agent saves the subagent output to `plans/<slug>.plan.md`
 
 ### Plan doc format
 
@@ -110,7 +117,13 @@ The user reviews and iterates. Do not proceed to tickets until the user explicit
 2. Explore the codebase for file hints and verification commands
 3. Seed `plans/.ticket-context.md` if it doesn't exist (see context seeding in ticket-creator skill)
 4. Create one ticket per plan step using ticket-creator skill Mode 3
-5. **Self-validate** (see ticket-creator skill for checklist):
+5. **Self-validate** (mandatory, every time):
+   - `tk list` — check all tickets are open
+   - For each ticket: `tk show <id>` — verify description has file hints, acceptance criteria are numbered and independently verifiable
+   - Refine any weak tickets immediately
+   - `tk dep cycle` — no cycles allowed
+   - `tk ready -T ready-for-development` — at least one ticket must be unblocked
+6. Report what was created
 
 ## Phase transitions
 

@@ -1,9 +1,7 @@
 ---
-description: Write or iterate on an implementation plan
+description: Write or iterate on an implementation plan using an isolated planner subagent
 ---
 
-Use your task-pipeline skill for the plan phase.
+Run /plan $@
 
-Slug: $@
-
-Read the research doc at plans/<slug>.md. Write or update the implementation plan at plans/<slug>.plan.md. Present the plan for user review. Do not create tickets until the user explicitly approves.
+This command will use the planner subagent to create a plan in an isolated process that cannot modify files.

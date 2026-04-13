@@ -63,17 +63,45 @@ let
     '';
   };
 
-  # Auto-discover extensions (.ts files)
-  extensionFiles = builtins.filter (name: lib.hasSuffix ".ts" name) (
-    builtins.attrNames (builtins.readDir ./extensions)
-  );
+  # Auto-discover extensions (.ts files and directories with index.ts)
+  extensionEntries = builtins.readDir ./extensions;
   extensionSymlinks = builtins.listToAttrs (
+    builtins.concatLists [
+      # Single .ts files
+      (map (name: {
+        name = ".pi/agent/extensions/${name}";
+        value = {
+          source = ./extensions/${name};
+        };
+      }) (builtins.filter (name: lib.hasSuffix ".ts" name) (builtins.attrNames extensionEntries)))
+      # Directories (extension subdirectories like subagent/)
+      (map
+        (name: {
+          name = ".pi/agent/extensions/${name}";
+          value = {
+            source = ./extensions/${name};
+          };
+        })
+        (
+          builtins.filter (name: extensionEntries.${name} == "directory") (
+            builtins.attrNames extensionEntries
+          )
+        )
+      )
+    ]
+  );
+
+  # Auto-discover agent definitions (.md files in agents/)
+  agentFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
+    builtins.attrNames (builtins.readDir ./agents)
+  );
+  agentSymlinks = builtins.listToAttrs (
     map (name: {
-      name = ".pi/agent/extensions/${name}";
+      name = ".pi/agent/agents/${name}";
       value = {
-        source = ./extensions/${name};
+        source = ./agents/${name};
       };
-    }) extensionFiles
+    }) agentFiles
   );
 
   # Auto-discover simple skills (no deps) - symlink entire directories
@@ -133,6 +161,7 @@ in
       ".pi/agent/mcp.json".source = ./mcp.json;
     }
     // extensionSymlinks
+    // agentSymlinks
     // skillSymlinks
     // promptSymlinks;
 
