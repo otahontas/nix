@@ -86,10 +86,10 @@ export default function (pi: ExtensionAPI) {
           "4. Create one ticket per plan step using ticket-creator skill Mode 3",
           "5. Self-validate (mandatory):",
           "   - tk list — check all tickets are open",
-          "   - For each ticket: tk show <id> — verify description has file hints, acceptance criteria are numbered and independently verifiable",
+          "   - For each ticket: tk show <id> - verify description has file hints, acceptance criteria are numbered and independently verifiable",
           "   - Refine any weak tickets immediately",
           "   - tk dep cycle — no cycles allowed",
-          "   - tk ready -T ready-for-development — at least one ticket must be unblocked",
+          "   - tk ready -T ready-for-development - each ticket needs to be unblocked. If ticket needs another ticket to unblock it, another ticket should have it explicitly stated in that ticket.",
           "6. Report what was created",
         ].join("\n"),
       );
