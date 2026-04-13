@@ -1,4 +1,7 @@
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type {
+  ExtensionAPI,
+  ExtensionContext,
+} from "@mariozechner/pi-coding-agent";
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -21,6 +24,24 @@ interface GitHubCopilotUserResponse {
   };
 }
 type Provider = "github-copilot" | "zai" | string;
+
+// Auth config (~/.pi/agent/auth.json)
+interface AuthConfig {
+  "github-copilot"?: {
+    refresh?: string;
+    enterpriseUrl?: string;
+  };
+}
+
+// Models config (~/.pi/agent/models.json)
+interface ModelsConfig {
+  providers?: {
+    zai?: {
+      baseUrl?: string;
+      apiKey?: string;
+    };
+  };
+}
 
 // Z.ai quota endpoint response
 interface ZaiQuotaWindow {
@@ -69,27 +90,18 @@ export default function (pi: ExtensionAPI) {
   // Z.ai cache
   let cachedZaiQuota: ZaiQuotaLimit | null = null;
   let lastZaiFetched = 0;
-  let modelsData: any | null = null;
+  let modelsData: ModelsConfig | null = null;
   let lastModelsFetched = 0;
-  let modelsFetchInFlight: Promise<any | null> | null = null;
+  let modelsFetchInFlight: Promise<ModelsConfig | null> | null = null;
 
   // auth.json cache (shared by all providers)
-  let cachedAuthData: any | null = null;
+  let cachedAuthData: AuthConfig | null = null;
   let lastAuthFetched = 0;
-  let authFetchInFlight: Promise<any | null> | null = null;
+  let authFetchInFlight: Promise<AuthConfig | null> | null = null;
 
   function logDebug(...args: any[]) {
     if (MODEL_QUOTA_DEBUG) console.error(...args);
   }
-
-  const autoRefreshKey = Symbol.for(
-    "@otahontas/pi:model-quota:autoRefreshTimer",
-  );
-  const existingAutoRefreshTimer = (globalThis as any)[autoRefreshKey] as
-    | ReturnType<typeof setInterval>
-    | undefined;
-  if (existingAutoRefreshTimer) clearInterval(existingAutoRefreshTimer);
-  (globalThis as any)[autoRefreshKey] = undefined;
 
   let autoRefreshTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -116,7 +128,7 @@ export default function (pi: ExtensionAPI) {
   }
 
   async function refreshQuotaForActiveModel(
-    ctx: any,
+    ctx: ExtensionContext,
     options: { force?: boolean; notify?: boolean } = {},
   ) {
     if (!ctx?.hasUI) return;
@@ -149,7 +161,7 @@ export default function (pi: ExtensionAPI) {
     lastSuccessfulModelId = activeModelId ?? null;
   }
 
-  function startAutoRefresh(ctx: any) {
+  function startAutoRefresh(ctx: ExtensionContext) {
     if (autoRefreshTimer) return;
 
     autoRefreshTimer = setInterval(
@@ -158,8 +170,6 @@ export default function (pi: ExtensionAPI) {
       },
       5 * 60 * 1000,
     );
-
-    (globalThis as any)[autoRefreshKey] = autoRefreshTimer;
   }
 
   pi.on("session_shutdown", async (_event, _ctx) => {
@@ -167,7 +177,6 @@ export default function (pi: ExtensionAPI) {
       clearInterval(autoRefreshTimer);
       autoRefreshTimer = null;
     }
-    (globalThis as any)[autoRefreshKey] = undefined;
   });
 
   pi.on("session_start", async (_event, ctx) => {
@@ -408,9 +417,9 @@ export default function (pi: ExtensionAPI) {
     return text.replace(/\x1b\[[0-9;]*m/g, "");
   }
 
-  async function readAuthData(): Promise<any | null> {
+  async function readAuthData(): Promise<AuthConfig | null> {
     const now = Date.now();
-    if (cachedAuthData && now - lastAuthFetched < 1000) return cachedAuthData;
+    if (cachedAuthData && now - lastAuthFetched < 60_000) return cachedAuthData;
     if (authFetchInFlight) return authFetchInFlight;
 
     const promise = (async () => {
@@ -516,9 +525,9 @@ export default function (pi: ExtensionAPI) {
     }
   }
 
-  async function readModelsData(): Promise<any | null> {
+  async function readModelsData(): Promise<ModelsConfig | null> {
     const now = Date.now();
-    if (modelsData && now - lastModelsFetched < 1000) return modelsData;
+    if (modelsData && now - lastModelsFetched < 60_000) return modelsData;
     if (modelsFetchInFlight) return modelsFetchInFlight;
 
     const promise = (async () => {

@@ -7,7 +7,10 @@
  */
 
 import { completeSimple } from "@mariozechner/pi-ai";
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type {
+  ExtensionAPI,
+  ExtensionContext,
+} from "@mariozechner/pi-coding-agent";
 
 const MAX_FOLLOWUPS = 1;
 const STOP_CHECK_PROMPT =
@@ -18,6 +21,8 @@ const LOCAL_GATEKEEPER_MODEL_ID = "gemma4:e2b";
 
 const CLOUD_GATEKEEPER_PROVIDER = "zai";
 const CLOUD_GATEKEEPER_MODEL_ID = "glm-4.5-air";
+
+const MAX_GATEKEEPER_FAILURES = 3;
 
 const GATEKEEPER_PROMPT = `You are a gatekeeper that decides whether an AI coding agent should be nudged to double-check its work.
 
@@ -33,31 +38,36 @@ Answer NO if:
 
 Respond with only YES or NO.`;
 
+const PAIRS_TO_SEND = 3;
+
+function extractText(content: unknown): string {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content))
+    return content
+      .filter((b: any) => b.type === "text")
+      .map((b: any) => b.text)
+      .join("\n");
+  return "";
+}
+
 function buildGatekeeperMessages(messages: any[]) {
-  const lastUserMsg = [...messages]
-    .reverse()
-    .find((m: any) => m.role === "user");
-  const lastAssistantMsg = [...messages]
-    .reverse()
-    .find((m: any) => m.role === "assistant");
+  // Single reverse pass: collect last N user-assistant pairs
+  const collected: { role: string; content: unknown }[] = [];
+  let pairCount = 0;
 
-  const userText = lastUserMsg?.content
-    ? typeof lastUserMsg.content === "string"
-      ? lastUserMsg.content
-      : lastUserMsg.content
-          .filter((b: any) => b.type === "text")
-          .map((b: any) => b.text)
-          .join("\n")
-    : "(no user message)";
+  for (let i = messages.length - 1; i >= 0 && pairCount < PAIRS_TO_SEND; i--) {
+    const m = messages[i];
+    if (m.role !== "user" && m.role !== "assistant") continue;
+    collected.unshift(m);
+    if (m.role === "user") pairCount++;
+  }
 
-  const assistantText = lastAssistantMsg?.content
-    ? Array.isArray(lastAssistantMsg.content)
-      ? lastAssistantMsg.content
-          .filter((b: any) => b.type === "text")
-          .map((b: any) => b.text)
-          .join("\n")
-      : String(lastAssistantMsg.content)
-    : "(no assistant message)";
+  const text = collected
+    .map((m) => {
+      const label = m.role === "user" ? "User" : "Assistant";
+      return `${label}:\n${extractText(m.content)}`;
+    })
+    .join("\n\n");
 
   return [
     {
@@ -65,7 +75,7 @@ function buildGatekeeperMessages(messages: any[]) {
       content: [
         {
           type: "text" as const,
-          text: `${GATEKEEPER_PROMPT}\n\nUser:\n${userText.slice(0, 4000)}\n\nAssistant:\n${assistantText.slice(0, 4000)}`,
+          text: `${GATEKEEPER_PROMPT}\n\n${text}`,
         },
       ],
       timestamp: Date.now(),
@@ -77,7 +87,7 @@ async function askGatekeeper(
   provider: string,
   modelId: string,
   contextMessages: any[],
-  ctx: any,
+  ctx: ExtensionContext,
 ): Promise<boolean | null> {
   const model = ctx.modelRegistry.find(provider, modelId);
   if (!model) return null;
@@ -105,7 +115,36 @@ async function askGatekeeper(
   return !text.startsWith("NO");
 }
 
-async function shouldSendNudge(messages: any[], ctx: any): Promise<boolean> {
+// Quick heuristic: skip gatekeeper for obvious completions
+function looksComplete(messages: any[]): boolean {
+  const lastAssistant = [...messages]
+    .reverse()
+    .find((m: any) => m.role === "assistant");
+  if (!lastAssistant) return false;
+
+  const text = extractText(lastAssistant.content).toLowerCase();
+
+  // Check for completion signals in the assistant's response
+  const completionSignals = [
+    /\ball (changes|tasks|steps) (applied|done|complete|committed)\b/,
+    /\bverification passed\b/,
+    /\ball tests? (pass|passed)\b/,
+  ];
+
+  return completionSignals.some((re) => re.test(text));
+}
+
+async function shouldSendNudge(
+  messages: any[],
+  ctx: ExtensionContext,
+  failureCounter: { count: number },
+): Promise<boolean> {
+  // Skip gatekeeper if too many consecutive failures
+  if (failureCounter.count >= MAX_GATEKEEPER_FAILURES) return false;
+
+  // Quick heuristic: skip for obvious completions
+  if (looksComplete(messages)) return false;
+
   const contextMessages = buildGatekeeperMessages(messages);
 
   // Try local gatekeeper model first
@@ -116,9 +155,12 @@ async function shouldSendNudge(messages: any[], ctx: any): Promise<boolean> {
       contextMessages,
       ctx,
     );
-    if (result !== null) return result;
+    if (result !== null) {
+      failureCounter.count = 0;
+      return result;
+    }
   } catch {
-    // Local model unavailable, fall through to cloud
+    failureCounter.count++;
   }
 
   // Fall back to cloud gatekeeper model
@@ -129,17 +171,22 @@ async function shouldSendNudge(messages: any[], ctx: any): Promise<boolean> {
       contextMessages,
       ctx,
     );
-    if (result !== null) return result;
+    if (result !== null) {
+      failureCounter.count = 0;
+      return result;
+    }
   } catch {
-    // Cloud model also unavailable, fall through to default
+    failureCounter.count++;
   }
 
-  // Both models unavailable — nudge as safe default
+  // Both models unavailable — nudge as safe default (unless too many failures)
+  if (failureCounter.count >= MAX_GATEKEEPER_FAILURES) return false;
   return true;
 }
 
 export default function (pi: ExtensionAPI) {
   let followupCount = 0;
+  const gatekeeperFailures = { count: 0 };
 
   pi.on("input", async (event) => {
     if (event.source !== "extension") {
@@ -160,7 +207,11 @@ export default function (pi: ExtensionAPI) {
     if (!hasToolUse) return;
 
     // Ask gatekeeper model whether to nudge
-    const shouldNudge = await shouldSendNudge(event.messages, _ctx);
+    const shouldNudge = await shouldSendNudge(
+      event.messages,
+      _ctx,
+      gatekeeperFailures,
+    );
     if (!shouldNudge) return;
 
     followupCount++;

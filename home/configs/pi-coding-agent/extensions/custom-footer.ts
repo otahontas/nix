@@ -6,7 +6,7 @@
 import type { AssistantMessage } from "@mariozechner/pi-ai";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@mariozechner/pi-tui";
-import { execSync } from "node:child_process";
+import { execFile } from "node:child_process/promises";
 
 function formatTokens(count: number): string {
   if (count < 1000) return count.toString();
@@ -36,13 +36,21 @@ function rightAlign(
   return left;
 }
 
-function getStarshipLine(cwd: string, dim: (s: string) => string): string {
+function getCwdDisplay(cwd: string): string {
+  const home = process.env.HOME || process.env.USERPROFILE;
+  if (home && cwd.startsWith(home)) {
+    return `~${cwd.slice(home.length)}`;
+  }
+  return cwd;
+}
+
+async function fetchStarship(cwd: string): Promise<string> {
   try {
-    const raw = execSync(
-      "starship prompt --status=0 --cmd-duration=0 --jobs=0",
+    const { stdout: raw } = await execFile(
+      "starship",
+      ["prompt", "--status=0", "--cmd-duration=0", "--jobs=0"],
       {
         cwd,
-        encoding: "utf-8",
         timeout: 500,
         env: { ...process.env, TERM_PROGRAM: "ghostty" },
       },
@@ -51,49 +59,78 @@ function getStarshipLine(cwd: string, dim: (s: string) => string): string {
     const line = cleaned.split("\n").find((l) => visibleWidth(l) > 2) ?? "";
     return line.replace(/^\s+/, "").replace(/\s+$/, "");
   } catch {
-    let fallback = cwd;
-    const home = process.env.HOME || process.env.USERPROFILE;
-    if (home && fallback.startsWith(home)) {
-      fallback = `~${fallback.slice(home.length)}`;
-    }
-    return dim(fallback);
+    return "";
   }
+}
+
+interface TokenCache {
+  totalInput: number;
+  totalOutput: number;
+  totalCacheRead: number;
+  totalCacheWrite: number;
+  entryCount: number;
 }
 
 export default function (pi: ExtensionAPI) {
   pi.on("session_start", (_event, ctx) => {
+    let cachedStarship = "";
+    const tokenCache: TokenCache = {
+      totalInput: 0,
+      totalOutput: 0,
+      totalCacheRead: 0,
+      totalCacheWrite: 0,
+      entryCount: 0,
+    };
+
     ctx.ui.setFooter((tui, theme, footerData) => {
-      const unsub = footerData.onBranchChange(() => tui.requestRender());
+      // Pre-fetch starship asynchronously, re-render when ready
+      fetchStarship(ctx.cwd).then((val) => {
+        cachedStarship = val;
+        tui.requestRender();
+      });
+
+      const unsub = footerData.onBranchChange(async () => {
+        cachedStarship = await fetchStarship(ctx.cwd);
+        tui.requestRender();
+      });
 
       return {
         dispose: unsub,
         invalidate() {},
         render(width: number): string[] {
-          // Cumulative usage from all session entries
-          let totalInput = 0;
-          let totalOutput = 0;
-          let totalCacheRead = 0;
-          let totalCacheWrite = 0;
-
-          for (const entry of ctx.sessionManager.getEntries()) {
-            if (
-              entry.type === "message" &&
-              entry.message.role === "assistant"
-            ) {
-              const m = entry.message as AssistantMessage;
-              totalInput += m.usage.input;
-              totalOutput += m.usage.output;
-              totalCacheRead += m.usage.cacheRead;
-              totalCacheWrite += m.usage.cacheWrite;
-            }
-          }
-
-          // Line 1: starship prompt with session name right-aligned
-          const starship = getStarshipLine(ctx.cwd, (s) => theme.fg("dim", s));
+          // Line 1: starship prompt (cached) with session name right-aligned
+          const starship =
+            cachedStarship || theme.fg("dim", getCwdDisplay(ctx.cwd));
           const sessionName = ctx.sessionManager.getSessionName();
           const line1 = sessionName
             ? rightAlign(starship, theme.fg("dim", sessionName), width)
             : starship;
+
+          // Token totals (cached, only recompute when entry count changes)
+          const entries = ctx.sessionManager.getEntries();
+          if (entries.length !== tokenCache.entryCount) {
+            let ti = 0,
+              to = 0,
+              tcr = 0,
+              tcw = 0;
+            for (const entry of entries) {
+              if (
+                entry.type === "message" &&
+                entry.message.role === "assistant"
+              ) {
+                const m = entry.message as AssistantMessage;
+                ti += m.usage.input;
+                to += m.usage.output;
+                tcr += m.usage.cacheRead;
+                tcw += m.usage.cacheWrite;
+              }
+            }
+            tokenCache.totalInput = ti;
+            tokenCache.totalOutput = to;
+            tokenCache.totalCacheRead = tcr;
+            tokenCache.totalCacheWrite = tcw;
+            tokenCache.entryCount = entries.length;
+          }
 
           // Line 2 left: token stats + context usage
           const contextUsage = ctx.getContextUsage();
@@ -101,17 +138,21 @@ export default function (pi: ExtensionAPI) {
           const contextWindow = contextUsage?.contextWindow ?? 0;
 
           const statsParts: string[] = [];
-          if (totalInput)
-            statsParts.push(theme.fg("muted", `↑${formatTokens(totalInput)}`));
-          if (totalOutput)
-            statsParts.push(theme.fg("muted", `↓${formatTokens(totalOutput)}`));
-          if (totalCacheRead)
+          if (tokenCache.totalInput)
             statsParts.push(
-              theme.fg("muted", `R${formatTokens(totalCacheRead)}`),
+              theme.fg("muted", `↑${formatTokens(tokenCache.totalInput)}`),
             );
-          if (totalCacheWrite)
+          if (tokenCache.totalOutput)
             statsParts.push(
-              theme.fg("muted", `W${formatTokens(totalCacheWrite)}`),
+              theme.fg("muted", `↓${formatTokens(tokenCache.totalOutput)}`),
+            );
+          if (tokenCache.totalCacheRead)
+            statsParts.push(
+              theme.fg("muted", `R${formatTokens(tokenCache.totalCacheRead)}`),
+            );
+          if (tokenCache.totalCacheWrite)
+            statsParts.push(
+              theme.fg("muted", `W${formatTokens(tokenCache.totalCacheWrite)}`),
             );
 
           const contextDisplay = `${contextPct.toFixed(1)}%/${formatTokens(contextWindow)}`;

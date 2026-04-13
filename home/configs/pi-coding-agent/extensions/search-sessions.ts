@@ -5,7 +5,7 @@
 
 import { Type } from "@sinclair/typebox";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -22,6 +22,12 @@ interface IndexEntry {
   path: string;
 }
 
+interface IndexMeta {
+  df: Map<string, number>;
+  avgTitleLen: number;
+  avgContentLen: number;
+}
+
 interface Index {
   version: number;
   built: string;
@@ -33,6 +39,27 @@ function tokenize(text: string): string[] {
     .toLowerCase()
     .split(/\W+/)
     .filter((t) => t.length > 1);
+}
+
+function computeMeta(entries: IndexEntry[]): IndexMeta {
+  const df = new Map<string, number>();
+  let totalTitleLen = 0;
+  let totalContentLen = 0;
+
+  for (const entry of entries) {
+    const titleTokens = new Set(tokenize(entry.title));
+    const contentTokens = new Set(tokenize(entry.content));
+    totalTitleLen += titleTokens.size || 1;
+    totalContentLen += contentTokens.size || 1;
+    for (const t of titleTokens) df.set(t, (df.get(t) || 0) + 1);
+    for (const t of contentTokens) df.set(t, (df.get(t) || 0) + 1);
+  }
+
+  return {
+    df,
+    avgTitleLen: totalTitleLen / entries.length,
+    avgContentLen: totalContentLen / entries.length,
+  };
 }
 
 function bm25Score(
@@ -82,13 +109,16 @@ function bm25Score(
 
 const INDEX_PATH = join(homedir(), ".cache", "pi-session-index.json");
 let cachedIndex: Index | null = null;
+let cachedMeta: IndexMeta | null = null;
 
-function loadIndex(): Index {
-  if (cachedIndex) return cachedIndex;
+async function loadIndex(): Promise<{ index: Index; meta: IndexMeta }> {
+  if (cachedIndex && cachedMeta)
+    return { index: cachedIndex, meta: cachedMeta };
   try {
-    const raw = readFileSync(INDEX_PATH, "utf-8");
+    const raw = await readFile(INDEX_PATH, "utf-8");
     cachedIndex = JSON.parse(raw) as Index;
-    return cachedIndex;
+    cachedMeta = computeMeta(cachedIndex.entries);
+    return { index: cachedIndex, meta: cachedMeta };
   } catch {
     throw new Error(
       "Session index not found. Run build-session-index manually or wait for the launchd timer. " +
@@ -125,7 +155,7 @@ export default function (pi: ExtensionAPI) {
     }),
 
     async execute(_id, params) {
-      const index = loadIndex();
+      const { index, meta } = await loadIndex();
       const entries = index.entries;
       const N = entries.length;
       if (N === 0) {
@@ -146,23 +176,6 @@ export default function (pi: ExtensionAPI) {
         };
       }
 
-      // Build document frequency map
-      const df = new Map<string, number>();
-      let totalTitleLen = 0;
-      let totalContentLen = 0;
-
-      for (const entry of entries) {
-        const titleTokens = new Set(tokenize(entry.title));
-        const contentTokens = new Set(tokenize(entry.content));
-        totalTitleLen += titleTokens.size || 1;
-        totalContentLen += contentTokens.size || 1;
-        for (const t of titleTokens) df.set(t, (df.get(t) || 0) + 1);
-        for (const t of contentTokens) df.set(t, (df.get(t) || 0) + 1);
-      }
-
-      const avgTitleLen = totalTitleLen / N;
-      const avgContentLen = totalContentLen / N;
-
       // Apply filters and score
       const now = Date.now();
       const dayMs = 86400000;
@@ -181,17 +194,17 @@ export default function (pi: ExtensionAPI) {
         candidates = candidates.filter((e) => e.date >= cutoff);
       }
 
-      // Score and rank
+      // Score and rank using precomputed meta
       const scored = candidates
         .map((entry) => ({
           entry,
           score: bm25Score(
             queryTerms,
             entry,
-            df,
+            meta.df,
             N,
-            avgTitleLen,
-            avgContentLen,
+            meta.avgTitleLen,
+            meta.avgContentLen,
           ),
         }))
         .filter((r) => r.score > 0)
@@ -247,9 +260,11 @@ export default function (pi: ExtensionAPI) {
 
     async execute(_id, params) {
       const maxMessages = params.max_messages ?? 20;
+      const truncateAt = Math.min(2000, Math.floor(10000 / maxMessages));
+
       let raw: string;
       try {
-        raw = readFileSync(params.path, "utf-8");
+        raw = await readFile(params.path, "utf-8");
       } catch {
         return {
           content: [
@@ -299,8 +314,8 @@ export default function (pi: ExtensionAPI) {
         .map((m) => {
           const label = m.role === "user" ? "**User**" : "**Assistant**";
           const text =
-            m.text.length > 500
-              ? m.text.slice(0, 500) + "\n... (truncated)"
+            m.text.length > truncateAt
+              ? m.text.slice(0, truncateAt) + "\n... (truncated)"
               : m.text;
           return `${label}: ${text}`;
         })
