@@ -316,7 +316,8 @@ in
         ".localized"
         "**/.worktrees/**"
         "**/.local_scripts/**"
-        "*plan*.md"
+        "**/plans/**"
+        "**/.tickets/logs/**"
       ];
     };
 
