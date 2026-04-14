@@ -21,40 +21,6 @@ type Guard = (
 // =============================================================================
 
 /**
- * Block local git config
- *
- * Prevents: git config user.name/user.email/commit.gpgsign without --global
- */
-const blockLocalGitConfig: Guard = (event) => {
-  if (event.toolName !== "bash") return;
-
-  const cmd = event.input.command;
-  const localGitConfigPattern =
-    /git\s+config\s+(user\.name|user\.email|commit\.gpgsign)/;
-
-  if (localGitConfigPattern.test(cmd) && !cmd.includes("--global")) {
-    return {
-      block: true,
-      reason:
-        "🚫 **Local git config modification blocked**\n\n" +
-        "You're attempting to modify git configuration locally.\n\n" +
-        "**From your AGENTS.md:**\n" +
-        "> Git author/email/signing is configured globally - never set these locally per-repo\n\n" +
-        "**What was blocked:**\n" +
-        "- `git config user.name`\n" +
-        "- `git config user.email`\n" +
-        "- `git config commit.gpgsign`\n\n" +
-        "**Why this matters:**\n" +
-        "- Your git identity is configured globally\n" +
-        "- Local overrides can cause commits to appear unverified\n" +
-        "- Maintains consistency across all repositories\n\n" +
-        "**If you need to change git settings:**\n" +
-        'Use global config: `git config --global user.name "Your Name"`',
-    };
-  }
-};
-
-/**
  * Block non-conventional commits
  *
  * Enforces: type(optional-scope): description
@@ -299,7 +265,6 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.on("tool_call", async (event, ctx) => {
-    // Run static guards first
     for (const guard of guards) {
       try {
         const result = guard(event, ctx);
@@ -309,48 +274,6 @@ export default function (pi: ExtensionAPI) {
       } catch (error) {
         console.error(`Error in guard:`, error);
       }
-    }
-
-    // Ticket gate: detect when agent reads the ticket
-    if (
-      pendingTicketId &&
-      !ticketRead &&
-      event.toolName === "bash" &&
-      typeof event.input.command === "string" &&
-      TK_SHOW_RE.test(event.input.command) &&
-      event.input.command.includes(pendingTicketId)
-    ) {
-      ticketRead = true;
-      return;
-    }
-
-    // Ticket gate: block edit/write until ticket is read
-    if (
-      pendingTicketId &&
-      !ticketRead &&
-      (event.toolName === "edit" || event.toolName === "write")
-    ) {
-      return {
-        block: true,
-        reason:
-          `📋 **Read the ticket first**\n\n` +
-          `You referenced ticket \`${pendingTicketId}\` but haven't read it yet.\n\n` +
-          `Run \`tk show ${pendingTicketId}\` before making changes.`,
-      };
-    }
-
-    // Investigation mode: block edit/write
-    if (
-      investigationMode &&
-      (event.toolName === "edit" || event.toolName === "write")
-    ) {
-      return {
-        block: true,
-        reason:
-          "🔍 **Investigation mode active**\n\n" +
-          "The user asked you to investigate, not to make changes.\n" +
-          "Report your findings. The user will tell you when to fix things.",
-      };
     }
   });
 }
