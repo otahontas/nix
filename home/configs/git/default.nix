@@ -1,54 +1,24 @@
 { pkgs, config, ... }:
 let
-
-  format-duration = pkgs.writeShellScriptBin "format-duration" (
-    builtins.readFile ./scripts/format-duration.sh
-  );
-  gh-pr-select = pkgs.writeShellScriptBin "gh-pr-select" (
-    builtins.readFile ./scripts/gh-pr-select.sh
-  );
-  gh-pr-get-url = pkgs.writeShellScriptBin "gh-pr-get-url" (
-    builtins.readFile ./scripts/gh-pr-get-url.sh
-  );
-  gh-pr-copy-url = pkgs.writeShellScriptBin "gh-pr-copy-url" (
-    builtins.readFile ./scripts/gh-pr-copy-url.sh
-  );
-  gh-repo-get-url = pkgs.writeShellScriptBin "gh-repo-get-url" (
-    builtins.readFile ./scripts/gh-repo-get-url.sh
-  );
-  gh-repo-copy-url = pkgs.writeShellScriptBin "gh-repo-copy-url" (
-    builtins.readFile ./scripts/gh-repo-copy-url.sh
-  );
-  gh-pr-review = pkgs.writeShellScriptBin "gh-pr-review" (
-    builtins.readFile ./scripts/gh-pr-review.sh
-  );
-  gh-pr-approve-and-merge = pkgs.writeShellScriptBin "gh-pr-approve-and-merge" (
-    builtins.readFile ./scripts/gh-pr-approve-and-merge.sh
-  );
-  gh-run-view = pkgs.writeShellScriptBin "gh-run-view" (builtins.readFile ./scripts/gh-run-view.sh);
-  gh-release-slack = pkgs.writeShellScriptBin "gh-release-slack" (
-    builtins.readFile ./scripts/gh-release-slack.sh
-  );
-  git-worktree-prune = pkgs.writeShellScriptBin "git-worktree-prune" (
-    builtins.readFile ./scripts/git-worktree-prune.sh
-  );
+  ghScript = builtins.readFile ./scripts/gh.sh;
+  gitExtrasScript = builtins.readFile ./scripts/git-extras.sh;
 in
 {
   home = {
     file.".ssh/allowed_signers".source = ./allowed_signers;
 
     packages = [
-      format-duration
-      gh-pr-select
-      gh-pr-get-url
-      gh-pr-copy-url
-      gh-repo-get-url
-      gh-repo-copy-url
-      gh-pr-review
-      gh-pr-approve-and-merge
-      gh-run-view
-      gh-release-slack
-      git-worktree-prune
+      (pkgs.writeShellScriptBin "format-duration" gitExtrasScript)
+      (pkgs.writeShellScriptBin "git-worktree-prune" gitExtrasScript)
+      (pkgs.writeShellScriptBin "gh-pr-select" ghScript)
+      (pkgs.writeShellScriptBin "gh-pr-get-url" ghScript)
+      (pkgs.writeShellScriptBin "gh-pr-copy-url" ghScript)
+      (pkgs.writeShellScriptBin "gh-repo-get-url" ghScript)
+      (pkgs.writeShellScriptBin "gh-repo-copy-url" ghScript)
+      (pkgs.writeShellScriptBin "gh-pr-review" ghScript)
+      (pkgs.writeShellScriptBin "gh-pr-approve-and-merge" ghScript)
+      (pkgs.writeShellScriptBin "gh-run-view" ghScript)
+      (pkgs.writeShellScriptBin "gh-release-slack" ghScript)
     ];
   };
 

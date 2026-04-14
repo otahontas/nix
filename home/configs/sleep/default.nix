@@ -1,13 +1,10 @@
 { pkgs, ... }:
 let
-  disableSleep = pkgs.writeShellScriptBin "disable-sleep" (
-    builtins.readFile ./scripts/disable-sleep.sh
-  );
-  enableSleep = pkgs.writeShellScriptBin "enable-sleep" (builtins.readFile ./scripts/enable-sleep.sh);
+  sleepScript = builtins.readFile ./scripts/sleep.sh;
 in
 {
   home.packages = [
-    disableSleep
-    enableSleep
+    (pkgs.writeShellScriptBin "disable-sleep" sleepScript)
+    (pkgs.writeShellScriptBin "enable-sleep" sleepScript)
   ];
 }

@@ -6,15 +6,16 @@ One directory per tool under `home/configs/`, each with `default.nix`. Home-mana
 
 Shell scripts live in `scripts/` subdirectories next to their `default.nix`. The nix files use `builtins.readFile ./scripts/<name>.sh` with `writeShellScriptBin`. This keeps scripts lintable and formattable.
 
+Related scripts are grouped into single files using `basename "$0"` dispatch — each `writeShellScriptBin` creates a binary whose name determines which function runs.
+
 Configs with extracted scripts:
 
 - `fd/` — `find-and-prune`
-- `fish/` — `listening`, `nukeport`, `trash-empty`
-- `git/` — `format-duration`, `gh-*` helpers, `git-worktree-prune`
-- `neovim/` — `todo_path`, `daily_path`, `todo`, `daily`
-- `pi-coding-agent/` — `pi` wrapper (uses `replaceVars` for nix store paths)
+- `git/` — `gh.sh` (all `gh-*` helpers), `git-extras.sh` (`format-duration`, `git-worktree-prune`)
+- `neovim/` — `todo.sh` (`todo_path`, `todo`), `daily.sh` (`daily_path`, `daily`)
 - `qpdf/` — `combine-pdfs-in-folder`
-- `sleep/` — `disable-sleep`, `enable-sleep`
+- `sleep/` — `sleep.sh` (`disable-sleep`, `enable-sleep`)
+- `utils/` — `utils.sh` (`listening`, `nukeport`, `trash-empty`)
 - `yubikey-manager/` — `yk-status`
 
 ## pi-coding-agent
