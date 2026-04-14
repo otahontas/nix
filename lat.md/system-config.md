@@ -1,16 +1,18 @@
 # System config
 
-nix-darwin flake in `system/`. Manages macOS defaults, user accounts, firewall, nix daemon, keyboard layouts.
+nix-darwin flake in `system/`. Manages macOS defaults, user accounts, firewall, nix daemon, keyboard layouts. Requires sudo — always ask user to apply, never apply yourself.
 
-Requires sudo. Apply with `devenv tasks run system:apply`.
+Apply with `devenv tasks run system:apply`.
 
 ## What it configures
 
-macOS defaults and daemon settings managed here.
+macOS defaults and daemon settings.
 
-- Finder, Dock, trackpad, screencapture defaults
-- Nix daemon — gc schedule, substituters, experimental features
-- TouchID for sudo via PAM
-- Firewall with stealth mode
-- Fish as default shell
-- Custom keyboard layout in `system/keyboard/`
+- **Finder/Dock/trackpad** — show pathbar, autohide dock, tap-to-click, three-finger drag
+- **Keyboard** — fast repeat, no press-and-hold, custom US International no-dead-keys layout in `system/keyboard/`
+- **Screencapture** — PNG to home dir, no shadow, no thumbnail
+- **Nix daemon** — auto gc (weekly), substituters (nix-community, devenv), experimental features, linux-builder
+- **TouchID** for sudo via PAM
+- **Firewall** with stealth mode
+- **Fish** as default shell
+- **Sudo** — passwordless `mas install` for the user

@@ -1,2 +1,0 @@
-- Requires admin privileges - always ask user to apply the changes, never apply yourself
-- Use devenv to apply the system config

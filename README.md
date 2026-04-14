@@ -1,28 +1,25 @@
 # nix config
 
-nix-darwin + home-manager based nix setup for macos. main goodies: devenv, neovim, fish, pi-coding assistant, catppuccin, gpg based git & ssh setup.
+nix-darwin + home-manager setup for macOS. Two flakes — one for the user, one for the system — sharing a devenv shell.
 
-config is separated to two folders:
+- **`home/`** — home-manager config for CLI and GUI apps (shells, editor, pi-coding-agent, catppuccin)
+- **`system/`** — nix-darwin config for system settings and global installs
 
-- **`home/`** - home-manager config for CLI and GUI apps for single user
-- **`system/`** - nix-darwin config for system settings / global installs
+## What's included
 
-dev setup is handled with devenv.
+See `lat.md/` for full documentation. Briefly:
 
-## Structure
+- **Shells** — fish with per-tool integrations
+- **Editor** — neovim with LSPs for Nix, shell, Lua
+- **Dev env** — devenv with languages, formatters, git hooks
+- **AI tooling** — pi coding agent with extensions and skills
+- **Theme** — catppuccin across all apps
+- **GPG/SSH** — YubiKey-based git signing and SSH
 
+## Quick start
+
+```sh
+devenv shell                    # enter dev environment
+devenv tasks run home:apply     # apply home-manager config
+devenv tasks run system:apply   # apply system config (requires sudo)
 ```
-home/
-  flake.nix           # Home-manager entry point
-  configs/            # Per-tool configurations
-    bash/
-    zsh/
-    git/
-    ...
-
-system/
-  flake.nix           # Nix-darwin entry point
-  ...
-```
-
-As with many nix setups, don't just blindly copy and apply.

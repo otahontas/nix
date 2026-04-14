@@ -1,32 +1,35 @@
 # Architecture
 
-Nix-managed macOS workstation. Two flakes — one for the user, one for the system — sharing a devenv shell at the repo root.
+Two-flake Nix setup for macOS: home-manager (user) + nix-darwin (system), sharing a devenv shell at the repo root.
 
 ## Repo layout
 
-Directory tree and what each top-level folder contains.
+Top-level directories and key files.
 
 ```
-home/       home-manager flake — shells, CLI tools, GUI apps, pi-coding-agent
-system/     nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
-devenv.nix  shared dev shell, tasks, linters
-scripts/    update-manual-packages.sh
+home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-coding-agent
+  configs/       per-tool directories, each with default.nix (42 configs)
+  packages/      manual npm derivations (pi-mcp-adapter, pi-web-access)
+system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
+  keyboard/      custom US International no-dead-keys layout
+devenv.nix       repo-specific dev shell: ollama-bin, rtk, typos config, fish_indent, tasks
+devenv.yaml      imports devenv-base as flake input
+scripts/         update-manual-packages.sh — bumps npm packages not in nixpkgs
+lat.md/          this documentation
 ```
 
 ## Flakes
 
-Both flakes pin `nixpkgs-unstable` independently. `home/` pulls extra inputs: catppuccin, brew-nix, kanttiinit-cli, pi-catppuccin.
+Both flakes pin `nixpkgs-unstable` independently. `home/` pulls extra inputs:
 
-Apply commands live in `devenv.nix` tasks:
+- **catppuccin / pi-catppuccin** — global theme (macchiato/blue) across terminal, editor, pi TUI
+- **kanttiinit-cli** — personal CLI tool
+- **brew-nix** — package overlay used by `mas` for Mac App Store installs
 
-- `devenv tasks run home:apply` — home-manager switch
-- `devenv tasks run system:apply` — darwin-rebuild switch
-- `devenv tasks run nix:update` — update all lockfiles + manual packages
+## Tasks
 
-## Config auto-import
+Defined in `devenv.nix`, run with `devenv tasks run <task>`:
 
-`home/flake.nix` auto-imports every `.nix` file under `home/configs/` via `lib.filesystem.listFilesRecursive`. Adding a new tool = adding a directory there — no manual registration.
-
-## Manual package updates
-
-`scripts/update-manual-packages.sh` bumps npm packages not in nixpkgs (pi-coding-agent, pi-mcp-adapter). Run via `devenv tasks run nix:update`.
+- `home:apply` — home-manager switch
+- `system:apply` — darwin-rebuild switch (requires sudo)
+- `nix:update` — update all lockfiles + manual npm packages
