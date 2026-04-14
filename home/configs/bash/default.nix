@@ -1,5 +1,7 @@
 _:
 let
+
+  # TODO: keep the bash contents in separate files, so those files can be linted and formatted properly!
   # Bash implementations for cd-dependent worktree functions
   # These must be shell functions (not scripts) because they change directory
   worktreeBashFunctions = ''
