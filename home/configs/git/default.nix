@@ -1,189 +1,37 @@
 { pkgs, config, ... }:
 let
-  format-duration = pkgs.writeShellScriptBin "format-duration" ''
-    secs=$1
-    if [ "$secs" -ge 86400 ]; then
-      days=$((secs / 86400))
-      hours=$((secs % 86400 / 3600))
-      echo "''${days}d''${hours}h"
-    elif [ "$secs" -ge 3600 ]; then
-      hours=$((secs / 3600))
-      mins=$((secs % 3600 / 60))
-      echo "''${hours}h''${mins}m"
-    elif [ "$secs" -ge 60 ]; then
-      mins=$((secs / 60))
-      remainder=$((secs % 60))
-      echo "''${mins}m''${remainder}s"
-    else
-      echo "''${secs}s"
-    fi
-  '';
 
-  gh-pr-select = pkgs.writeShellScriptBin "gh-pr-select" ''
-    prompt="''${1:-}> "
-    prs=$(gh pr list --state open --limit 100 --json number,title,headRefName,createdAt)
-
-    if [ -z "$prs" ] || [ "$prs" = "[]" ]; then
-      echo "No open pull requests found" >&2
-      exit 1
-    fi
-
-    formatted=$(echo "$prs" | jq -r '.[] | "\(.number) | \(.title) | \(.headRefName) | \(.createdAt | split(\"T\")[0] + \" \" + .createdAt | split(\"T\")[1] | split(\".\")[0])"')
-
-    selection=$(echo "$formatted" | fzf --prompt "$prompt" --header "id | title | branch | created at")
-
-    if [ -z "$selection" ]; then
-      exit 1
-    fi
-
-    echo "$selection" | cut -d'|' -f1 | xargs
-  '';
-
-  gh-pr-get-url = pkgs.writeShellScriptBin "gh-pr-get-url" ''
-    url=$(gh pr view --json url --jq .url 2>/dev/null)
-    if [ -z "$url" ]; then
-      echo "No pull request found for the current branch" >&2
-      exit 1
-    fi
-    echo "$url"
-  '';
-
-  gh-pr-copy-url = pkgs.writeShellScriptBin "gh-pr-copy-url" ''
-    pr_url=$(gh-pr-get-url) || exit 1
-    echo "$pr_url" | pbcopy
-    echo "Copied PR URL to clipboard: $pr_url"
-  '';
-
-  gh-repo-get-url = pkgs.writeShellScriptBin "gh-repo-get-url" ''
-    url=$(gh repo view --json url --jq .url 2>/dev/null)
-    if [ -z "$url" ]; then
-      echo "Could not get repository URL" >&2
-      exit 1
-    fi
-    echo "$url"
-  '';
-
-  gh-repo-copy-url = pkgs.writeShellScriptBin "gh-repo-copy-url" ''
-    repo_url=$(gh-repo-get-url) || exit 1
-    echo "$repo_url" | pbcopy
-    echo "Copied repo URL to clipboard: $repo_url"
-  '';
-
-  gh-pr-review = pkgs.writeShellScriptBin "gh-pr-review" ''
-    pr_number=$(gh-pr-select "review> ") || exit 1
-    gh pr view --comments "$pr_number"
-  '';
-
-  gh-pr-approve-and-merge = pkgs.writeShellScriptBin "gh-pr-approve-and-merge" ''
-    pr_number=$(gh-pr-select "approve+merge> ") || exit 1
-    echo "Approving PR #$pr_number..."
-    gh pr review "$pr_number" --approve
-    echo "Merging PR #$pr_number..."
-    gh pr merge "$pr_number" --auto
-  '';
-
-  gh-run-view = pkgs.writeShellScriptBin "gh-run-view" ''
-    runs=$(gh run list --limit 50 --json status,displayTitle,workflowName,headBranch,databaseId,startedAt,updatedAt,createdAt,conclusion)
-
-    if [ -z "$runs" ] || [ "$runs" = "[]" ]; then
-      echo "No workflow runs found"
-      exit 0
-    fi
-
-    formatted=$(echo "$runs" | jq -r '.[] |
-      (.status) + " | " +
-      (.displayTitle) + " | " +
-      (.workflowName // "-") + " | " +
-      (.headBranch // "-") + " | " +
-      (.databaseId | tostring) + " | " +
-      (if .startedAt == null or .startedAt == "" then "-" else .startedAt end) + " | " +
-      (if .createdAt == null or .createdAt == "" then "-" else .createdAt end)')
-
-    selection=$(echo "$formatted" | fzf --prompt "runs> " --header "status | title | workflow | branch | id | started | created")
-
-    if [ -z "$selection" ]; then
-      exit 0
-    fi
-
-    run_id=$(echo "$selection" | cut -d'|' -f5 | xargs)
-    gh run view "$run_id"
-  '';
-
-  gh-release-slack = pkgs.writeShellScriptBin "gh-release-slack" ''
-        pr_number="$1"
-
-        if [ -z "$pr_number" ]; then
-          echo "Usage: gh-release-slack <pr_number>" >&2
-          exit 1
-        fi
-
-        pr_data=$(gh pr view "$pr_number" --json title,body --template '{{ .title }}\n{{ .body }}' 2>/dev/null)
-
-        if [ -z "$pr_data" ]; then
-          echo "Failed to read PR $pr_number." >&2
-          exit 1
-        fi
-
-        title=$(echo "$pr_data" | head -n1)
-        release_notes=$(echo "$pr_data" | tail -n +2)
-
-        # Parse title with format "Release <service> <version>"
-        if ! echo "$title" | grep -qE '^Release\s+.+?\s+\S+$'; then
-          echo "PR $pr_number title \"$title\" does not match \"Release <service> <version>\" format." >&2
-          exit 1
-        fi
-
-        service=$(echo "$title" | sed -E 's/^Release\s+(.+?)\s+\S+$/\1/')
-        version=$(echo "$title" | awk '{print $NF}')
-
-        if [ -z "$(echo "$release_notes" | xargs)" ]; then
-          echo "PR $pr_number release notes are empty." >&2
-          exit 1
-        fi
-
-        output="Released $service \`$version\`
-
-    $release_notes"
-        echo "$output"
-        echo "$output" | pbcopy
-        echo "Copied to clipboard." >&2
-  '';
-
-  # gwprune does not cd - convert to script
-  git-worktree-prune = pkgs.writeShellScriptBin "git-worktree-prune" ''
-    branch_name="$1"
-
-    if [ -z "$branch_name" ]; then
-      echo "Usage: git-worktree-prune <branch_name>"
-      exit 1
-    fi
-
-    repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
-    if [ -z "$repo_root" ]; then
-      echo "Error: Not in a git repository"
-      exit 1
-    fi
-
-    worktree_path="$repo_root/.worktrees/$branch_name"
-
-    if [ ! -d "$worktree_path" ]; then
-      echo "Error: Could not find worktree for branch '$branch_name'"
-      echo ""
-      echo "Available worktrees:"
-      git worktree list
-      exit 1
-    fi
-
-    echo "Removing worktree: $worktree_path"
-    git worktree remove "$worktree_path" --force
-    echo "✓ Worktree removed"
-
-    if git show-ref --verify --quiet "refs/heads/$branch_name"; then
-      echo "Deleting branch: $branch_name"
-      git branch -D "$branch_name"
-      echo "✓ Branch deleted"
-    fi
-  '';
+  format-duration = pkgs.writeShellScriptBin "format-duration" (
+    builtins.readFile ./scripts/format-duration.sh
+  );
+  gh-pr-select = pkgs.writeShellScriptBin "gh-pr-select" (
+    builtins.readFile ./scripts/gh-pr-select.sh
+  );
+  gh-pr-get-url = pkgs.writeShellScriptBin "gh-pr-get-url" (
+    builtins.readFile ./scripts/gh-pr-get-url.sh
+  );
+  gh-pr-copy-url = pkgs.writeShellScriptBin "gh-pr-copy-url" (
+    builtins.readFile ./scripts/gh-pr-copy-url.sh
+  );
+  gh-repo-get-url = pkgs.writeShellScriptBin "gh-repo-get-url" (
+    builtins.readFile ./scripts/gh-repo-get-url.sh
+  );
+  gh-repo-copy-url = pkgs.writeShellScriptBin "gh-repo-copy-url" (
+    builtins.readFile ./scripts/gh-repo-copy-url.sh
+  );
+  gh-pr-review = pkgs.writeShellScriptBin "gh-pr-review" (
+    builtins.readFile ./scripts/gh-pr-review.sh
+  );
+  gh-pr-approve-and-merge = pkgs.writeShellScriptBin "gh-pr-approve-and-merge" (
+    builtins.readFile ./scripts/gh-pr-approve-and-merge.sh
+  );
+  gh-run-view = pkgs.writeShellScriptBin "gh-run-view" (builtins.readFile ./scripts/gh-run-view.sh);
+  gh-release-slack = pkgs.writeShellScriptBin "gh-release-slack" (
+    builtins.readFile ./scripts/gh-release-slack.sh
+  );
+  git-worktree-prune = pkgs.writeShellScriptBin "git-worktree-prune" (
+    builtins.readFile ./scripts/git-worktree-prune.sh
+  );
 in
 {
   home = {

@@ -136,18 +136,18 @@ in
     packages = [
       (pkgs.writeShellScriptBin "work-tickets" (builtins.readFile ./scripts/work-tickets.sh))
 
-      (pkgs.writeShellScriptBin "pi" ''
-        export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:${pkgs.ast-grep}/bin:${lat-md}/bin:$PATH"
-
-        # Load API keys from pass
-        if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
-          export GEMINI_API_KEY="$(${pkgs.pass}/bin/pass show api/gemini-pi-coding-agent-web-search 2>/dev/null || true)"
-          export ZAI_API_KEY="$(${pkgs.pass}/bin/pass show api/z-pi-coding-agent 2>/dev/null || true)"
-          export CONTEXT7_API_KEY="$(${pkgs.pass}/bin/pass show api/context7 2>/dev/null || true)"
-          export GITHITS_API_KEY="$(${pkgs.pass}/bin/pass show api/githits 2>/dev/null || true)"
-        fi
-        exec ${pi-coding-agent}/bin/pi "$@"
-      '')
+      (pkgs.writeShellScriptBin "pi" (
+        builtins.readFile (
+          pkgs.replaceVars ./scripts/pi.sh {
+            nodejs = pkgs.nodejs_24;
+            poppler_utils = pkgs."poppler-utils";
+            ast_grep = pkgs.ast-grep;
+            lat_md = lat-md;
+            inherit (pkgs) pass;
+            pi_coding_agent = pi-coding-agent;
+          }
+        )
+      ))
 
       pkgs."poppler-utils"
       lat-md

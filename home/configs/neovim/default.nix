@@ -32,44 +32,10 @@ let
     }
   );
 
-  todo_path = pkgs.writeShellScriptBin "todo_path" ''
-    if [ -z "$TODO_FILE_LOCATION" ]; then
-      echo "Error: TODO_FILE_LOCATION environment variable not set" >&2
-      exit 1
-    fi
-    echo "$TODO_FILE_LOCATION"
-  '';
-
-  daily_path = pkgs.writeShellScriptBin "daily_path" ''
-    if [ -z "$DAILY_FOLDER_LOCATION" ]; then
-      echo "Error: DAILY_FOLDER_LOCATION environment variable not set" >&2
-      exit 1
-    fi
-
-    today=$(date "+%F")
-    daily_file="$DAILY_FOLDER_LOCATION/$today.md"
-    template_file="$DAILY_FOLDER_LOCATION/daily_template.txt"
-
-    if [ ! -e "$daily_file" ]; then
-      if [ ! -e "$template_file" ]; then
-        echo "Error: daily template not found at $template_file" >&2
-        exit 1
-      fi
-      sed "s/<YYYY-MM-DD>/$today/g" "$template_file" > "$daily_file"
-    fi
-
-    echo "$daily_file"
-  '';
-
-  todo = pkgs.writeShellScriptBin "todo" ''
-    p=$(todo_path) || exit 1
-    nvim "$p"
-  '';
-
-  daily = pkgs.writeShellScriptBin "daily" ''
-    p=$(daily_path) || exit 1
-    nvim "$p"
-  '';
+  todo_path = pkgs.writeShellScriptBin "todo_path" (builtins.readFile ./scripts/todo_path.sh);
+  daily_path = pkgs.writeShellScriptBin "daily_path" (builtins.readFile ./scripts/daily_path.sh);
+  todo = pkgs.writeShellScriptBin "todo" (builtins.readFile ./scripts/todo.sh);
+  daily = pkgs.writeShellScriptBin "daily" (builtins.readFile ./scripts/daily.sh);
 in
 {
   xdg.configFile = {
