@@ -63,7 +63,7 @@ Create, stage, reapply. Auto-discovery handles the rest.
 
 ## Config index
 
-All 42 configs under `home/configs/`:
+All 43 configs under `home/configs/`:
 
 | Config          | What it manages                                 |
 | --------------- | ----------------------------------------------- |
@@ -104,6 +104,7 @@ All 42 configs under `home/configs/`:
 | ssh             | SSH config (GPG agent provides keys)            |
 | starship        | shell prompt                                    |
 | symlinks        | out-of-store symlinks (pi sessions, Music dirs) |
+| tree            | directory tree viewer                           |
 | utils           | `listening`, `nukeport`, `trash-empty` scripts  |
 | yazi            | file manager                                    |
 | yt-dlp          | video downloader                                |
