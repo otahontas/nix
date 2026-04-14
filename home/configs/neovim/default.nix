@@ -32,10 +32,8 @@ let
     }
   );
 
-  todo_path = pkgs.writeShellScriptBin "todo_path" (builtins.readFile ./scripts/todo_path.sh);
-  daily_path = pkgs.writeShellScriptBin "daily_path" (builtins.readFile ./scripts/daily_path.sh);
-  todo = pkgs.writeShellScriptBin "todo" (builtins.readFile ./scripts/todo.sh);
-  daily = pkgs.writeShellScriptBin "daily" (builtins.readFile ./scripts/daily.sh);
+  todoScript = builtins.readFile ./scripts/todo.sh;
+  dailyScript = builtins.readFile ./scripts/daily.sh;
 in
 {
   xdg.configFile = {
@@ -97,10 +95,10 @@ in
 
   home = {
     packages = [
-      todo_path
-      daily_path
-      todo
-      daily
+      (pkgs.writeShellScriptBin "todo_path" todoScript)
+      (pkgs.writeShellScriptBin "todo" todoScript)
+      (pkgs.writeShellScriptBin "daily_path" dailyScript)
+      (pkgs.writeShellScriptBin "daily" dailyScript)
     ];
 
     sessionVariables = {
