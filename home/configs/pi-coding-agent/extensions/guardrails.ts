@@ -200,7 +200,6 @@ const blockSecretTools: Guard = (event) => {
 };
 
 const guards: Guard[] = [
-  blockLocalGitConfig,
   blockNonConventionalCommits,
   blockNpxBunx,
   blockRmCommand,
