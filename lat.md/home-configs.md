@@ -49,7 +49,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
 - `extensions/` — `.ts` extensions, symlinked
-- `agents/`, `prompts/` — symlinked to `~/.pi/agent/`
+- `agents/`, `prompts/` — symlinked to `~/.pi/agent/`. Prompts has only `merge-worktree.md`; task/plan/tickets commands are handled by the `task-pipeline` extension
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files
 - `pi-package/`, `lat-md-package/` — npm package sources
 

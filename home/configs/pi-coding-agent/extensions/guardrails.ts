@@ -103,7 +103,7 @@ const blockRmCommand: Guard = (event) => {
   // - At start of line or after whitespace/semicolon/pipe/&&/||
   // - Followed by whitespace or flags
   // - Handles: rm, rm -rf, sudo rm, rmdir, sudo rmdir, etc.
-  const rmPattern = /(^|[\s;&|])(sudo\s+)?(rm|rmdir)(\s|$)/;
+  const rmPattern = /(?:^|[;&|])\s*(sudo\s+)?(rm|rmdir)(\s|$)/;
 
   if (rmPattern.test(cmd)) {
     return {
@@ -207,62 +207,7 @@ const guards: Guard[] = [
   blockSecretTools,
 ];
 
-// =============================================================================
-// Session-aware guards (ticket gating + investigation mode)
-// =============================================================================
-
-/**
- * Ticket-gated editing
- *
- * When user mentions a tk ticket ID (e.g. Nix-2eqw) in their prompt,
- * blocks edit/write until the agent has run `tk show <id>`.
- * Lifts automatically once the ticket is read.
- */
-const TICKET_ID_RE = /\b([a-z]+-[a-z0-9]{4})\b/i;
-const TK_SHOW_RE = /tk\s+show\s+/;
-
-/**
- * Investigation mode
- *
- * When user says "investigate" or "review" without "and fix" / "then fix",
- * blocks edit/write for that agent run. Auto-lifts on next user prompt.
- */
-const INVESTIGATE_RE = /\b(investigate|inspect|audit)\b/i;
-const FIX_INTENT_RE = /\b(and\s+fix|then\s+fix)\b/i;
-
 export default function (pi: ExtensionAPI) {
-  let pendingTicketId: string | null = null;
-  let ticketRead = false;
-  let investigationMode = false;
-
-  pi.on("input", async (event) => {
-    // Always reset investigation mode on new input
-    investigationMode = false;
-
-    // Only gate on real user input, not extension-generated messages
-    // (e.g. subagent output sent via sendUserMessage contains arbitrary text
-    // that can false-positive match ticket IDs like "read-only")
-    if (event.source === "extension") return;
-
-    const text = event.text;
-
-    // Detect investigation mode
-    if (INVESTIGATE_RE.test(text) && !FIX_INTENT_RE.test(text)) {
-      investigationMode = true;
-    }
-
-    // Detect ticket reference
-    const ticketMatch = text.match(TICKET_ID_RE);
-    if (ticketMatch) {
-      pendingTicketId = ticketMatch[1];
-      ticketRead = false;
-    } else {
-      // No ticket in this prompt — clear ticket gating
-      pendingTicketId = null;
-      ticketRead = false;
-    }
-  });
-
   pi.on("tool_call", async (event, ctx) => {
     for (const guard of guards) {
       try {

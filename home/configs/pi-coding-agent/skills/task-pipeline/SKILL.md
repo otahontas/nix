@@ -43,6 +43,10 @@ This phase runs in an **isolated subagent** (`researcher`) that physically canno
 - Finding 2 with source references
 - ...
 
+## Current state
+
+Describe how things work right now. Include relevant code snippets.
+
 ## Open questions
 
 - Question that couldn't be answered

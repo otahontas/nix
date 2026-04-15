@@ -7,6 +7,7 @@
   - When setup gets complex, create `devenv.nix`
   - Don't bypass devenv with global installs
   - `devenv search <query>` to find packages and options
+- When working with external libraries, use MCP tools (`context7`, `githits`) to look up docs and examples instead of guessing APIs
 
 ## Caveman mode
 
@@ -38,19 +39,14 @@
 - Place tests next to the files they test, not in a separate test directory. Integration tests can be next to the stack/module they test.
 - When `lat.md/` exists in the project root, use `lat search` to understand the codebase before making changes. Update `lat.md/` to reflect any changes you make, and run `lat check` before finishing.
 
-## Multi-step task workflow:
+## General workflow:
 
-- For complex tasks: write plan in markdown file first. Use your judgment to determine if a task is "complex": if it involves multiple steps, file modifications, or research, it's better to plan first.
 - Always clarify users intention unless request is completely clear
 - If uncertain, say so immediately - don't guess what to implement
 - When debugging, run diagnostic commands and present findings before proposing a fix. Don't jump to solutions.
-- Work incrementally:
-  1. complete step
-  2. explicitly run verification commands (e.g., build, lint, test).
-  3. if verification passes, commit and mark step as done. If not, fix and verify. Only commit when a step is fully working.
+- Work incrementally: complete step → verify → commit. Only commit when a step is fully working.
 - When user says "investigate", "check", "inspect", or "audit", only investigate and report findings. Don't implement changes unless explicitly told to.
-- Don't create plans/markdown for simple single-step tasks
-- Research and planning phase docs go in `plans/` folder at repo root.
+- For complex multi-step tasks, use the task-pipeline skill (research → plan → tickets → work)
 
 ## Local development scripts:
 

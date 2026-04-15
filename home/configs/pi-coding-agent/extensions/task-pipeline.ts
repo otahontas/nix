@@ -51,7 +51,12 @@ export default function (pi: ExtensionAPI) {
   pi.registerCommand("plan", {
     description:
       "Create an implementation plan using an isolated subagent (read-only)",
-    handler: async (_args, _ctx) => {
+    handler: async (args, _ctx) => {
+      const inlineContext = args?.trim() || "";
+      const contextBlock = inlineContext
+        ? `User-provided context:\n${inlineContext}\n\n`
+        : "";
+
       pi.sendUserMessage(
         [
           "Create implementation plan from research findings.",
@@ -60,8 +65,9 @@ export default function (pi: ExtensionAPI) {
           "",
           "Steps:",
           "1. Read plans/task.md (the research findings) — if it doesn't exist, tell the user to run /task first",
-          '2. Call subagent tool: { agent: "planner", task: "<the research findings from plans/task.md>" }',
-          "3. Save the subagent output to plans/plan.md (overwrite if exists)",
+          "2. If user-provided context was given, prepend it to the research findings before passing to the planner",
+          '3. Call subagent tool: { agent: "planner", task: "<user context + research findings>" }',
+          "4. Save the subagent output to plans/plan.md (overwrite if exists)",
           "",
           "The planner agent runs in isolation — it can read files but CANNOT edit or write anything.",
           "Its output will be the implementation plan. Save that output verbatim to the plans file.",
@@ -89,7 +95,7 @@ export default function (pi: ExtensionAPI) {
           "   - For each ticket: tk show <id> - verify description has file hints, acceptance criteria are numbered and independently verifiable",
           "   - Refine any weak tickets immediately",
           "   - tk dep cycle — no cycles allowed",
-          "   - tk ready -T ready-for-development - each ticket needs to be unblocked. If ticket needs another ticket to unblock it, another ticket should have it explicitly stated in that ticket.",
+          "   - tk ready -T ready-for-development - at least one ticket must be unblocked; all tickets must become unblocked through the dependency chain",
           "6. Report what was created",
         ].join("\n"),
       );
