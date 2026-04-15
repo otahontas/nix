@@ -18,6 +18,19 @@ scripts/         update-manual-packages.sh — bumps npm packages not in nixpkgs
 lat.md/          this documentation
 ```
 
+## devenv-base
+
+Shared module collection at `github:otahontas/devenv-base`, imported in `devenv.yaml`. Provides languages, formatters, git hooks, neovim, AI tooling, and more.
+
+Each module lives in `modules/<name>/` and exposes options under the `devenv-base.<name>` namespace. To extend a module, set its options in `devenv.nix`:
+
+```nix
+devenv-base.agents-md.extraEntries = [ ... ];
+devenv-base.treefmt.programs = { ... };
+```
+
+Check the module's `default.nix` for available options. Don't edit generated files directly — extend the module config and rebuild.
+
 ## Flakes
 
 Both flakes pin `nixpkgs-unstable` independently. `home/` pulls extra inputs:
@@ -25,6 +38,38 @@ Both flakes pin `nixpkgs-unstable` independently. `home/` pulls extra inputs:
 - **catppuccin / pi-catppuccin** — global theme (macchiato/blue) across terminal, editor, pi TUI
 - **kanttiinit-cli** — personal CLI tool
 - **brew-nix** — package overlay used by `mas` for Mac App Store installs
+
+## AGENTS.md pipeline
+
+Pi loads AGENTS.md from multiple locations (global + parent dirs + cwd), all concatenated. This repo has two managed layers.
+
+### Global: home-manager
+
+`home/configs/pi-coding-agent/sources/GLOBAL_AGENTS.md` → symlinked to `~/.pi/agent/AGENTS.md` by home-manager. Edit the source file, then `devenv tasks run home:apply`.
+
+### Project: devenv-base module
+
+`devenv-base` provides `modules/agents-md/` which generates a project-level AGENTS.md at `${DEVENV_ROOT}/.pi/agent/AGENTS.md` on every `devenv shell` entry:
+
+1. Base content from `modules/agents-md/BASE_AGENTS.md`
+2. Appends any strings from `devenv-base.agents-md.extraEntries`
+3. Writes result to nix store, `enter-shell.sh` symlinks it into `.pi/agent/`
+
+To add project-specific instructions, extend in `devenv.nix`:
+
+```nix
+devenv-base.agents-md.extraEntries = [
+  "## My section"
+  ""
+  "- Some instruction"
+];
+```
+
+### Key takeaway
+
+Both AGENTS.md files are nix store symlinks — never edit them directly. Always modify the source (`GLOBAL_AGENTS.md` for global, `devenv.nix` extra entries for project) and rebuild.
+
+This applies broadly in this repo: if `readlink` shows a nix store path, find the source (flake config, home-manager module, or devenv-base option) and change that instead.
 
 ## Tasks
 

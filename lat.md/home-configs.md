@@ -46,7 +46,7 @@ Configs worth documenting beyond a table row.
 Directory layout of `home/configs/pi-coding-agent/`.
 
 - `default.nix` — main config, auto-discovers and symlinks everything below
-- `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md`
+- `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
 - `extensions/` — `.ts` extensions, symlinked
 - `agents/`, `prompts/` — symlinked to `~/.pi/agent/`
