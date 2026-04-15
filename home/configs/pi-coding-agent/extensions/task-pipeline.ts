@@ -1,14 +1,8 @@
 /**
- * Task pipeline commands — /task and /plan backed by subagents
+ * Task pipeline commands — /task, /plan, /tickets
  *
- * These commands orchestrate the research → plan → tickets → work pipeline.
- * Research and planning phases use the subagent tool to run in isolated processes
- * with restricted tool access (read-only, no file mutations).
- *
- * The main agent's only job during /task and /plan is:
- *   1. Create/manage worktrees
- *   2. Invoke the subagent tool
- *   3. Save subagent output to plans/*.md files
+ * /task and /plan launch subagents that write their own output files.
+ * The main agent just invokes the subagent and presents results.
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
@@ -16,7 +10,7 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 export default function (pi: ExtensionAPI) {
   pi.registerCommand("task", {
     description:
-      "Research a task using an isolated subagent (read-only, no mutations)",
+      "Research a task — launches researcher subagent that writes plans/task.md",
     handler: async (args, _ctx) => {
       if (!args || !args.trim()) {
         pi.sendUserMessage(
@@ -34,15 +28,9 @@ export default function (pi: ExtensionAPI) {
         [
           `Research task: ${input}`,
           "",
-          "Use the subagent tool with the 'researcher' agent to research this task in an isolated process.",
+          "Use the subagent tool with the 'researcher' agent. The researcher will write its findings to plans/task.md.",
           "",
-          "Steps:",
-          "1. If plans/task.md already exists, read it first, then pass its contents as context to continue research",
-          '2. Call subagent tool: { agent: "researcher", task: "<the research task with all context>" }',
-          "3. Save the subagent output to plans/task.md (overwrite if exists)",
-          "",
-          "The researcher agent runs in isolation — it can read files, search code, and run read-only commands, but CANNOT edit, write, or modify anything.",
-          "Its output will be the research findings. Save that output verbatim to the plans file.",
+          "After the subagent finishes, read plans/task.md and present the findings to the user.",
         ].join("\n"),
       );
     },
@@ -50,28 +38,22 @@ export default function (pi: ExtensionAPI) {
 
   pi.registerCommand("plan", {
     description:
-      "Create an implementation plan using an isolated subagent (read-only)",
+      "Create an implementation plan — launches planner subagent that writes plans/plan.md",
     handler: async (args, _ctx) => {
       const inlineContext = args?.trim() || "";
-      const contextBlock = inlineContext
-        ? `User-provided context:\n${inlineContext}\n\n`
+      const contextPrefix = inlineContext
+        ? `User context: ${inlineContext}\n\n`
         : "";
 
       pi.sendUserMessage(
         [
-          "Create implementation plan from research findings.",
+          "Create an implementation plan from the research findings.",
           "",
-          "Use the subagent tool with the 'planner' agent to create an implementation plan.",
+          "Read plans/task.md first — if it doesn't exist, tell the user to run /task first.",
           "",
-          "Steps:",
-          "1. Read plans/task.md (the research findings) — if it doesn't exist, tell the user to run /task first",
-          "2. If user-provided context was given, prepend it to the research findings before passing to the planner",
-          '3. Call subagent tool: { agent: "planner", task: "<user context + research findings>" }',
-          "4. Save the subagent output to plans/plan.md (overwrite if exists)",
+          `Use the subagent tool with the 'planner' agent. ${inlineContext ? "Include the user context in the task. " : ""}The planner will read plans/task.md and write the plan to plans/plan.md.`,
           "",
-          "The planner agent runs in isolation — it can read files but CANNOT edit or write anything.",
-          "Its output will be the implementation plan. Save that output verbatim to the plans file.",
-          "Present the plan to the user for review. Do NOT create tickets until explicitly approved.",
+          "After the subagent finishes, read plans/plan.md and present the plan to the user for review. Do NOT create tickets until explicitly approved.",
         ].join("\n"),
       );
     },

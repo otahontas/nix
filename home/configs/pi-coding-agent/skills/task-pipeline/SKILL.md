@@ -23,82 +23,17 @@ Fixed filenames because worktrees already isolate tasks — no need for unique s
 
 **Entry:** `/task <description>` or `/task` (to continue existing research)
 
-Any text after `/task` is the research context — the problem to investigate, requirements, constraints, etc. The agent passes this directly to the researcher subagent.
+Launches the **researcher** subagent. The researcher reads existing `plans/task.md` if present (continuing research), investigates the codebase, and writes findings to `plans/task.md`.
 
-This phase runs in an **isolated subagent** (`researcher`) that physically cannot modify files. The main agent's only jobs are: invoking the subagent and saving output.
-
-1. If `plans/task.md` exists: main agent reads it and passes contents as context to the researcher subagent
-2. Main agent invokes the subagent tool: `{ agent: "researcher", task: "<research task with context>" }`
-3. The researcher subagent runs in isolation — it can read, search, and run read-only commands, but **cannot edit, write, or modify anything**
-4. Main agent saves the subagent output to `plans/task.md`
-
-### Research doc format
-
-```markdown
-# <task description>
-
-## Findings
-
-- Finding 1 with evidence
-- Finding 2 with source references
-- ...
-
-## Current state
-
-Describe how things work right now. Include relevant code snippets.
-
-## Open questions
-
-- Question that couldn't be answered
-- ...
-
-## Sources
-
-- file paths, URLs, session references
-```
-
-Keep writing until you can't find more. The user will tell you when to move on.
+The user reviews and iterates. Run `/task` again to continue research.
 
 ## Phase 2: Plan
 
 **Entry:** `/plan` or `/plan <context>`
 
-This phase runs in an **isolated subagent** (`planner`) that physically cannot modify files.
+Launches the **planner** subagent. The planner reads `plans/task.md`, optionally receives inline context from the user, and writes the plan to `plans/plan.md`.
 
-1. Main agent reads `plans/task.md` — the research findings
-2. If `plans/task.md` doesn't exist: tell the user to run `/task` first
-3. If the user passed inline context (`/plan <context>`), prepend it to the research findings before passing to the planner
-4. Main agent invokes the subagent tool: `{ agent: "planner", task: "<user context + research findings>" }`
-5. The planner subagent runs in isolation — it can read files but **cannot edit or write anything**
-6. Main agent saves the subagent output to `plans/plan.md`
-
-### Plan doc format
-
-```markdown
-# Plan: <task description>
-
-Research: `plans/task.md`
-
-## Steps
-
-### Step 1: <title>
-
-- **What:** description
-- **Files:** paths to change
-- **Verify:** how to confirm it works
-
-### Step 2: <title>
-
-- **What:** description
-- **Files:** paths to change
-- **Verify:** how to confirm it works
-
-## Notes
-
-- Design decisions, trade-offs, things to watch out for
-```
-
-Each step maps 1:1 to a ticket. Steps are ordered by dependency.
+Prerequisite: `plans/task.md` must exist (run `/task` first).
 
 The user reviews and iterates. Do not proceed to tickets until the user explicitly says to.
 
