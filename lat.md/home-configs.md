@@ -1,6 +1,6 @@
 # Home configs
 
-One directory per tool under `home/configs/` (42 configs), each with `default.nix`. Auto-imported by `lib.filesystem.listFilesRecursive` — add a directory, it appears.
+One directory per tool under `home/configs/` (43 configs), each with `default.nix`. Auto-imported by `lib.filesystem.listFilesRecursive` — add a directory, it appears.
 
 Apply with `devenv tasks run home:apply`. Stage new files before applying; don't commit unless asked.
 
@@ -63,7 +63,7 @@ Create, stage, reapply. Auto-discovery handles the rest.
 
 ## Config index
 
-All 43 configs under `home/configs/`:
+All 44 configs under `home/configs/`:
 
 | Config          | What it manages                                 |
 | --------------- | ----------------------------------------------- |
@@ -94,6 +94,7 @@ All 43 configs under `home/configs/`:
 | mermaid-cli     | diagram generation                              |
 | neovim          | editor, LSPs, spell file, todo/daily scripts    |
 | netnewswire     | RSS reader                                      |
+| ollama          | LLM runner (prebuilt macOS binary)              |
 | npm             | npm config                                      |
 | orion           | browser                                         |
 | password-store  | password manager with GPG                       |

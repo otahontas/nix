@@ -1,10 +1,2 @@
-- This project uses a CLI ticket system for task management. Run `tk help` when you need to use it.
-- Pre-commit hooks configured in `devenv.nix` via `git-hooks.hooks`
-- Linter configs (typos, etc.) inline in devenv
-- `deadnix` checks for unused Nix declarations - use `_` for intentionally unused lambda args
-- `nix search nixpkgs <name>` shows packages but doesn't mean they work on darwin. use `nix eval --json nixpkgs#<pkg>.meta.platforms` to check actual platform support
-- Many packages have `-bin` variants for darwin (e.g., `ghostty` is Linux-only, `ghostty-bin` works on darwin)
-- `nix build --no-link --print-out-paths nixpkgs#<pkg>` then check for `Applications/*.app` - verifies GUI app bundle exists
-- `NIXPKGS_ALLOW_UNFREE=1 nix build --impure ...` - for testing unfree packages
 - All commits can be pushed directly to default branch (main) in github
-- Use devenv commands and devenv tasks for applying configs, updating and formatting
+- run `devenv tasks run home:apply` to apply home manager config after changing it

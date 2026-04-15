@@ -12,7 +12,7 @@ home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-co
   packages/      manual npm derivations (pi-mcp-adapter, pi-web-access)
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
-devenv.nix       repo-specific dev shell: ollama-bin, rtk, typos config, fish_indent, tasks
+devenv.nix       repo-specific dev shell: typos config, fish_indent, tasks
 devenv.yaml      imports devenv-base as flake input
 scripts/         update-manual-packages.sh — bumps npm packages not in nixpkgs
 lat.md/          this documentation
