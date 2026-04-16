@@ -75,7 +75,8 @@ User says: "create a ticket for X" or "add a ticket for X"
 1. Clarify scope if ambiguous
 2. Explore the codebase to find relevant files
 3. Create the ticket
-4. Show the created ticket to the user
+4. Commit the ticket: `git add .tickets/ && git commit -m "feat(tickets): add ticket for <short description>"`
+5. Show the created ticket to the user
 
 If the request is vague ("add a ticket for that auth thing I mentioned"), create a backlog ticket: brief title, minimal description, **no tag**. The user or a later refine session will fill in the details.
 
@@ -121,7 +122,8 @@ Turn a vague backlog ticket into a workable one. If the ticket is too large, spl
    - Numbered acceptance criteria (each independently verifiable)
    - Correct type if the current one is wrong
 6. Add the `ready-for-development` tag to the frontmatter
-7. Show the refined ticket to the user
+7. Commit the refined ticket: `git add .tickets/ && git commit -m "refactor(tickets): refine ticket <id>"`
+8. Show the refined ticket to the user
 
 Batch refine: if the user says "refine backlog tickets" or "refine all", repeat for each untagged open ticket. Stop on the first one that needs user clarification — don't guess.
 
@@ -188,4 +190,7 @@ Report: number of tickets created, any issues found and fixed, whether tickets a
 4. Create tickets via `tk create` with all fields populated. Use real newlines in `-d` and `--acceptance` arguments — never pass literal `\n` characters
 5. If multiple tickets: set dependencies via `tk dep <id> <dep-id>`
 6. Run self-validation (see above)
-7. Present created tickets for review
+7. Commit all created tickets: `git add .tickets/ && git commit -m "feat(tickets): add tickets for <short description>"`
+   - If `.tickets/` is not the tickets dir, find it first with `find . -name .tickets -type d`
+   - Also commit any context file created (`plans/.ticket-context.md`)
+8. Present created tickets for review
