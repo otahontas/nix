@@ -43,12 +43,11 @@ _: {
       exec = "sudo darwin-rebuild switch --flake ./system";
     };
     "nix:update" = {
-      description = "Update home and system flake lockfiles, devenv, and manual packages";
+      description = "Update home and system flake lockfiles and devenv ";
       exec = ''
         nix flake update --flake ./home
         nix flake update --flake ./system
         devenv update
-        bash scripts/update-manual-packages.sh
       '';
     };
   };
