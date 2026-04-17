@@ -11,11 +11,11 @@ let
   # Pi coding agent - built from npm registry
   pi-coding-agent = pkgs.buildNpmPackage {
     pname = "pi-coding-agent";
-    version = "0.64.0";
+    version = "0.67.6";
 
     src = ./pi-package;
 
-    npmDepsHash = "sha256-OCg/AwFBC/NG3JCweMur+VuqChc92/C1cngfidXd5ag=";
+    npmDepsHash = "sha256-MolELJh1vkr/S7MkXvOEFi9NbiCLx20EI0s/XW20HZw=";
 
     dontNpmBuild = true;
 
@@ -39,27 +39,6 @@ let
         --replace-fail 'const delayMs = settings.baseDelayMs * 2 ** (this._retryAttempt - 1);' \
         'const delayMs = Math.min(settings.baseDelayMs * 2 ** (this._retryAttempt - 1), settings.maxDelayMs);'
 
-      runHook postInstall
-    '';
-  };
-
-  # lat.md CLI - Agent Lattice knowledge graph
-  lat-md = pkgs.buildNpmPackage {
-    pname = "lat-md";
-    version = "0.11.0";
-
-    src = ./lat-md-package;
-
-    npmDepsHash = "sha256-gGRPqE7hWv51Zd5Sv5hOcepZToZfl1G/3FPLRrBSnko=";
-
-    dontNpmBuild = true;
-
-    installPhase = ''
-      runHook preInstall
-      mkdir -p $out/lib
-      cp -r node_modules $out/lib/node_modules
-      mkdir -p $out/bin
-      ln -s $out/lib/node_modules/lat.md/dist/src/cli/index.js $out/bin/lat
       runHook postInstall
     '';
   };
@@ -137,7 +116,7 @@ in
       (pkgs.writeShellScriptBin "work-tickets" (builtins.readFile ./scripts/work-tickets.sh))
 
       (pkgs.writeShellScriptBin "pi" ''
-        export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:${lat-md}/bin:$PATH"
+        export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
 
         # Load API keys from pass
         if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
@@ -151,7 +130,6 @@ in
       '')
 
       pkgs."poppler-utils"
-      lat-md
     ];
 
     file = {

@@ -36,7 +36,7 @@ Configs worth documenting beyond a table row.
 
 - **GPG/SSH** (`gpg/`) — YubiKey-based: gpg-agent with SSH support, GPG signing for git, `pinentry_mac` for GUI prompts
 - **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it
-- **pi-coding-agent** — builds pi and lat-md from npm, wraps `pi` with PATH and API keys; extensions/skills/agents/prompts/models symlink to `~/.pi/agent/`
+- **pi-coding-agent** — builds pi from npm, wraps `pi` with PATH and API keys; extensions/skills/agents/prompts/models symlink to `~/.pi/agent/`
 - **password-store** — pass with GPG integration
 - **neovim** — `.nvim.lua` config with LSPs for Nix, shell, Lua; custom spell file
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, worktree scripts
@@ -51,7 +51,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `extensions/` — `.ts` extensions, symlinked
 - `agents/`, `prompts/` — symlinked to `~/.pi/agent/`. Prompts has only `merge-worktree.md`; task/plan/tickets commands are handled by the `task-pipeline` extension
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files
-- `pi-package/`, `lat-md-package/` — npm package sources
+- `pi-package/` — npm package source
 
 ### Adding skills or extensions
 

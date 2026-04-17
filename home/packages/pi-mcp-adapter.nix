@@ -5,16 +5,16 @@
 }:
 buildNpmPackage {
   pname = "pi-mcp-adapter";
-  version = "2.2.1";
+  version = "2.4.0";
 
   src = fetchFromGitHub {
     owner = "nicobailon";
     repo = "pi-mcp-adapter";
-    rev = "v2.2.1";
-    hash = "sha256-HTexm+b+UUbJD4qwIqlNcVPhF/G7/MtBtXa0AdeztbY=";
+    rev = "v2.4.0";
+    hash = "sha256-41f4kS6At7GQIfStEeQPRIQaFN5oMs6SrgDsNTeHhLE=";
   };
 
-  npmDepsHash = "sha256-myJ9h/zC/KDddt8NOVvJjjqbnkdEN4ZR+okCR5nu7hM=";
+  npmDepsHash = "sha256-9P71EDq++Bmez3QDEbOL+PCtCFI2ajxy345stBOBp8k=";
 
   dontNpmBuild = true;
 
