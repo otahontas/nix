@@ -199,11 +199,39 @@ const blockSecretTools: Guard = (event) => {
   }
 };
 
+/**
+ * Block git commit --no-verify
+ *
+ * Prevents bypassing git hooks (linting, formatting, etc.).
+ */
+const blockNoVerifyCommit: Guard = (event) => {
+  if (event.toolName !== "bash") return;
+
+  const cmd = event.input.command;
+  const gitCommitNoVerify = /\bgit\s+commit[^\n;|&]*\b(--no-verify|-n)\b/.test(
+    cmd,
+  );
+
+  if (gitCommitNoVerify) {
+    return {
+      block: true,
+      reason:
+        "🚫 **git commit --no-verify blocked**\n\n" +
+        "You've configured pi to never bypass git hooks.\n\n" +
+        "**Why this is blocked:**\n" +
+        "`--no-verify` skips pre-commit and commit-msg hooks, which enforce linting, formatting, and other quality checks.\n\n" +
+        "**What to do instead:**\n" +
+        "Fix the issues flagged by the hooks and commit normally.",
+    };
+  }
+};
+
 const guards: Guard[] = [
   blockNonConventionalCommits,
   blockNpxBunx,
   blockRmCommand,
   blockNonStandardWorktreePath,
+  blockNoVerifyCommit,
   blockSecretTools,
 ];
 
