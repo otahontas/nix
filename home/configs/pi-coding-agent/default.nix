@@ -11,11 +11,11 @@ let
   # Pi coding agent - built from npm registry
   pi-coding-agent = pkgs.buildNpmPackage {
     pname = "pi-coding-agent";
-    version = "0.67.6";
+    version = "0.72.1";
 
     src = ./pi-package;
 
-    npmDepsHash = "sha256-MolELJh1vkr/S7MkXvOEFi9NbiCLx20EI0s/XW20HZw=";
+    npmDepsHash = "sha256-wQI2D5lYJjjjib/OReZ0HBoWD8lQ3HY6Qls2w5qpb0s=";
 
     dontNpmBuild = true;
 
