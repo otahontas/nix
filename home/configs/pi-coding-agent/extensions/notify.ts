@@ -1,6 +1,6 @@
 /**
  * Sends a native terminal notification when pi agent is done.
- * Uses OSC 777 (supported by Ghostty, iTerm2, WezTerm).
+ * Uses OSC 777 (supported by Ghostty).
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
