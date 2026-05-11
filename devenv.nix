@@ -42,11 +42,12 @@ _: {
       exec = "sudo darwin-rebuild switch --flake ./system";
     };
     "nix:update" = {
-      description = "Update home and system flake lockfiles and devenv ";
+      description = "Update home and system flake lockfiles, devenv, and pi agent";
       exec = ''
         nix flake update --flake ./home
         nix flake update --flake ./system
         devenv update
+        pi -p "Check if @mariozechner/pi-coding-agent has a newer version on npm than what's in home/configs/pi-coding-agent/pi-package/package.json. If newer: update version in package.json, run 'npm install --prefix home/configs/pi-coding-agent/pi-package', update version and npmDepsHash in home/configs/pi-coding-agent/default.nix (get npmDepsHash by setting it to empty string and running nix-build to see the expected hash in the error message)."
       '';
     };
   };
