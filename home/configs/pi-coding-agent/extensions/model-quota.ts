@@ -84,6 +84,9 @@ const PI_AUTH_PATH = join(homedir(), ".pi", "agent", "auth.json");
 
 const PI_MODELS_PATH = join(homedir(), ".pi", "agent", "models.json");
 const FETCH_TIMEOUT_MS = 10_000;
+const DASHBOARD_SCRAPE_TIMEOUT_MS = 10_000;
+const USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Gecko/20100101 Firefox/148.0";
 const MODEL_QUOTA_DEBUG = process.env.PI_MODEL_QUOTA_DEBUG === "1";
 
 export default function (pi: ExtensionAPI) {
@@ -94,6 +97,12 @@ export default function (pi: ExtensionAPI) {
   // OpenCode Go quota cache
   let cachedOpenCodeGoQuota: OpenCodeGoUsage | null = null;
   let lastOpenCodeGoFetched = 0;
+  let lastOpenCodeGoFailureReason:
+    | "api-404"
+    | "api-error"
+    | "scraper-failed"
+    | "no-credentials"
+    | null = null;
 
   // Z.ai cache
   let cachedZaiQuota: ZaiQuotaLimit | null = null;
@@ -137,6 +146,7 @@ export default function (pi: ExtensionAPI) {
     if (provider === "opencode-go") {
       cachedOpenCodeGoQuota = null;
       lastOpenCodeGoFetched = 0;
+      lastOpenCodeGoFailureReason = null;
       return;
     }
   }
@@ -607,9 +617,24 @@ export default function (pi: ExtensionAPI) {
   ): Promise<QuotaInfo> {
     const usage = await fetchOpenCodeGoUsage();
     if (!usage) {
-      return {
-        statusText: themed(theme, "error", "OpenCode Go: unavailable"),
-      };
+      switch (lastOpenCodeGoFailureReason) {
+        case "api-404":
+          return {
+            statusText: themed(theme, "dim", "OpenCode Go: quota API pending"),
+          };
+        case "scraper-failed":
+          return {
+            statusText: themed(theme, "error", "OpenCode Go: check auth"),
+          };
+        case "no-credentials":
+          return {
+            statusText: themed(theme, "error", "OpenCode Go: no auth"),
+          };
+        default:
+          return {
+            statusText: themed(theme, "error", "OpenCode Go: unavailable"),
+          };
+      }
     }
 
     const { rollingUsage, weeklyUsage, monthlyUsage } = usage;
@@ -672,6 +697,101 @@ export default function (pi: ExtensionAPI) {
     return `${diffMins}m`;
   }
 
+  // Dashboard scraper for OpenCode Go (fallback when /zen/go/v1/usage endpoint is unavailable)
+  interface ScrapedWindow {
+    usagePercent: number;
+    resetInSec: number;
+  }
+
+  function parseUsageWindow(html: string, name: string): ScrapedWindow | null {
+    // Match SolidJS SSR hydration patterns like:
+    // rollingUsage:$R[0]={usagePercent:65,resetInSec:2520}
+    // Fields may appear in either order.
+    const NUM = "(-?\\d+(?:\\.\\d+)?)";
+    const rePctFirst = new RegExp(
+      `${name}:\\$R\\[\\d+\\]=\\{[^}]*usagePercent:${NUM}[^}]*resetInSec:${NUM}[^}]*\\}`,
+    );
+    const reResetFirst = new RegExp(
+      `${name}:\\$R\\[\\d+\\]=\\{[^}]*resetInSec:${NUM}[^}]*usagePercent:${NUM}[^}]*\\}`,
+    );
+
+    let m = html.match(rePctFirst);
+    if (m) {
+      const usagePercent = Number(m[1]);
+      const resetInSec = Number(m[2]);
+      if (Number.isFinite(usagePercent) && Number.isFinite(resetInSec)) {
+        return { usagePercent, resetInSec };
+      }
+    }
+
+    m = html.match(reResetFirst);
+    if (m) {
+      const resetInSec = Number(m[1]);
+      const usagePercent = Number(m[2]);
+      if (Number.isFinite(usagePercent) && Number.isFinite(resetInSec)) {
+        return { usagePercent, resetInSec };
+      }
+    }
+
+    return null;
+  }
+
+  async function scrapeOpenCodeGoDashboard(): Promise<OpenCodeGoUsage | null> {
+    const workspaceId = process.env.OPENCODE_GO_WORKSPACE_ID;
+    const authCookie = process.env.OPENCODE_GO_AUTH_COOKIE;
+    if (!workspaceId || !authCookie) return null;
+
+    try {
+      const url = `https://opencode.ai/workspace/${encodeURIComponent(workspaceId)}/go`;
+
+      const response = await fetchWithTimeout(
+        url,
+        {
+          method: "GET",
+          headers: {
+            "User-Agent": USER_AGENT,
+            Accept: "text/html",
+            Cookie: `auth=${authCookie}`,
+          },
+        },
+        DASHBOARD_SCRAPE_TIMEOUT_MS,
+      );
+
+      if (!response.ok) {
+        logDebug("OpenCode Go dashboard scrape error:", response.status);
+        return null;
+      }
+
+      const html = await response.text();
+
+      const rolling = parseUsageWindow(html, "rollingUsage");
+      const weekly = parseUsageWindow(html, "weeklyUsage");
+      const monthly = parseUsageWindow(html, "monthlyUsage");
+
+      if (!rolling && !weekly && !monthly) {
+        logDebug("OpenCode Go dashboard: could not parse any usage windows");
+        return null;
+      }
+
+      return {
+        rollingUsage: rolling ?? {
+          status: "ok",
+          resetInSec: 0,
+          usagePercent: 0,
+        },
+        weeklyUsage: weekly ?? { status: "ok", resetInSec: 0, usagePercent: 0 },
+        monthlyUsage: monthly ?? {
+          status: "ok",
+          resetInSec: 0,
+          usagePercent: 0,
+        },
+      };
+    } catch (error) {
+      logDebug("Failed to scrape OpenCode Go usage:", error);
+      return null;
+    }
+  }
+
   async function fetchOpenCodeGoUsage(): Promise<OpenCodeGoUsage | null> {
     // Cache for 60 seconds
     const now = Date.now();
@@ -679,35 +799,67 @@ export default function (pi: ExtensionAPI) {
       return cachedOpenCodeGoQuota;
     }
 
+    // Try the API endpoint first (PR #16513 — /zen/go/v1/usage)
     try {
       const authData = await readAuthData();
       const opencodeGoAuth = authData?.["opencode-go"];
 
-      // Resolve API key: prefer auth.json, fall back to env var
       let apiKey = opencodeGoAuth?.key;
       if (!apiKey) apiKey = process.env.OPENCODE_API_KEY || null;
-      if (!apiKey) return null;
 
-      const response = await fetchWithTimeout(OPENCODE_GO_USAGE_URL, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          Accept: "application/json",
-        },
-      });
+      if (apiKey) {
+        const response = await fetchWithTimeout(OPENCODE_GO_USAGE_URL, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            Accept: "application/json",
+          },
+        });
 
-      if (!response.ok) {
+        if (response.ok) {
+          cachedOpenCodeGoQuota = (await response.json()) as OpenCodeGoUsage;
+          lastOpenCodeGoFetched = now;
+          lastOpenCodeGoFailureReason = null;
+          return cachedOpenCodeGoQuota;
+        }
+
         logDebug("OpenCode Go usage API error:", response.status);
-        return null;
+        // Only fall through to scraper on 404 (endpoint not available)
+        if (response.status !== 404) {
+          lastOpenCodeGoFailureReason = "api-error";
+          return null;
+        }
+      } else {
+        lastOpenCodeGoFailureReason = "no-credentials";
       }
-
-      cachedOpenCodeGoQuota = (await response.json()) as OpenCodeGoUsage;
-      lastOpenCodeGoFetched = now;
-      return cachedOpenCodeGoQuota;
     } catch (error) {
-      logDebug("Failed to fetch OpenCode Go usage:", error);
-      return null;
+      logDebug("Failed to fetch OpenCode Go usage via API:", error);
+      // Fall through to scraper
     }
+
+    // Fallback: scrape the OpenCode Go dashboard
+    const scraped = await scrapeOpenCodeGoDashboard();
+    if (scraped) {
+      cachedOpenCodeGoQuota = scraped;
+      lastOpenCodeGoFetched = now;
+      lastOpenCodeGoFailureReason = null;
+      return scraped;
+    }
+
+    // If we got here with no reason set yet, check if scraper was attempted
+    if (!lastOpenCodeGoFailureReason) {
+      const hasScraperCreds =
+        process.env.OPENCODE_GO_WORKSPACE_ID &&
+        process.env.OPENCODE_GO_AUTH_COOKIE;
+      if (hasScraperCreds) {
+        lastOpenCodeGoFailureReason = "scraper-failed";
+      } else {
+        // API failed with 404 (endpoint doesn't exist) and no scraper creds
+        lastOpenCodeGoFailureReason = "api-404";
+      }
+    }
+
+    return null;
   }
 
   async function fetchZaiQuota(): Promise<ZaiQuotaLimit | null> {

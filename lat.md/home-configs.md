@@ -59,9 +59,14 @@ Status bar quota display for GitHub Copilot, Z.ai, and OpenCode Go. Returns `Quo
 
 - GitHub Copilot: `unavailable`, `no premium data`, `cannot parse usage`
 - Z.ai: `unavailable (check API key)`, `no quota data`, `no token limits`
-- OpenCode Go: `unavailable`
+- OpenCode Go: `quota API pending` (API endpoint 404, no scraper creds), `check auth` (scraper configured but failed), `no auth` (no API key or scraper creds)
 
 Manual `/model-quota` command shows all three providers. Auto-refreshes every 5 minutes.
+
+**OpenCode Go quota fetching:**
+
+- First tries API endpoint `/zen/go/v1/usage` (PR #16513, unmerged) with the API key from `auth.json`
+- Falls back to scraping `https://opencode.ai/workspace/{id}/go` with env vars `OPENCODE_GO_WORKSPACE_ID` and `OPENCODE_GO_AUTH_COOKIE` (auth cookie from browser)
 
 ### Adding skills or extensions
 
