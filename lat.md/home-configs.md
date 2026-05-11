@@ -48,10 +48,20 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `default.nix` — main config, auto-discovers and symlinks everything below
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
-- `extensions/` — `.ts` extensions, symlinked. Notable: `model-quota.ts` shows usage/limits for GitHub Copilot, Z.ai, and OpenCode Go in the status bar
+- `extensions/` — `.ts` extensions, symlinked. Notable: `model-quota.ts` shows usage/limits for GitHub Copilot, Z.ai, and OpenCode Go in the status bar; displays error text in same spot when quota fetch fails
 - `agents/`, `prompts/` — symlinked to `~/.pi/agent/`. Prompts has only `merge-worktree.md`; task/plan/tickets commands are handled by the `task-pipeline` extension
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files
 - `pi-package/` — npm package source
+
+### model-quota extension
+
+Status bar quota display for GitHub Copilot, Z.ai, and OpenCode Go. Returns `QuotaInfo` (never null) — errors display inline:
+
+- GitHub Copilot: `unavailable`, `no premium data`, `cannot parse usage`
+- Z.ai: `unavailable (check API key)`, `no quota data`, `no token limits`
+- OpenCode Go: `unavailable`
+
+Manual `/model-quota` command shows all three providers. Auto-refreshes every 5 minutes.
 
 ### Adding skills or extensions
 

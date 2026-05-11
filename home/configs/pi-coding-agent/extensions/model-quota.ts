@@ -159,11 +159,6 @@ export default function (pi: ExtensionAPI) {
     // Only apply the latest refresh.
     if (seq !== refreshSeq) return;
 
-    if (!quota) {
-      ctx.ui.setStatus("model-quota", undefined);
-      return;
-    }
-
     ctx.ui.setStatus("model-quota", quota.statusText);
 
     if (options.notify && quota.notify) {
@@ -248,19 +243,11 @@ export default function (pi: ExtensionAPI) {
         getQuotaForProvider("opencode-go", ctx.ui.theme),
       ]);
 
-      const lines: string[] = [];
-      if (copilot)
-        lines.push(`GitHub Copilot: ${stripAnsiLike(copilot.statusText)}`);
-      if (zai) lines.push(`Z.ai: ${stripAnsiLike(zai.statusText)}`);
-      if (opencodeGo)
-        lines.push(`OpenCode Go: ${stripAnsiLike(opencodeGo.statusText)}`);
-      if (lines.length === 0) {
-        ctx.ui.notify(
-          "No quota info available. Make sure you are logged in (OAuth) for GitHub Copilot, have configured Z.ai API key in models.json, or have an OpenCode Go API key in auth.json",
-          "info",
-        );
-        return;
-      }
+      const lines: string[] = [
+        `GitHub Copilot: ${stripAnsiLike(copilot.statusText)}`,
+        `Z.ai: ${stripAnsiLike(zai.statusText)}`,
+        `OpenCode Go: ${stripAnsiLike(opencodeGo.statusText)}`,
+      ];
 
       ctx.ui.notify(lines.join("\n"), "info");
     },
@@ -269,11 +256,13 @@ export default function (pi: ExtensionAPI) {
   async function getQuotaForProvider(
     provider: Provider,
     theme: ThemeLike | undefined,
-  ): Promise<QuotaInfo | null> {
+  ): QuotaInfo {
     if (provider === "github-copilot") return getGitHubCopilotQuota(theme);
     if (provider === "zai") return getZaiQuota(theme);
     if (provider === "opencode-go") return getOpenCodeGoQuota(theme);
-    return null;
+    return {
+      statusText: themed(theme, "error", `Unknown provider`),
+    };
   }
 
   function getQuotaNotification(
@@ -338,10 +327,20 @@ export default function (pi: ExtensionAPI) {
 
   async function getGitHubCopilotQuota(
     theme: ThemeLike | undefined,
-  ): Promise<QuotaInfo | null> {
+  ): Promise<QuotaInfo> {
     const user = await fetchGitHubCopilotUser();
+    if (!user) {
+      return {
+        statusText: themed(theme, "error", "GitHub Copilot: unavailable"),
+      };
+    }
+
     const premium = user?.quota_snapshots?.premium_interactions;
-    if (!user || !premium) return null;
+    if (!premium) {
+      return {
+        statusText: themed(theme, "error", "GitHub Copilot: no premium data"),
+      };
+    }
 
     const resetText = user.quota_reset_date_utc
       ? formatTimeUntil(user.quota_reset_date_utc)
@@ -369,7 +368,15 @@ export default function (pi: ExtensionAPI) {
       );
     }
 
-    if (usedPercent == null) return null;
+    if (usedPercent == null) {
+      return {
+        statusText: themed(
+          theme,
+          "error",
+          "GitHub Copilot: cannot parse usage",
+        ),
+      };
+    }
     usedPercent = Math.max(0, Math.min(100, usedPercent));
 
     const status = `${monthlyLabel}${formatUsedPercent(theme, usedPercent)}${timePart}`;
@@ -380,17 +387,28 @@ export default function (pi: ExtensionAPI) {
     };
   }
 
-  async function getZaiQuota(
-    theme: ThemeLike | undefined,
-  ): Promise<QuotaInfo | null> {
+  async function getZaiQuota(theme: ThemeLike | undefined): Promise<QuotaInfo> {
     const quota = await fetchZaiQuota();
-    if (!quota?.data?.limits) return null;
+    if (!quota) {
+      return {
+        statusText: themed(theme, "error", "Z.ai: unavailable (check API key)"),
+      };
+    }
+    if (!quota?.data?.limits) {
+      return {
+        statusText: themed(theme, "error", "Z.ai: no quota data"),
+      };
+    }
 
     // Z.ai returns two TOKENS_LIMIT windows: session (shorter) and weekly (longer)
     const tokenLimits = quota.data.limits
       .filter((w) => w.type === "TOKENS_LIMIT")
       .sort((a, b) => (a.nextResetTime ?? 0) - (b.nextResetTime ?? 0));
-    if (tokenLimits.length === 0) return null;
+    if (tokenLimits.length === 0) {
+      return {
+        statusText: themed(theme, "error", "Z.ai: no token limits"),
+      };
+    }
 
     const [sessionWindow, weeklyWindow] = tokenLimits;
 
@@ -586,9 +604,13 @@ export default function (pi: ExtensionAPI) {
 
   async function getOpenCodeGoQuota(
     theme: ThemeLike | undefined,
-  ): Promise<QuotaInfo | null> {
+  ): Promise<QuotaInfo> {
     const usage = await fetchOpenCodeGoUsage();
-    if (!usage) return null;
+    if (!usage) {
+      return {
+        statusText: themed(theme, "error", "OpenCode Go: unavailable"),
+      };
+    }
 
     const { rollingUsage, weeklyUsage, monthlyUsage } = usage;
 
