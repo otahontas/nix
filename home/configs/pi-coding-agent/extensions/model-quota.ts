@@ -23,7 +23,7 @@ interface GitHubCopilotUserResponse {
     completions?: GitHubCopilotQuotaSnapshot;
   };
 }
-type Provider = "github-copilot" | "zai" | "opencode-go" | string;
+type Provider = "github-copilot" | "opencode-go" | string;
 
 // Auth config (~/.pi/agent/auth.json)
 interface AuthConfig {
@@ -35,38 +35,6 @@ interface AuthConfig {
     type?: string;
     key?: string;
   };
-}
-
-// Models config (~/.pi/agent/models.json)
-interface ModelsConfig {
-  providers?: {
-    zai?: {
-      baseUrl?: string;
-      apiKey?: string;
-    };
-  };
-}
-
-// Z.ai quota endpoint response
-interface ZaiQuotaWindow {
-  type: string;
-  unit: number;
-  number: number;
-  percentage: number;
-  usage?: number;
-  currentValue?: number;
-  remaining?: number;
-  nextResetTime?: number;
-}
-
-interface ZaiQuotaLimit {
-  code?: number;
-  msg?: string;
-  data?: {
-    limits: ZaiQuotaWindow[];
-    level?: string;
-  };
-  success?: boolean;
 }
 
 type QuotaInfo = {
@@ -82,7 +50,6 @@ type ThemeLike = {
 
 const PI_AUTH_PATH = join(homedir(), ".pi", "agent", "auth.json");
 
-const PI_MODELS_PATH = join(homedir(), ".pi", "agent", "models.json");
 const FETCH_TIMEOUT_MS = 10_000;
 const DASHBOARD_SCRAPE_TIMEOUT_MS = 10_000;
 const USER_AGENT =
@@ -103,13 +70,6 @@ export default function (pi: ExtensionAPI) {
     | "scraper-failed"
     | "no-credentials"
     | null = null;
-
-  // Z.ai cache
-  let cachedZaiQuota: ZaiQuotaLimit | null = null;
-  let lastZaiFetched = 0;
-  let modelsData: ModelsConfig | null = null;
-  let lastModelsFetched = 0;
-  let modelsFetchInFlight: Promise<ModelsConfig | null> | null = null;
 
   // auth.json cache (shared by all providers)
   let cachedAuthData: AuthConfig | null = null;
@@ -134,12 +94,6 @@ export default function (pi: ExtensionAPI) {
     if (provider === "github-copilot") {
       cachedGitHubCopilotUser = null;
       lastGitHubCopilotFetched = 0;
-      return;
-    }
-
-    if (provider === "zai") {
-      cachedZaiQuota = null;
-      lastZaiFetched = 0;
       return;
     }
 
@@ -232,14 +186,12 @@ export default function (pi: ExtensionAPI) {
   // Manual command
   pi.registerCommand("model-quota", {
     description:
-      "Show model quota for the current provider (GitHub Copilot, Z.ai, OpenCode Go supported)",
+      "Show model quota for the current provider (GitHub Copilot, OpenCode Go supported)",
     handler: async (_args, ctx) => {
       if (!ctx.hasUI) return;
 
       // Clear caches to get fresh data
       cachedGitHubCopilotUser = null;
-      cachedZaiQuota = null;
-      lastZaiFetched = 0;
       lastGitHubCopilotFetched = 0;
       cachedAuthData = null;
       lastAuthFetched = 0;
@@ -247,15 +199,13 @@ export default function (pi: ExtensionAPI) {
 
       // pi extensions don't get direct access to the selected provider inside commands.
       // So we show all providers if available.
-      const [copilot, zai, opencodeGo] = await Promise.all([
+      const [copilot, opencodeGo] = await Promise.all([
         getQuotaForProvider("github-copilot", ctx.ui.theme),
-        getQuotaForProvider("zai", ctx.ui.theme),
         getQuotaForProvider("opencode-go", ctx.ui.theme),
       ]);
 
       const lines: string[] = [
         `GitHub Copilot: ${stripAnsiLike(copilot.statusText)}`,
-        `Z.ai: ${stripAnsiLike(zai.statusText)}`,
         `OpenCode Go: ${stripAnsiLike(opencodeGo.statusText)}`,
       ];
 
@@ -268,7 +218,6 @@ export default function (pi: ExtensionAPI) {
     theme: ThemeLike | undefined,
   ): QuotaInfo {
     if (provider === "github-copilot") return getGitHubCopilotQuota(theme);
-    if (provider === "zai") return getZaiQuota(theme);
     if (provider === "opencode-go") return getOpenCodeGoQuota(theme);
     return {
       statusText: themed(theme, "error", `Unknown provider`),
@@ -397,66 +346,6 @@ export default function (pi: ExtensionAPI) {
     };
   }
 
-  async function getZaiQuota(theme: ThemeLike | undefined): Promise<QuotaInfo> {
-    const quota = await fetchZaiQuota();
-    if (!quota) {
-      return {
-        statusText: themed(theme, "error", "Z.ai: unavailable (check API key)"),
-      };
-    }
-    if (!quota?.data?.limits) {
-      return {
-        statusText: themed(theme, "error", "Z.ai: no quota data"),
-      };
-    }
-
-    // Z.ai returns two TOKENS_LIMIT windows: session (shorter) and weekly (longer)
-    const tokenLimits = quota.data.limits
-      .filter((w) => w.type === "TOKENS_LIMIT")
-      .sort((a, b) => (a.nextResetTime ?? 0) - (b.nextResetTime ?? 0));
-    if (tokenLimits.length === 0) {
-      return {
-        statusText: themed(theme, "error", "Z.ai: no token limits"),
-      };
-    }
-
-    const [sessionWindow, weeklyWindow] = tokenLimits;
-
-    const sessionPercent = Math.round(sessionWindow.percentage);
-    const sessionReset = sessionWindow.nextResetTime
-      ? formatTimeUntil(sessionWindow.nextResetTime)
-      : null;
-
-    const sessionLabel = themed(theme, "muted", "session: ");
-    const sessionTime = sessionReset
-      ? themed(theme, "dim", ` (${sessionReset})`)
-      : "";
-    const separator = themed(theme, "dim", " | ");
-
-    let status = `${sessionLabel}${formatUsedPercent(theme, sessionPercent)}${sessionTime}`;
-
-    let weeklyPercent: number | undefined;
-    if (weeklyWindow) {
-      weeklyPercent = Math.round(weeklyWindow.percentage);
-      const weeklyReset = weeklyWindow.nextResetTime
-        ? formatTimeUntil(weeklyWindow.nextResetTime)
-        : null;
-      const weeklyLabel = themed(theme, "muted", "weekly: ");
-      const weeklyTime = weeklyReset
-        ? themed(theme, "dim", ` (${weeklyReset})`)
-        : "";
-      status += `${separator}${weeklyLabel}${formatUsedPercent(theme, weeklyPercent)}${weeklyTime}`;
-    }
-
-    return {
-      statusText: status,
-      notify: getQuotaNotification(
-        Math.max(sessionPercent, weeklyPercent ?? 0),
-        "Z.ai",
-      ),
-    };
-  }
-
   // Very small helper so /model-quota output doesn't contain theme escape sequences.
   function stripAnsiLike(text: string): string {
     // pi theme strings are plain text, but we defensively strip common ANSI just in case.
@@ -569,31 +458,6 @@ export default function (pi: ExtensionAPI) {
       logDebug("Failed to fetch GitHub Copilot quota:", error);
       return null;
     }
-  }
-
-  async function readModelsData(): Promise<ModelsConfig | null> {
-    const now = Date.now();
-    if (modelsData && now - lastModelsFetched < 60_000) return modelsData;
-    if (modelsFetchInFlight) return modelsFetchInFlight;
-
-    const promise = (async () => {
-      try {
-        const raw = await readFile(PI_MODELS_PATH, "utf8");
-        const data = JSON.parse(raw);
-        modelsData = data;
-        lastModelsFetched = Date.now();
-        return data;
-      } catch {
-        modelsData = null;
-        lastModelsFetched = 0;
-        return null;
-      } finally {
-        modelsFetchInFlight = null;
-      }
-    })();
-
-    modelsFetchInFlight = promise;
-    return promise;
   }
 
   // OpenCode Go usage endpoint response (zen/go/v1/usage)
@@ -860,55 +724,5 @@ export default function (pi: ExtensionAPI) {
     }
 
     return null;
-  }
-
-  async function fetchZaiQuota(): Promise<ZaiQuotaLimit | null> {
-    // Cache for 60 seconds
-    const now = Date.now();
-    if (cachedZaiQuota && now - lastZaiFetched < 60 * 1000) {
-      return cachedZaiQuota;
-    }
-
-    try {
-      const modelsData = await readModelsData();
-      const zaiConfig = modelsData?.providers?.zai;
-      if (!zaiConfig?.baseUrl) return null;
-
-      // Resolve API key: if it looks like an env var name, read from environment
-      let apiKey = zaiConfig.apiKey;
-      if (
-        typeof apiKey === "string" &&
-        apiKey === apiKey.toUpperCase() &&
-        /^[A-Z_]+$/.test(apiKey)
-      ) {
-        apiKey = process.env[apiKey] || null;
-      }
-
-      if (!apiKey) return null;
-
-      // Construct the quota endpoint URL (base domain, not the model API path)
-      const baseOrigin = new URL(zaiConfig.baseUrl).origin;
-      const quotaUrl = `${baseOrigin}/api/monitor/usage/quota/limit`;
-
-      const response = await fetchWithTimeout(quotaUrl, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        logDebug("Z.ai quota API error:", response.status);
-        return null;
-      }
-
-      cachedZaiQuota = (await response.json()) as ZaiQuotaLimit;
-      lastZaiFetched = now;
-      return cachedZaiQuota;
-    } catch (error) {
-      logDebug("Failed to fetch Z.ai quota:", error);
-      return null;
-    }
   }
 }

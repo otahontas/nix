@@ -121,12 +121,11 @@ in
         # Load API keys from pass
         if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
           GEMINI_API_KEY="$(${pkgs.pass}/bin/pass show api/gemini-pi-coding-agent-web-search 2>/dev/null || true)"
-          ZAI_API_KEY="$(${pkgs.pass}/bin/pass show api/z-pi-coding-agent 2>/dev/null || true)"
           CONTEXT7_API_KEY="$(${pkgs.pass}/bin/pass show api/context7 2>/dev/null || true)"
           GITHITS_API_KEY="$(${pkgs.pass}/bin/pass show api/githits 2>/dev/null || true)"
           OPENCODE_GO_WORKSPACE_ID="$(${pkgs.pass}/bin/pass show api/opencode-go-workspace-id 2>/dev/null || true)"
           OPENCODE_GO_AUTH_COOKIE="$(${pkgs.pass}/bin/pass show api/opencode-go-auth-cookie 2>/dev/null || true)"
-          export GEMINI_API_KEY ZAI_API_KEY CONTEXT7_API_KEY GITHITS_API_KEY OPENCODE_GO_WORKSPACE_ID OPENCODE_GO_AUTH_COOKIE
+          export GEMINI_API_KEY CONTEXT7_API_KEY GITHITS_API_KEY OPENCODE_GO_WORKSPACE_ID OPENCODE_GO_AUTH_COOKIE
         fi
         exec ${pi-coding-agent}/bin/pi "$@"
       '')

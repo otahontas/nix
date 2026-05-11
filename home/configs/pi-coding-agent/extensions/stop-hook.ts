@@ -19,8 +19,8 @@ const STOP_CHECK_PROMPT =
 const LOCAL_GATEKEEPER_PROVIDER = "ollama";
 const LOCAL_GATEKEEPER_MODEL_ID = "gemma4:e2b";
 
-const CLOUD_GATEKEEPER_PROVIDER = "zai";
-const CLOUD_GATEKEEPER_MODEL_ID = "glm-4.5-air";
+const CLOUD_GATEKEEPER_PROVIDER = "github-copilot";
+const CLOUD_GATEKEEPER_MODEL_ID = "claude-haiku-4.5";
 
 const MAX_GATEKEEPER_FAILURES = 3;
 
