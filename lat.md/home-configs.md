@@ -68,6 +68,18 @@ Manual `/model-quota` command shows all three providers. Auto-refreshes every 5 
 - First tries API endpoint `/zen/go/v1/usage` (PR #16513, unmerged) with the API key from `auth.json`
 - Falls back to scraping `https://opencode.ai/workspace/{id}/go` with env vars `OPENCODE_GO_WORKSPACE_ID` and `OPENCODE_GO_AUTH_COOKIE` (auth cookie from browser)
 
+**To enable the scraper:**
+
+1. Log into opencode.ai in your browser and navigate to your Go dashboard
+2. Get workspace ID from the URL: `https://opencode.ai/workspace/{ID}/go`
+3. Get auth cookie from browser dev tools (F12 → Application → Storage → Cookies → copy `auth` value, starts with `Fe26.2**`)
+4. Set env vars (don't commit — these are session credentials):
+   - direnv: add to `.envrc`: `export OPENCODE_GO_WORKSPACE_ID="<your-workspace-id>"` + `export OPENCODE_GO_AUTH_COOKIE="<your-auth-cookie>"`
+   - fish: add to `~/.config/fish/conf.d/opencode-go-quota.fish`: `set -x OPENCODE_GO_WORKSPACE_ID "<your-workspace-id>"` + `set -x OPENCODE_GO_AUTH_COOKIE "<your-auth-cookie>"`
+   - bash/zsh: add `export` statements to `~/.zshrc` or equivalent
+
+Once set, restart pi. Status bar shows `5h: 12% (4h) | wk: 35% (2d) | mo: 8% (29d)`. If cookie expires, refresh it from browser.
+
 ### Adding skills or extensions
 
 Create, stage, reapply. Auto-discovery handles the rest.
