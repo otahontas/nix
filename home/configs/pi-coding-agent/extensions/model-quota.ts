@@ -23,13 +23,17 @@ interface GitHubCopilotUserResponse {
     completions?: GitHubCopilotQuotaSnapshot;
   };
 }
-type Provider = "github-copilot" | "zai" | string;
+type Provider = "github-copilot" | "zai" | "opencode-go" | string;
 
 // Auth config (~/.pi/agent/auth.json)
 interface AuthConfig {
   "github-copilot"?: {
     refresh?: string;
     enterpriseUrl?: string;
+  };
+  "opencode-go"?: {
+    type?: string;
+    key?: string;
   };
 }
 
@@ -87,6 +91,10 @@ export default function (pi: ExtensionAPI) {
   let cachedGitHubCopilotUser: GitHubCopilotUserResponse | null = null;
   let lastGitHubCopilotFetched = 0;
 
+  // OpenCode Go quota cache
+  let cachedOpenCodeGoQuota: OpenCodeGoUsage | null = null;
+  let lastOpenCodeGoFetched = 0;
+
   // Z.ai cache
   let cachedZaiQuota: ZaiQuotaLimit | null = null;
   let lastZaiFetched = 0;
@@ -123,6 +131,12 @@ export default function (pi: ExtensionAPI) {
     if (provider === "zai") {
       cachedZaiQuota = null;
       lastZaiFetched = 0;
+      return;
+    }
+
+    if (provider === "opencode-go") {
+      cachedOpenCodeGoQuota = null;
+      lastOpenCodeGoFetched = 0;
       return;
     }
   }
@@ -213,7 +227,7 @@ export default function (pi: ExtensionAPI) {
   // Manual command
   pi.registerCommand("model-quota", {
     description:
-      "Show model quota for the current provider (GitHub Copilot + Z.ai supported)",
+      "Show model quota for the current provider (GitHub Copilot, Z.ai, OpenCode Go supported)",
     handler: async (_args, ctx) => {
       if (!ctx.hasUI) return;
 
@@ -228,18 +242,21 @@ export default function (pi: ExtensionAPI) {
 
       // pi extensions don't get direct access to the selected provider inside commands.
       // So we show all providers if available.
-      const [copilot, zai] = await Promise.all([
+      const [copilot, zai, opencodeGo] = await Promise.all([
         getQuotaForProvider("github-copilot", ctx.ui.theme),
         getQuotaForProvider("zai", ctx.ui.theme),
+        getQuotaForProvider("opencode-go", ctx.ui.theme),
       ]);
 
       const lines: string[] = [];
       if (copilot)
         lines.push(`GitHub Copilot: ${stripAnsiLike(copilot.statusText)}`);
       if (zai) lines.push(`Z.ai: ${stripAnsiLike(zai.statusText)}`);
+      if (opencodeGo)
+        lines.push(`OpenCode Go: ${stripAnsiLike(opencodeGo.statusText)}`);
       if (lines.length === 0) {
         ctx.ui.notify(
-          "No quota info available. Make sure you are logged in (OAuth) for GitHub Copilot, or have configured Z.ai API key in models.json",
+          "No quota info available. Make sure you are logged in (OAuth) for GitHub Copilot, have configured Z.ai API key in models.json, or have an OpenCode Go API key in auth.json",
           "info",
         );
         return;
@@ -255,6 +272,7 @@ export default function (pi: ExtensionAPI) {
   ): Promise<QuotaInfo | null> {
     if (provider === "github-copilot") return getGitHubCopilotQuota(theme);
     if (provider === "zai") return getZaiQuota(theme);
+    if (provider === "opencode-go") return getOpenCodeGoQuota(theme);
     return null;
   }
 
@@ -548,6 +566,126 @@ export default function (pi: ExtensionAPI) {
 
     modelsFetchInFlight = promise;
     return promise;
+  }
+
+  // OpenCode Go usage endpoint response (zen/go/v1/usage)
+  interface OpenCodeGoUsageWindow {
+    status: "ok" | "rate-limited";
+    resetInSec: number;
+    usagePercent: number;
+  }
+
+  interface OpenCodeGoUsage {
+    useBalance?: boolean;
+    rollingUsage: OpenCodeGoUsageWindow;
+    weeklyUsage: OpenCodeGoUsageWindow;
+    monthlyUsage: OpenCodeGoUsageWindow;
+  }
+
+  const OPENCODE_GO_USAGE_URL = "https://opencode.ai/zen/go/v1/usage";
+
+  async function getOpenCodeGoQuota(
+    theme: ThemeLike | undefined,
+  ): Promise<QuotaInfo | null> {
+    const usage = await fetchOpenCodeGoUsage();
+    if (!usage) return null;
+
+    const { rollingUsage, weeklyUsage, monthlyUsage } = usage;
+
+    const rollingLabel = themed(theme, "muted", "5h: ");
+    const rollingTime = themed(
+      theme,
+      "dim",
+      ` (${formatTimeUntilSeconds(rollingUsage.resetInSec)})`,
+    );
+    const rollingPart = `${rollingLabel}${formatUsedPercent(theme, rollingUsage.usagePercent)}${rollingTime}`;
+
+    const separator = themed(theme, "dim", " | ");
+
+    const weeklyLabel = themed(theme, "muted", "wk: ");
+    const weeklyTime = themed(
+      theme,
+      "dim",
+      ` (${formatTimeUntilSeconds(weeklyUsage.resetInSec)})`,
+    );
+    const weeklyPart = `${weeklyLabel}${formatUsedPercent(theme, weeklyUsage.usagePercent)}${weeklyTime}`;
+
+    const monthlyLabel = themed(theme, "muted", "mo: ");
+    const monthlyTime = themed(
+      theme,
+      "dim",
+      ` (${formatTimeUntilSeconds(monthlyUsage.resetInSec)})`,
+    );
+    const monthlyPart = `${monthlyLabel}${formatUsedPercent(theme, monthlyUsage.usagePercent)}${monthlyTime}`;
+
+    const status = `${rollingPart}${separator}${weeklyPart}${separator}${monthlyPart}`;
+
+    const maxPercent = Math.max(
+      rollingUsage.usagePercent,
+      weeklyUsage.usagePercent,
+      monthlyUsage.usagePercent,
+    );
+
+    return {
+      statusText: status,
+      notify: getQuotaNotification(maxPercent, "OpenCode Go"),
+    };
+  }
+
+  function formatTimeUntilSeconds(seconds: number): string {
+    if (seconds <= 0) return "now";
+
+    const diffMins = Math.floor(seconds / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffDays > 0) {
+      const hours = diffHours % 24;
+      return hours > 0 ? `${diffDays}d ${hours}h` : `${diffDays}d`;
+    }
+    if (diffHours > 0) {
+      const mins = diffMins % 60;
+      return mins > 0 ? `${diffHours}h ${mins}m` : `${diffHours}h`;
+    }
+    return `${diffMins}m`;
+  }
+
+  async function fetchOpenCodeGoUsage(): Promise<OpenCodeGoUsage | null> {
+    // Cache for 60 seconds
+    const now = Date.now();
+    if (cachedOpenCodeGoQuota && now - lastOpenCodeGoFetched < 60 * 1000) {
+      return cachedOpenCodeGoQuota;
+    }
+
+    try {
+      const authData = await readAuthData();
+      const opencodeGoAuth = authData?.["opencode-go"];
+
+      // Resolve API key: prefer auth.json, fall back to env var
+      let apiKey = opencodeGoAuth?.key;
+      if (!apiKey) apiKey = process.env.OPENCODE_API_KEY || null;
+      if (!apiKey) return null;
+
+      const response = await fetchWithTimeout(OPENCODE_GO_USAGE_URL, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        logDebug("OpenCode Go usage API error:", response.status);
+        return null;
+      }
+
+      cachedOpenCodeGoQuota = (await response.json()) as OpenCodeGoUsage;
+      lastOpenCodeGoFetched = now;
+      return cachedOpenCodeGoQuota;
+    } catch (error) {
+      logDebug("Failed to fetch OpenCode Go usage:", error);
+      return null;
+    }
   }
 
   async function fetchZaiQuota(): Promise<ZaiQuotaLimit | null> {

@@ -48,7 +48,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `default.nix` — main config, auto-discovers and symlinks everything below
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
-- `extensions/` — `.ts` extensions, symlinked
+- `extensions/` — `.ts` extensions, symlinked. Notable: `model-quota.ts` shows usage/limits for GitHub Copilot, Z.ai, and OpenCode Go in the status bar
 - `agents/`, `prompts/` — symlinked to `~/.pi/agent/`. Prompts has only `merge-worktree.md`; task/plan/tickets commands are handled by the `task-pipeline` extension
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files
 - `pi-package/` — npm package source
