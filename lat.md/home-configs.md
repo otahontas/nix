@@ -73,12 +73,12 @@ Manual `/model-quota` command shows all three providers. Auto-refreshes every 5 
 1. Log into opencode.ai in your browser and navigate to your Go dashboard
 2. Get workspace ID from the URL: `https://opencode.ai/workspace/{ID}/go`
 3. Get auth cookie from browser dev tools (F12 → Application → Storage → Cookies → copy `auth` value, starts with `Fe26.2**`)
-4. Set env vars (don't commit — these are session credentials):
-   - direnv: add to `.envrc`: `export OPENCODE_GO_WORKSPACE_ID="<your-workspace-id>"` + `export OPENCODE_GO_AUTH_COOKIE="<your-auth-cookie>"`
-   - fish: add to `~/.config/fish/conf.d/opencode-go-quota.fish`: `set -x OPENCODE_GO_WORKSPACE_ID "<your-workspace-id>"` + `set -x OPENCODE_GO_AUTH_COOKIE "<your-auth-cookie>"`
-   - bash/zsh: add `export` statements to `~/.zshrc` or equivalent
+4. Store in pass:
+   - `pass insert api/opencode-go-workspace-id` — paste your workspace ID
+   - `pass insert api/opencode-go-auth-cookie` — paste your auth cookie
+5. Rebuild home-manager (`devenv tasks run home:apply`) to pick up the new pass entries in the pi wrapper script
 
-Once set, restart pi. Status bar shows `5h: 12% (4h) | wk: 35% (2d) | mo: 8% (29d)`. If cookie expires, refresh it from browser.
+Once set, restart pi. Status bar shows `5h: 12% (4h) | wk: 35% (2d) | mo: 8% (29d)`. If cookie expires, refresh it from browser and update pass.
 
 ### Adding skills or extensions
 
