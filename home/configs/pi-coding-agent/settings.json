@@ -14,8 +14,17 @@
   "enabledModels": [
     "ollama/gemma4:e2b",
     "zai/glm-4.5-air",
-    "github-copilot/claude-opus-4.5",
+    "github-copilot/claude-haiku-4.5",
+    "github-copilot/gemini-2.5-pro",
+    "github-copilot/gemini-3-flash-preview",
+    "github-copilot/gpt-4.1",
+    "github-copilot/gpt-4o",
+    "github-copilot/gpt-5-mini",
+    "github-copilot/gpt-5.2",
+    "github-copilot/gpt-5.2-codex",
     "github-copilot/gpt-5.3-codex",
+    "github-copilot/gpt-5.4-mini",
+    "github-copilot/grok-code-fast-1",
     "zai/glm-5.1",
     "opencode-go/*"
   ],
