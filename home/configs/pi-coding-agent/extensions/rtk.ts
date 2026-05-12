@@ -5,8 +5,8 @@
  * Falls back to the original command if rtk is unavailable or no rewrite applies.
  */
 
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { createBashTool } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { createBashTool } from "@earendil-works/pi-coding-agent";
 import { execSync } from "node:child_process";
 
 export default function (pi: ExtensionAPI) {

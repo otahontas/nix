@@ -6,11 +6,11 @@
  * gets at most one automatic follow-up.
  */
 
-import { completeSimple } from "@mariozechner/pi-ai";
+import { completeSimple } from "@earendil-works/pi-ai";
 import type {
   ExtensionAPI,
   ExtensionContext,
-} from "@mariozechner/pi-coding-agent";
+} from "@earendil-works/pi-coding-agent";
 
 const MAX_FOLLOWUPS = 1;
 const STOP_CHECK_PROMPT =

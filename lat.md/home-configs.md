@@ -64,7 +64,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `prompts/` — `merge-worktree.md`; symlinked to `~/.pi/agent/prompts/`
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files
-- `pi-package/` — npm package source (`@mariozechner/pi-coding-agent`); `default.nix` patches `agent-session.js` for unlimited 429 retries and capped backoff
+- `pi-package/` — npm package source (`@earendil-works/pi-coding-agent`); `default.nix` patches `agent-session.js` for unlimited 429 retries and capped backoff
 
 ### model-quota extension
 

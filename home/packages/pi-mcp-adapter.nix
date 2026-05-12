@@ -14,7 +14,7 @@ buildNpmPackage {
     hash = "sha256-An8T5HCzofCZ0iNDaUPu8NDk+8ndPgAm+owm6F9kmYM=";
   };
 
-  npmDepsHash = "sha256-4xv8qj4xZGwankS2CHuoII7/s4up0LsuJ06Qy0cgKJM=";
+  npmDepsHash = "sha256-WAsJ9/qvFz+QNX9w9dnXmrqhod+z+ruVkFY65YSfVaI=";
 
   postPatch = ''
     cp ${./pi-mcp-adapter-package-lock.json} package-lock.json

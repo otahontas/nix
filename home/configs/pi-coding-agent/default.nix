@@ -11,11 +11,11 @@ let
   # Pi coding agent - built from npm registry
   pi-coding-agent = pkgs.buildNpmPackage {
     pname = "pi-coding-agent";
-    version = "0.73.1";
+    version = "0.74.0";
 
     src = ./pi-package;
 
-    npmDepsHash = "sha256-TxHTkxO14PJZtJFRmmIZZjrrWWnYx94bv7TylGqqv/U=";
+    npmDepsHash = "sha256-x3aZCa3ZjqxPer4CNhzOHHeoj4rhp8DSaSXVHlGwuiE=";
 
     dontNpmBuild = true;
 
@@ -24,10 +24,10 @@ let
       mkdir -p $out/lib
       cp -r node_modules $out/lib/node_modules
       mkdir -p $out/bin
-      ln -s $out/lib/node_modules/@mariozechner/pi-coding-agent/dist/cli.js $out/bin/pi
+      ln -s $out/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js $out/bin/pi
 
       # Patch agent-session.js: unlimited 429 retries + capped backoff
-      TARGET=$out/lib/node_modules/@mariozechner/pi-coding-agent/dist/core/agent-session.js
+      TARGET=$out/lib/node_modules/@earendil-works/pi-coding-agent/dist/core/agent-session.js
 
       # 1. Skip maxRetries cap for 429/rate-limit errors
       substituteInPlace "$TARGET" \
