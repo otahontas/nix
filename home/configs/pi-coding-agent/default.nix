@@ -4,6 +4,7 @@
   config,
   pi-mcp-adapter,
   pi-web-access,
+  pi-subagents,
   ...
 }:
 
@@ -71,7 +72,8 @@ let
     ]
   );
 
-  # Auto-discover agent definitions (.md files in agents/)
+  # Agent definitions now come from pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
+  # Custom agents can be added to ./agents/ directory — auto-discovered and symlinked to ~/.pi/agent/agents/
   agentFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
     builtins.attrNames (builtins.readDir ./agents)
   );
@@ -141,6 +143,9 @@ in
 
       # Pi web access extension - built with deps
       ".pi/agent/extensions/pi-web-access".source = pi-web-access;
+
+      # pi-subagents extension - multi-agent orchestration
+      ".pi/agent/extensions/pi-subagents".source = pi-subagents;
 
       ".pi/agent/models.json".source = ./models.json;
       ".pi/agent/mcp.json".source = ./mcp.json;

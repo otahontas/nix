@@ -45,26 +45,24 @@ Configs worth documenting beyond a table row.
 
 Directory layout of `home/configs/pi-coding-agent/`.
 
-- `default.nix` — main config, auto-discovers and symlinks everything below
+- `default.nix` — main config, auto-discovers and symlinks everything below; accepts `pi-subagents`, `pi-mcp-adapter`, `pi-web-access` as parameters
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
-- `extensions/` — `.ts` extensions and subdirectories, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
-  - `model-quota.ts` — status bar quota display for GitHub Copilot, Z.ai, and OpenCode Go (see [[lat.md/home-configs#Home configs#Notable configs#model-quota extension]])
+- `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
+  - `model-quota.ts` — status bar quota display for GitHub Copilot, Z.ai, and OpenCode Go (see model-quota extension below)
   - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
   - `stop-hook.ts` — gatekeeper model decides whether to nudge agent after each response; tries local Ollama then cloud fallback
   - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, `pass`/`gpg`, non-standard worktree paths, `--no-verify` commits
   - `custom-footer.ts` — starship prompt + token stats + model info in TUI footer
-  - `task-pipeline.ts` — `/task`, `/plan`, `/tickets` slash commands
-  - `subagent/` — isolated subagent spawning (single, parallel, chain modes)
   - `search-sessions.ts` — BM25 search over past pi conversations
-  - `restricted-write.ts` — `write-task`/`write-plan` tools scoped to `plans/`
   - `non-interactive.ts` — detects headless mode, injects no-chatter prompt
   - `notify.ts` — sends OSC 777 notification on agent completion
-- `agents/` — `researcher.md`, `planner.md`; symlinked to `~/.pi/agent/agents/`
+- `agents/` — empty; bundled agents come from pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
 - `prompts/` — `merge-worktree.md`; symlinked to `~/.pi/agent/prompts/`
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files
 - `pi-package/` — npm package source (`@earendil-works/pi-coding-agent`); `default.nix` patches `agent-session.js` for unlimited 429 retries and capped backoff
+- `home/packages/pi-subagents.nix` — `stdenv.mkDerivation` fetching pi-subagents v0.24.2 from GitHub; peer deps resolved by pi's own node_modules, no npm build needed
 
 ### model-quota extension
 
@@ -95,11 +93,18 @@ Once set, restart pi. Status bar shows `5h: 12% (4h) | wk: 35% (2d) | mo: 8% (29
 
 ### Adding skills or extensions
 
-Create, stage, reapply. Auto-discovery handles the rest.
+**Simple extensions** (single `.ts` files, no npm deps):
 
-1. Create `skills/name/SKILL.md` or `extensions/name.ts`
+1. Create `extensions/name.ts`
 2. `git add` the file
 3. `devenv tasks run home:apply`
+
+**Complex extensions** (with npm dependencies):
+
+- Add to `home/packages/` as a Nix derivation
+- Pass through `extraSpecialArgs` in `home/flake.nix`
+- Symlink in `default.nix` like pi-mcp-adapter, pi-web-access, pi-subagents
+- Peer dependencies resolved by pi's own `node_modules` — use `stdenv.mkDerivation` instead of `buildNpmPackage` when no additional npm deps are needed
 
 ## Config index
 

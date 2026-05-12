@@ -46,7 +46,12 @@
 - When debugging, run diagnostic commands and present findings before proposing a fix. Don't jump to solutions.
 - Work incrementally: complete step → verify → commit. Only commit when a step is fully working.
 - When user says "investigate", "check", "inspect", or "audit", only investigate and report findings. Don't implement changes unless explicitly told to.
-- For complex multi-step tasks, use the task-pipeline skill (research → plan → tickets → work)
+- For complex multi-step tasks, use pi-subagents to orchestrate: scout/review/implement with reviewer verification
+- Prefer natural language delegation: "use scout to understand X", "have worker implement Y", "run parallel reviewers"
+- After every implementation, run a parallel review pass unless the change is trivial
+- Use oracle for second opinions before risky decisions
+- tk stays as general ticket tracker, not tied to the agent workflow
+- pi-subagents workflow: clarify → planner → worker → reviewers → worker (apply fixes)
 
 ## Local development scripts:
 
