@@ -31,5 +31,13 @@
     "showTerminalProgress": true,
     "imageWidthCells": 120
   },
-  "shellCommandPrefix": "export GIT_EDITOR=true\nexport GIT_SEQUENCE_EDITOR=true\nexport GIT_TERMINAL_PROMPT=0"
+  "shellCommandPrefix": "export GIT_EDITOR=true\nexport GIT_SEQUENCE_EDITOR=true\nexport GIT_TERMINAL_PROMPT=0",
+  "subagents": {
+    "agentOverrides": {
+      "scout": {
+        "model": "opencode-go/deepseek-v4-flash",
+        "fallbackModels": ["github-copilot/gemini-3-flash-preview"]
+      }
+    }
+  }
 }
