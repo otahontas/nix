@@ -1,8 +1,8 @@
 {
   "retry": {
     "baseDelayMs": 1000,
-    "maxDelayMs": 900000,
     "provider": {
+      "maxRetryDelayMs": 900000,
       "timeoutMs": 3600000
     }
   },

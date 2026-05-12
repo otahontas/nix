@@ -1,8 +1,8 @@
 {
   "name": "pi-wrapper",
-  "version": "0.72.1",
+  "version": "0.73.1",
   "private": true,
   "dependencies": {
-    "@mariozechner/pi-coding-agent": "0.72.1"
+    "@mariozechner/pi-coding-agent": "0.73.1"
   }
 }

@@ -48,10 +48,23 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `default.nix` — main config, auto-discovers and symlinks everything below
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
-- `extensions/` — `.ts` extensions, symlinked. Notable: `model-quota.ts` shows usage/limits for GitHub Copilot, Z.ai, and OpenCode Go in the status bar; displays error text in same spot when quota fetch fails
-- `agents/`, `prompts/` — symlinked to `~/.pi/agent/`. Prompts has only `merge-worktree.md`; task/plan/tickets commands are handled by the `task-pipeline` extension
+- `extensions/` — `.ts` extensions and subdirectories, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
+  - `model-quota.ts` — status bar quota display for GitHub Copilot, Z.ai, and OpenCode Go (see [[lat.md/home-configs#Home configs#Notable configs#model-quota extension]])
+  - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
+  - `stop-hook.ts` — gatekeeper model decides whether to nudge agent after each response; tries local Ollama then cloud fallback
+  - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, `pass`/`gpg`, non-standard worktree paths, `--no-verify` commits
+  - `custom-footer.ts` — starship prompt + token stats + model info in TUI footer
+  - `task-pipeline.ts` — `/task`, `/plan`, `/tickets` slash commands
+  - `subagent/` — isolated subagent spawning (single, parallel, chain modes)
+  - `search-sessions.ts` — BM25 search over past pi conversations
+  - `restricted-write.ts` — `write-task`/`write-plan` tools scoped to `plans/`
+  - `non-interactive.ts` — detects headless mode, injects no-chatter prompt
+  - `notify.ts` — sends OSC 777 notification on agent completion
+- `agents/` — `researcher.md`, `planner.md`; symlinked to `~/.pi/agent/agents/`
+- `prompts/` — `merge-worktree.md`; symlinked to `~/.pi/agent/prompts/`
+- `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files
-- `pi-package/` — npm package source
+- `pi-package/` — npm package source (`@mariozechner/pi-coding-agent`); `default.nix` patches `agent-session.js` for unlimited 429 retries and capped backoff
 
 ### model-quota extension
 

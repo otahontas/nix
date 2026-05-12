@@ -1,1 +1,1 @@
-/nix/store/7c93jzw1lbv4kz6mbmacjzy93m6vnjra-lat-md-SKILL.md
+/nix/store/4m8k3v933v62dsflwyvznw6dpvrhg7gl-lat-md-SKILL.md

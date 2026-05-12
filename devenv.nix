@@ -21,6 +21,10 @@ _: {
     '';
   };
 
+  devenv-base.gitignore.extraEntries = [
+    "home/configs/pi-coding-agent/pi-package/node_modules/"
+  ];
+
   devenv-base.treefmt = {
     settings.global.excludes = [
       "home/configs/git/allowed_signers"

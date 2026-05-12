@@ -9,10 +9,10 @@ Top-level directories and key files.
 ```
 home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-coding-agent
   configs/       per-tool directories, each with default.nix (42 configs)
-  packages/      manual npm derivations (pi-mcp-adapter, pi-web-access)
+  packages/      manual npm derivations (pi-mcp-adapter, pi-web-access); lockfiles vendored when upstream omits them
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
-devenv.nix       repo-specific dev shell: typos config, fish_indent, tasks
+devenv.nix       repo-specific dev shell: typos config, gitignore entries, treefmt overrides, tasks
 devenv.yaml      imports devenv-base as flake input
 scripts/         update-manual-packages.sh — bumps npm packages not in nixpkgs
 lat.md/          this documentation
@@ -20,13 +20,14 @@ lat.md/          this documentation
 
 ## devenv-base
 
-Shared module collection at `github:otahontas/devenv-base`, imported in `devenv.yaml`. Provides languages, formatters, git hooks, neovim, AI tooling, and more.
+Shared module collection at `github:otahontas/devenv-base`, imported in `devenv.yaml`. Provides languages, formatters, git hooks, neovim, AI tooling, gitignore management, and more.
 
 Each module lives in `modules/<name>/` and exposes options under the `devenv-base.<name>` namespace. To extend a module, set its options in `devenv.nix`:
 
 ```nix
 devenv-base.agents-md.extraEntries = [ ... ];
 devenv-base.treefmt.programs = { ... };
+devenv-base.gitignore.extraEntries = [ ... ];
 ```
 
 Check the module's `default.nix` for available options. Don't edit generated files directly — extend the module config and rebuild.
