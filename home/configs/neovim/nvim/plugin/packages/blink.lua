@@ -22,7 +22,7 @@ require("blink.cmp").setup({
 				opts = {
 					max_completions = 1,
 					max_attempts = 4,
-					debounce = 200,
+					debounce = 500,
 					kind_icon = " ",
 					auto_refresh = {
 						backward = true,
