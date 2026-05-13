@@ -38,7 +38,7 @@ Configs worth documenting beyond a table row.
 - **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it
 - **pi-coding-agent** — builds pi from npm, wraps `pi` with PATH and API keys; extensions/skills/agents/prompts/models symlink to `~/.pi/agent/`
 - **password-store** — pass with GPG integration
-- **neovim** — `.nvim.lua` config with LSPs for Nix, shell, Lua; custom spell file
+- **neovim** — blink.cmp with Copilot ghost text completion; LSPs for Nix, shell, Lua; custom spell file
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, worktree scripts
 
 ### pi-coding-agent structure

@@ -61,10 +61,12 @@ in
         imagemagick
         mermaid-cli
         google-chrome
+        copilot-language-server
       ];
       plugins = with pkgs.vimPlugins; [
         # Completion & snippets
         blink-cmp
+        blink-copilot
         friendly-snippets
 
         # Editor enhancements
