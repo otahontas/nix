@@ -5,9 +5,7 @@ require("blink.cmp").setup({
 	completion = {
 		documentation = { auto_show = true },
 		ghost_text = {
-			enabled = true,
-			show_with_menu = true,
-			show_without_menu = true,
+			enabled = false,
 		},
 	},
 	signature = { enabled = true },
@@ -22,7 +20,7 @@ require("blink.cmp").setup({
 				opts = {
 					max_completions = 1,
 					max_attempts = 4,
-					debounce = 500,
+					debounce = 200,
 					kind_icon = " ",
 					auto_refresh = {
 						backward = true,
@@ -34,7 +32,3 @@ require("blink.cmp").setup({
 	},
 })
 
--- Manually trigger Copilot completion without typing
-vim.keymap.set({ "n", "i" }, "<leader>cc", function()
-	require("blink.cmp").show({ providers = { "copilot" } })
-end, { desc = "Trigger Copilot completion" })

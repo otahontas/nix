@@ -38,7 +38,8 @@ Configs worth documenting beyond a table row.
 - **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it
 - **pi-coding-agent** — builds pi from npm, wraps `pi` with PATH and API keys; extensions/skills/agents/prompts/models symlink to `~/.pi/agent/`
 - **password-store** — pass with GPG integration
-- **neovim** — blink.cmp with Copilot ghost text completion; LSPs for Nix, shell, Lua; custom spell file
+- **input-source** — disables Control+Space input source switch shortcut for terminal/nvim pass-through
+- **neovim** — blink.cmp with Copilot LSP + blink-copilot source; LSPs for Nix, shell, Lua; custom spell file; ghost text disabled
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, worktree scripts
 
 ### pi-coding-agent structure
@@ -115,7 +116,7 @@ Once set, restart pi. Status bar shows `5h: 12% (4h) | wk: 35% (2d) | mo: 8% (29
 
 ## Config index
 
-All 43 configs under `home/configs/`:
+All 44 configs under `home/configs/`:
 
 | Config          | What it manages                                 |
 | --------------- | ----------------------------------------------- |
@@ -138,6 +139,7 @@ All 43 configs under `home/configs/`:
 | google-chrome   | browser                                         |
 | gpg             | GPG agent, SSH support, YubiKey signing         |
 | iina            | media player                                    |
+| input-source    | disables Control+Space input source shortcut    |
 | jq              | JSON processor                                  |
 | kanttiinit      | personal CLI tool                               |
 | less            | pager config                                    |
