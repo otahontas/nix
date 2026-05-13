@@ -14,7 +14,7 @@ buildNpmPackage {
     hash = "sha256-yBWgnZYw4OjSxKOmiQOltdM/jSbnHa/tdOBwUgNDkXU=";
   };
 
-  npmDepsHash = "sha256-zlm4iTqgmkKhZ98rRtlydN1efTRJRB9Rlm4EAYx47kU=";
+  npmDepsHash = "sha256-GKgXtaZwvrLUzfvrw5BMDZ9IE4b44xobAU0vvdDtam4=";
 
   postPatch = ''
     cp ${./pi-subagents-package-lock.json} package-lock.json
