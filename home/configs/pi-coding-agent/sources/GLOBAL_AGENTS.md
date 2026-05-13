@@ -24,6 +24,19 @@
 - Never include time estimations unless specifically asked
 - Avoid corporate buzzwords and AI phrases (see `writing-clearly-and-concisely` skill for substitution list)
 
+## Images with non-vision models
+
+When running a model that can't view images (e.g. deepseek-v4-pro, deepseek-v4-flash, grok-code-fast-1):
+
+- Pasted images appear as file paths; image data is replaced with a placeholder.
+- To analyze an image, run pi with a vision model via bash:
+  ```bash
+  pi --no-session -p --model github-copilot/gemini-3-flash-preview -p @/path/to/image "describe this image in detail"
+  ```
+- For code/screenshots: `--model github-copilot/claude-haiku-4.5` gives more structured output.
+- The subagent runs stateless — it only has the `read` tool, can't modify files.
+- Always pipe stderr to /dev/null or redirect to avoid noise.
+
 ## Git
 
 - For non-interactive rebases, always run `GIT_EDITOR=true git rebase --continue`
