@@ -108,10 +108,10 @@ Once set, restart pi. Status bar shows `5h: 12% (4h) | wk: 35% (2d) | mo: 8% (29
 
 **Complex extensions** (with npm dependencies):
 
-- Add to `home/packages/` as a Nix derivation
+- Add to `home/packages/` as a `buildNpmPackage` derivation — see existing `.nix` files for the pattern (`dontNpmBuild = true`, `cp -r . $out/`)
+- If upstream omits `package-lock.json`, generate one (`npm install --package-lock-only`) and vendored it; reference it via `postPatch` like pi-mcp-adapter and pi-subagents do
 - Pass through `extraSpecialArgs` in `home/flake.nix`
-- Symlink in `default.nix` like pi-mcp-adapter, pi-web-access, pi-subagents
-- Peer dependencies resolved by pi's own `node_modules` — use `stdenv.mkDerivation` instead of `buildNpmPackage` when no additional npm deps are needed
+- Symlink in `default.nix`
 
 ## Config index
 
