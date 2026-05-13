@@ -14,7 +14,7 @@ buildNpmPackage {
     hash = "sha256-0Yhgg+u194pCrWt0Ycf6ceSw10kolxuT0DpaOnc1iYM=";
   };
 
-  npmDepsHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  npmDepsHash = "sha256-wvQfo5JJtKDlSrYZpwFXka5/gLdnNbm3DIT6JdckdBg=";
   dontNpmBuild = true;
 
   installPhase = ''
