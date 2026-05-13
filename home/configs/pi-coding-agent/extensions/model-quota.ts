@@ -23,7 +23,7 @@ interface GitHubCopilotUserResponse {
     completions?: GitHubCopilotQuotaSnapshot;
   };
 }
-type Provider = "github-copilot" | "opencode-go" | string;
+type Provider = "github-copilot" | "opencode-go" | "openai-codex" | string;
 
 // Auth config (~/.pi/agent/auth.json)
 interface AuthConfig {
@@ -34,6 +34,9 @@ interface AuthConfig {
   "opencode-go"?: {
     type?: string;
     key?: string;
+  };
+  "openai-codex"?: {
+    access?: string;
   };
 }
 
@@ -71,6 +74,10 @@ export default function (pi: ExtensionAPI) {
     | "no-credentials"
     | null = null;
 
+  // OpenAI Codex quota cache
+  let cachedCodexUsage: CodexUsageResponse | null = null;
+  let lastCodexFetched = 0;
+
   // auth.json cache (shared by all providers)
   let cachedAuthData: AuthConfig | null = null;
   let lastAuthFetched = 0;
@@ -101,6 +108,12 @@ export default function (pi: ExtensionAPI) {
       cachedOpenCodeGoQuota = null;
       lastOpenCodeGoFetched = 0;
       lastOpenCodeGoFailureReason = null;
+      return;
+    }
+
+    if (provider === "openai-codex") {
+      cachedCodexUsage = null;
+      lastCodexFetched = 0;
       return;
     }
   }
@@ -186,26 +199,30 @@ export default function (pi: ExtensionAPI) {
   // Manual command
   pi.registerCommand("model-quota", {
     description:
-      "Show model quota for the current provider (GitHub Copilot, OpenCode Go supported)",
+      "Show model quota for the current provider (GitHub Copilot, OpenAI Codex, OpenCode Go supported)",
     handler: async (_args, ctx) => {
       if (!ctx.hasUI) return;
 
       // Clear caches to get fresh data
       cachedGitHubCopilotUser = null;
       lastGitHubCopilotFetched = 0;
+      cachedCodexUsage = null;
+      lastCodexFetched = 0;
       cachedAuthData = null;
       lastAuthFetched = 0;
       authFetchInFlight = null;
 
       // pi extensions don't get direct access to the selected provider inside commands.
       // So we show all providers if available.
-      const [copilot, opencodeGo] = await Promise.all([
+      const [copilot, codex, opencodeGo] = await Promise.all([
         getQuotaForProvider("github-copilot", ctx.ui.theme),
+        getQuotaForProvider("openai-codex", ctx.ui.theme),
         getQuotaForProvider("opencode-go", ctx.ui.theme),
       ]);
 
       const lines: string[] = [
         `GitHub Copilot: ${stripAnsiLike(copilot.statusText)}`,
+        `OpenAI Codex: ${stripAnsiLike(codex.statusText)}`,
         `OpenCode Go: ${stripAnsiLike(opencodeGo.statusText)}`,
       ];
 
@@ -218,6 +235,7 @@ export default function (pi: ExtensionAPI) {
     theme: ThemeLike | undefined,
   ): QuotaInfo {
     if (provider === "github-copilot") return getGitHubCopilotQuota(theme);
+    if (provider === "openai-codex") return getCodexQuota(theme);
     if (provider === "opencode-go") return getOpenCodeGoQuota(theme);
     return {
       statusText: themed(theme, "error", `Unknown provider`),
@@ -456,6 +474,129 @@ export default function (pi: ExtensionAPI) {
       return cachedGitHubCopilotUser;
     } catch (error) {
       logDebug("Failed to fetch GitHub Copilot quota:", error);
+      return null;
+    }
+  }
+
+  // OpenAI Codex (ChatGPT subscription) usage endpoint
+  // GET https://chatgpt.com/backend-api/wham/usage
+  interface CodexUsageWindow {
+    used_percent: number;
+    limit_window_seconds: number;
+    reset_after_seconds: number;
+    reset_at: number; // unix seconds
+  }
+
+  interface CodexUsageResponse {
+    plan_type?: string;
+    rate_limit?: {
+      allowed: boolean;
+      limit_reached: boolean;
+      primary_window: CodexUsageWindow;
+      secondary_window: CodexUsageWindow | null;
+    };
+    code_review_rate_limit?: {
+      allowed: boolean;
+      limit_reached: boolean;
+      primary_window: CodexUsageWindow;
+      secondary_window: CodexUsageWindow | null;
+    };
+    credits?: {
+      has_credits: boolean;
+      unlimited: boolean;
+      balance: string;
+      approx_local_messages?: [number, number];
+      approx_cloud_messages?: [number, number];
+    };
+  }
+
+  async function getCodexQuota(
+    theme: ThemeLike | undefined,
+  ): Promise<QuotaInfo> {
+    const usage = await fetchCodexUsage();
+    if (!usage?.rate_limit) {
+      return {
+        statusText: themed(
+          theme,
+          "error",
+          "OpenAI Codex: unavailable (check /login)",
+        ),
+      };
+    }
+
+    const primary = usage.rate_limit.primary_window;
+    const secondary = usage.rate_limit.secondary_window;
+
+    const sessionLabel = themed(theme, "muted", "session: ");
+    const sessionTime = themed(
+      theme,
+      "dim",
+      ` (${formatTimeUntil(primary.reset_at)})`,
+    );
+
+    const separator = themed(theme, "dim", " | ");
+
+    let status = `${sessionLabel}${formatUsedPercent(theme, primary.used_percent)}${sessionTime}`;
+
+    if (secondary) {
+      const weeklyLabel = themed(theme, "muted", "weekly: ");
+      const weeklyTime = themed(
+        theme,
+        "dim",
+        ` (${formatTimeUntil(secondary.reset_at)})`,
+      );
+      status += `${separator}${weeklyLabel}${formatUsedPercent(theme, secondary.used_percent)}${weeklyTime}`;
+    }
+
+    if (usage.credits?.balance) {
+      status += `${separator}${themed(theme, "dim", `credits: ${usage.credits.balance}`)}`;
+    }
+
+    const maxPercent = secondary
+      ? Math.max(primary.used_percent, secondary.used_percent)
+      : primary.used_percent;
+
+    return {
+      statusText: status,
+      notify: getQuotaNotification(maxPercent, "OpenAI Codex"),
+    };
+  }
+
+  async function fetchCodexUsage(): Promise<CodexUsageResponse | null> {
+    // Cache for 60 seconds
+    const now = Date.now();
+    if (cachedCodexUsage && now - lastCodexFetched < 60 * 1000) {
+      return cachedCodexUsage;
+    }
+
+    try {
+      const authData = await readAuthData();
+      const codexAuth = authData?.["openai-codex"];
+      if (!codexAuth?.access) return null;
+
+      const token = codexAuth.access as string;
+
+      const response = await fetchWithTimeout(
+        "https://chatgpt.com/backend-api/wham/usage",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        logDebug("OpenAI Codex quota API error:", response.status);
+        return null;
+      }
+
+      cachedCodexUsage = (await response.json()) as CodexUsageResponse;
+      lastCodexFetched = now;
+      return cachedCodexUsage;
+    } catch (error) {
+      logDebug("Failed to fetch OpenAI Codex quota:", error);
       return null;
     }
   }

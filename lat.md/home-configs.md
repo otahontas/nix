@@ -50,7 +50,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
 - `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
-  - `model-quota.ts` — status bar quota display for GitHub Copilot and OpenCode Go (see model-quota extension below)
+  - `model-quota.ts` — status bar quota display for GitHub Copilot, OpenAI Codex, and OpenCode Go (see model-quota extension below)
   - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
   - `stop-hook.ts` — gatekeeper model decides whether to nudge agent after each response; tries local Ollama then cloud fallback
   - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, `pass`/`gpg`, non-standard worktree paths, `--no-verify` commits
@@ -75,12 +75,13 @@ Directory layout of `home/configs/pi-coding-agent/`.
 
 ### model-quota extension
 
-Status bar quota display for GitHub Copilot and OpenCode Go. Returns `QuotaInfo` (never null) — errors display inline:
+Status bar quota display for GitHub Copilot, OpenAI Codex, and OpenCode Go. Returns `QuotaInfo` (never null) — errors display inline:
 
 - GitHub Copilot: `unavailable`, `no premium data`, `cannot parse usage`
+- OpenAI Codex: `unavailable (check /login)` — needs OAuth login via `/login`; fetches from `https://chatgpt.com/backend-api/wham/usage` using the access token from `auth.json["openai-codex"]`
 - OpenCode Go: `quota API pending` (API endpoint 404, no scraper creds), `check auth` (scraper configured but failed), `no auth` (no API key or scraper creds)
 
-Manual `/model-quota` command shows both providers. Auto-refreshes every 5 minutes.
+Manual `/model-quota` command shows all three providers. Auto-refreshes every 5 minutes.
 
 **OpenCode Go quota fetching:**
 
