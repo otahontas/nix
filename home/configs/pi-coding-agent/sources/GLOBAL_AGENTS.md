@@ -35,7 +35,7 @@ When running a model that can't view images (e.g. deepseek-v4-pro, deepseek-v4-f
   ```
 - For code/screenshots: `--model github-copilot/claude-haiku-4.5` gives more structured output.
 - The subagent runs stateless — it only has the `read` tool, can't modify files.
-- Always pipe stderr to /dev/null or redirect to avoid noise.
+- pi writes model output to stderr. Use `2>&1` when you need the output (e.g. calling pi from another pi). Only use `2>/dev/null` for fire-and-forget calls.
 
 ## Git
 
