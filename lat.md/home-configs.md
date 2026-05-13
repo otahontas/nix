@@ -58,6 +58,8 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `non-interactive.ts` — detects headless mode, injects no-chatter prompt
   - `notify.ts` — sends OSC 777 notification on agent completion
 - Nix-built extensions (symlinked from `home/packages/`):
+  - `pi-mcp-adapter/` — MCP server integration, OAuth flow, tool discovery
+  - `pi-web-access/` — web search, content extraction, YouTube + video understanding
   - `pi-subagents/` — multi-agent orchestration (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
   - `pi-ralph-loop/` — autonomous coding loops with `/ralph` command and RALPH.md goal files
 - `agents/` — empty; bundled agents come from pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
@@ -65,7 +67,9 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files
 - `pi-package/` — npm package source (`@earendil-works/pi-coding-agent`); `default.nix` patches `agent-session.js` for unlimited 429 retries and capped backoff
-- `home/packages/pi-subagents.nix` — `stdenv.mkDerivation` fetching pi-subagents v0.24.2 from GitHub; peer deps resolved by pi's own node_modules, no npm build needed
+- `home/packages/pi-mcp-adapter.nix` — `buildNpmPackage` fetching pi-mcp-adapter v2.6.0 from GitHub; vendored lockfile copied in `postPatch` (upstream omits it)
+- `home/packages/pi-web-access.nix` — `buildNpmPackage` fetching pi-web-access v0.10.7 from GitHub
+- `home/packages/pi-subagents.nix` — `buildNpmPackage` fetching pi-subagents v0.24.2 from GitHub; vendored lockfile copied in `postPatch` (upstream omits it)
 - `home/packages/pi-ralph-loop.nix` — `buildNpmPackage` fetching pi-ralph-loop v1.8.0 from GitHub; ships skills (ralph-loop, ralph-draft, ralph-finalize) to `~/.pi/agent/skills/`
 
 ### model-quota extension

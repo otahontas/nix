@@ -14,7 +14,6 @@ system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix da
   keyboard/      custom US International no-dead-keys layout
 devenv.nix       repo-specific dev shell: typos config, gitignore entries, treefmt overrides, tasks
 devenv.yaml      imports devenv-base as flake input
-scripts/         update-manual-packages.sh — bumps npm packages not in nixpkgs
 lat.md/          this documentation
 ```
 

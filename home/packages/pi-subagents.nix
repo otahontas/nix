@@ -1,9 +1,9 @@
 {
   lib,
-  stdenv,
+  buildNpmPackage,
   fetchFromGitHub,
 }:
-stdenv.mkDerivation {
+buildNpmPackage {
   pname = "pi-subagents";
   version = "0.24.2";
 
@@ -14,7 +14,13 @@ stdenv.mkDerivation {
     hash = "sha256-yBWgnZYw4OjSxKOmiQOltdM/jSbnHa/tdOBwUgNDkXU=";
   };
 
-  dontBuild = true;
+  npmDepsHash = "sha256-zlm4iTqgmkKhZ98rRtlydN1efTRJRB9Rlm4EAYx47kU=";
+
+  postPatch = ''
+    cp ${./pi-subagents-package-lock.json} package-lock.json
+  '';
+
+  dontNpmBuild = true;
 
   installPhase = ''
     runHook preInstall
