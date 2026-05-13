@@ -45,11 +45,11 @@ Configs worth documenting beyond a table row.
 
 Directory layout of `home/configs/pi-coding-agent/`.
 
-- `default.nix` — main config, auto-discovers and symlinks everything below; accepts `pi-subagents`, `pi-mcp-adapter`, `pi-web-access` as parameters
+- `default.nix` — main config, auto-discovers and symlinks everything below; accepts `pi-subagents`, `pi-ralph-loop`, `pi-mcp-adapter`, `pi-web-access` as parameters
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
 - `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
-  - `model-quota.ts` — status bar quota display for GitHub Copilot, Z.ai, and OpenCode Go (see model-quota extension below)
+  - `model-quota.ts` — status bar quota display for GitHub Copilot and OpenCode Go (see model-quota extension below)
   - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
   - `stop-hook.ts` — gatekeeper model decides whether to nudge agent after each response; tries local Ollama then cloud fallback
   - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, `pass`/`gpg`, non-standard worktree paths, `--no-verify` commits
@@ -57,22 +57,25 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `search-sessions.ts` — BM25 search over past pi conversations
   - `non-interactive.ts` — detects headless mode, injects no-chatter prompt
   - `notify.ts` — sends OSC 777 notification on agent completion
+- Nix-built extensions (symlinked from `home/packages/`):
+  - `pi-subagents/` — multi-agent orchestration (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
+  - `pi-ralph-loop/` — autonomous coding loops with `/ralph` command and RALPH.md goal files
 - `agents/` — empty; bundled agents come from pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
 - `prompts/` — `merge-worktree.md`; symlinked to `~/.pi/agent/prompts/`
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files
 - `pi-package/` — npm package source (`@earendil-works/pi-coding-agent`); `default.nix` patches `agent-session.js` for unlimited 429 retries and capped backoff
 - `home/packages/pi-subagents.nix` — `stdenv.mkDerivation` fetching pi-subagents v0.24.2 from GitHub; peer deps resolved by pi's own node_modules, no npm build needed
+- `home/packages/pi-ralph-loop.nix` — `buildNpmPackage` fetching pi-ralph-loop v1.8.0 from GitHub; ships skills (ralph-loop, ralph-draft, ralph-finalize) to `~/.pi/agent/skills/`
 
 ### model-quota extension
 
-Status bar quota display for GitHub Copilot, Z.ai, and OpenCode Go. Returns `QuotaInfo` (never null) — errors display inline:
+Status bar quota display for GitHub Copilot and OpenCode Go. Returns `QuotaInfo` (never null) — errors display inline:
 
 - GitHub Copilot: `unavailable`, `no premium data`, `cannot parse usage`
-- Z.ai: `unavailable (check API key)`, `no quota data`, `no token limits`
 - OpenCode Go: `quota API pending` (API endpoint 404, no scraper creds), `check auth` (scraper configured but failed), `no auth` (no API key or scraper creds)
 
-Manual `/model-quota` command shows all three providers. Auto-refreshes every 5 minutes.
+Manual `/model-quota` command shows both providers. Auto-refreshes every 5 minutes.
 
 **OpenCode Go quota fetching:**
 

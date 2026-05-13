@@ -51,6 +51,10 @@
 - Run parallel reviewers after every non-trivial implementation
 - Ask oracle for a second opinion before risky decisions
 - Manage tickets manually with tk when you need structured task tracking
+- For repetitive/verifiable tasks (fix all failing tests, migrate across many files, audit a codebase), use ralph-loop:
+  - Write a RALPH.md defining completion criteria (max_iterations, completion_promise, stop_on_error)
+  - Run `/ralph --path ./task` to loop until done
+  - Read the ralph-loop skill for details on guardrails, completion gating, and iteration patterns
 
 ## Local development scripts:
 

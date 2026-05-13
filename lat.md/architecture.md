@@ -9,7 +9,7 @@ Top-level directories and key files.
 ```
 home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-coding-agent
   configs/       per-tool directories, each with default.nix (42 configs)
-  packages/      manual npm derivations (pi-mcp-adapter, pi-web-access); lockfiles vendored when upstream omits them
+  packages/      manual npm derivations (pi-mcp-adapter, pi-web-access, pi-subagents, pi-ralph-loop); lockfiles vendored when upstream omits them
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
 devenv.nix       repo-specific dev shell: typos config, gitignore entries, treefmt overrides, tasks
