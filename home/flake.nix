@@ -60,6 +60,7 @@
       pi-mcp-adapter = pkgs.callPackage ./packages/pi-mcp-adapter.nix { };
       pi-web-access = pkgs.callPackage ./packages/pi-web-access.nix { };
       pi-subagents = pkgs.callPackage ./packages/pi-subagents.nix { };
+      pi-ralph-loop = pkgs.callPackage ./packages/pi-ralph-loop.nix { };
     in
     {
       homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
@@ -71,6 +72,7 @@
             pi-mcp-adapter
             pi-web-access
             pi-subagents
+            pi-ralph-loop
             ;
         };
         modules = [
