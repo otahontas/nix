@@ -21,10 +21,6 @@ _: {
     '';
   };
 
-  devenv-base.gitignore.extraEntries = [
-    "home/configs/pi-coding-agent/pi-package/node_modules/"
-  ];
-
   devenv-base.treefmt = {
     settings.global.excludes = [
       "home/configs/git/allowed_signers"
@@ -51,13 +47,11 @@ _: {
         nix flake update --flake ./home
         nix flake update --flake ./system
         devenv update
-        pi -p "Check these three manually-pinned packages for newer versions and update them if newer exists. DO NOT apply any changes (no home-manager switch, no nix-build). DO NOT commit. ONLY update the source files — nothing else.
+        pi -p "Check these two manually-pinned packages for newer versions and update them if newer exists. DO NOT apply any changes (no home-manager switch, no nix-build). DO NOT commit. ONLY update the source files — nothing else.
 
-        1. pi-coding-agent (configs/pi-coding-agent): check npm for @mariozechner/pi-coding-agent newer than version in pi-package/package.json. If newer: update version in package.json, run 'npm install --prefix home/configs/pi-coding-agent/pi-package', update version and npmDepsHash in default.nix (set npmDepsHash empty, nix-build to get expected hash from error).
+        1. pi-mcp-adapter (packages/pi-mcp-adapter.nix): check GitHub releases at nicobailon/pi-mcp-adapter for version newer than what's in the nix file. If newer: update version, rev, src hash, and npmDepsHash in packages/pi-mcp-adapter.nix.
 
-        2. pi-mcp-adapter (packages/pi-mcp-adapter.nix): check GitHub releases at nicobailon/pi-mcp-adapter for version newer than what's in the nix file. If newer: update version, rev, src hash, and npmDepsHash in packages/pi-mcp-adapter.nix (same hash technique).
-
-        3. pi-web-access (packages/pi-web-access.nix): check GitHub releases at nicobailon/pi-web-access for version newer than what's in the nix file. If newer: update version, rev, src hash, and npmDepsHash in packages/pi-web-access.nix (same hash technique)."
+        2. pi-web-access (packages/pi-web-access.nix): check GitHub releases at nicobailon/pi-web-access for version newer than what's in the nix file. If newer: update version, rev, src hash, and npmDepsHash in packages/pi-web-access.nix."
       '';
     };
   };

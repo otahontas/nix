@@ -36,7 +36,7 @@ Configs worth documenting beyond a table row.
 
 - **GPG/SSH** (`gpg/`) — YubiKey-based: gpg-agent with SSH support, GPG signing for git, `pinentry_mac` for GUI prompts
 - **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it
-- **pi-coding-agent** — builds pi from npm, wraps `pi` with PATH and API keys; extensions/skills/agents/prompts/models symlink to `~/.pi/agent/`
+- **pi-coding-agent** — wraps `pkgs.pi-coding-agent` with PATH, API keys, and Node module aliases for extensions; extensions/skills/agents/prompts/models symlink to `~/.pi/agent/`
 - **password-store** — pass with GPG integration
 - **input-source** — disables Control+Space input source switch shortcut for terminal/nvim pass-through
 - **neovim** — blink.cmp with Copilot LSP + blink-copilot source; LSPs for Nix, shell, Lua; custom spell file; ghost text disabled
@@ -46,7 +46,7 @@ Configs worth documenting beyond a table row.
 
 Directory layout of `home/configs/pi-coding-agent/`.
 
-- `default.nix` — main config, auto-discovers and symlinks everything below; accepts `pi-subagents`, `pi-ralph-loop`, `pi-mcp-adapter`, `pi-web-access` as parameters
+- `default.nix` — main config, wraps `pkgs.pi-coding-agent` to load pass secrets, PATH tools, and Node module aliases for extensions, then auto-discovers and symlinks everything below; accepts `pi-subagents`, `pi-ralph-loop`, `pi-mcp-adapter`, `pi-web-access` as parameters
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
 - `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
@@ -67,7 +67,6 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `prompts/` — `merge-worktree.md`; symlinked to `~/.pi/agent/prompts/`
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files
-- `pi-package/` — npm package source (`@earendil-works/pi-coding-agent`); `default.nix` patches `agent-session.js` for unlimited 429 retries and capped backoff
 - `home/packages/pi-mcp-adapter.nix` — `buildNpmPackage` fetching pi-mcp-adapter v2.6.0 from GitHub; vendored lockfile copied in `postPatch` (upstream omits it)
 - `home/packages/pi-web-access.nix` — `buildNpmPackage` fetching pi-web-access v0.10.7 from GitHub
 - `home/packages/pi-subagents.nix` — `buildNpmPackage` fetching pi-subagents v0.24.2 from GitHub; vendored lockfile copied in `postPatch` (upstream omits it)

@@ -1,8 +1,0 @@
-{
-  "name": "pi-wrapper",
-  "version": "0.74.0",
-  "private": true,
-  "dependencies": {
-    "@earendil-works/pi-coding-agent": "0.74.0"
-  }
-}

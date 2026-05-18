@@ -77,4 +77,4 @@ Defined in `devenv.nix`, run with `devenv tasks run <task>`:
 
 - `home:apply` — home-manager switch
 - `system:apply` — darwin-rebuild switch (requires sudo)
-- `nix:update` — update home/system lockfiles + devenv, then run non-interactive pi to self-update pi-coding-agent npm package
+- `nix:update` — update home/system lockfiles + devenv, then run non-interactive pi to update manually pinned extension packages

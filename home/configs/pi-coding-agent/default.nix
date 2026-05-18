@@ -10,40 +10,34 @@
 }:
 
 let
-  # Pi coding agent - built from npm registry
-  pi-coding-agent = pkgs.buildNpmPackage {
-    pname = "pi-coding-agent";
-    version = "0.74.0";
+  inherit (pkgs) pi-coding-agent;
 
-    src = ./pi-package;
+  piNodeAliases = pkgs.runCommand "pi-node-aliases" { } ''
+    mkdir -p $out/node_modules/@earendil-works
 
-    npmDepsHash = "sha256-x3aZCa3ZjqxPer4CNhzOHHeoj4rhp8DSaSXVHlGwuiE=";
+    piRoot=$(find ${pi-coding-agent}/lib/node_modules -mindepth 1 -maxdepth 1 -type d | head -n1)
+    piNodeModules="$piRoot/node_modules"
 
-    dontNpmBuild = true;
+    makeAlias() {
+      target="$1"
+      package="$2"
+      aliasDir="$out/node_modules/@earendil-works/$package"
 
-    installPhase = ''
-      runHook preInstall
-      mkdir -p $out/lib
-      cp -r node_modules $out/lib/node_modules
-      mkdir -p $out/bin
-      ln -s $out/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js $out/bin/pi
+      mkdir -p "$aliasDir"
+      ln -s "$target/dist" "$aliasDir/dist"
+      printf '{"name":"@earendil-works/%s","type":"module","main":"./dist/index.js","types":"./dist/index.d.ts"}\n' "$package" > "$aliasDir/package.json"
+    }
 
-      # Patch agent-session.js: unlimited 429 retries + capped backoff
-      TARGET=$out/lib/node_modules/@earendil-works/pi-coding-agent/dist/core/agent-session.js
+    makeAlias "$piRoot" pi-coding-agent
 
-      # 1. Skip maxRetries cap for 429/rate-limit errors
-      substituteInPlace "$TARGET" \
-        --replace-fail 'if (this._retryAttempt > settings.maxRetries) {' \
-        'const _is429 = /429|rate.?limit|too many requests/i.test(message.errorMessage || ""); if (!_is429 && this._retryAttempt > settings.maxRetries) {'
-
-      # 2. Cap delay at maxDelayMs (set to 900000/15min in settings.json)
-      substituteInPlace "$TARGET" \
-        --replace-fail 'const delayMs = settings.baseDelayMs * 2 ** (this._retryAttempt - 1);' \
-        'const delayMs = Math.min(settings.baseDelayMs * 2 ** (this._retryAttempt - 1), settings.maxDelayMs);'
-
-      runHook postInstall
-    '';
-  };
+    for package in pi-ai pi-agent-core pi-tui; do
+      if [ -e "$piNodeModules/@earendil-works/$package" ]; then
+        makeAlias "$piNodeModules/@earendil-works/$package" "$package"
+      elif [ -e "$piNodeModules/@mariozechner/$package" ]; then
+        makeAlias "$piNodeModules/@mariozechner/$package" "$package"
+      fi
+    done
+  '';
 
   # Auto-discover extensions (.ts files and directories with index.ts)
   extensionEntries = builtins.readDir ./extensions;
@@ -120,6 +114,7 @@ in
 
       (pkgs.writeShellScriptBin "pi" ''
         export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
+        export NODE_PATH="${piNodeAliases}/node_modules''${NODE_PATH:+:$NODE_PATH}"
 
         # Load API keys from pass
         if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
