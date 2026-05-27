@@ -100,7 +100,7 @@
               # enable catppuccin globally
               catppuccin = {
                 enable = true;
-                flavor = "macchiato";
+                flavor = "latte";
                 accent = "blue";
               };
 
