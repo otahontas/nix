@@ -1,6 +1,6 @@
 # Home configs
 
-One directory per tool under `home/configs/` (45 configs), each with `default.nix`. Auto-imported by `lib.filesystem.listFilesRecursive` — add a directory, it appears.
+One directory per tool under `home/configs/` (46 configs), each with `default.nix`. Auto-imported by `lib.filesystem.listFilesRecursive` — add a directory, it appears.
 
 Apply with `devenv tasks run home:apply`. Stage new files before applying; don't commit unless asked.
 
@@ -116,52 +116,53 @@ Once set, restart pi. Status bar shows `5h: 12% (4h) | wk: 35% (2d) | mo: 8% (29
 
 ## Config index
 
-All 45 configs under `home/configs/`:
+All 46 configs under `home/configs/`:
 
-| Config          | What it manages                                 |
-| --------------- | ----------------------------------------------- |
-| aliases         | shell aliases                                   |
-| atuin           | shell history                                   |
-| bash            | bash config                                     |
-| bat             | cat replacement, catppuccin theme               |
-| cargo           | Rust package manager                            |
-| coreutils       | GNU coreutils                                   |
-| delta           | git diff pager                                  |
-| devenv          | devenv fish completions                         |
-| eza             | ls replacement                                  |
-| fd              | find replacement + `find-and-prune` script      |
-| ffmpeg          | multimedia processing                           |
-| fish            | default shell, config, plugins                  |
-| fzf             | fuzzy finder                                    |
-| ghostty         | terminal emulator (darwin-bin variant)          |
-| git             | git, gh CLI, signing, worktree scripts          |
-| gnugrep         | GNU grep                                        |
-| google-chrome   | browser                                         |
-| gpg             | GPG agent, SSH support, YubiKey signing         |
-| iina            | media player                                    |
-| input-source    | disables Control+Space input source shortcut    |
-| jq              | JSON processor                                  |
-| kanttiinit      | personal CLI tool                               |
-| less            | pager config                                    |
-| mas             | Mac App Store installs via activation script    |
-| meetingbar      | calendar menu bar app                           |
-| mermaid-cli     | diagram generation                              |
-| mise            | tool version manager with Bash/Fish hooks       |
-| neovim          | editor, LSPs, spell file, todo/daily scripts    |
-| netnewswire     | RSS reader                                      |
-| ollama          | LLM runner (prebuilt macOS binary)              |
-| orion           | browser                                         |
-| password-store  | password manager with GPG                       |
-| pi-coding-agent | pi CLI, extensions, skills, lat-md              |
-| qpdf            | PDF tools + `combine-pdfs-in-folder` script     |
-| ripgrep         | search tool                                     |
-| sleep           | `disable-sleep` / `enable-sleep` scripts        |
-| ssh             | SSH config (GPG agent provides keys)            |
-| starship        | shell prompt                                    |
-| symlinks        | out-of-store symlinks (pi sessions, Music dirs) |
-| tree            | directory tree viewer                           |
-| utils           | `listening`, `nukeport`, `trash-empty` scripts  |
-| yazi            | file manager                                    |
-| yt-dlp          | video downloader                                |
-| yubikey-manager | `yk-status` script                              |
-| zoxide          | directory jumper                                |
+| Config               | What it manages                                  |
+| -------------------- | ------------------------------------------------ |
+| aliases              | shell aliases                                    |
+| atuin                | shell history                                    |
+| bash                 | bash config                                      |
+| bat                  | cat replacement, catppuccin theme                |
+| cargo                | Rust package manager                             |
+| coreutils            | GNU coreutils                                    |
+| delta                | git diff pager                                   |
+| devenv               | devenv fish completions                          |
+| eza                  | ls replacement                                   |
+| fd                   | find replacement + `find-and-prune` script       |
+| ffmpeg               | multimedia processing                            |
+| fish                 | default shell, config, plugins                   |
+| fzf                  | fuzzy finder                                     |
+| ghostty              | terminal emulator (darwin-bin variant)           |
+| git                  | git, gh CLI, signing, worktree scripts           |
+| gnugrep              | GNU grep                                         |
+| google-chrome        | browser                                          |
+| google-workspace-cli | Google Workspace CLI (`gws`) from upstream flake |
+| gpg                  | GPG agent, SSH support, YubiKey signing          |
+| iina                 | media player                                     |
+| input-source         | disables Control+Space input source shortcut     |
+| jq                   | JSON processor                                   |
+| kanttiinit           | personal CLI tool                                |
+| less                 | pager config                                     |
+| mas                  | Mac App Store installs via activation script     |
+| meetingbar           | calendar menu bar app                            |
+| mermaid-cli          | diagram generation                               |
+| mise                 | tool version manager with Bash/Fish hooks        |
+| neovim               | editor, LSPs, spell file, todo/daily scripts     |
+| netnewswire          | RSS reader                                       |
+| ollama               | LLM runner (prebuilt macOS binary)               |
+| orion                | browser                                          |
+| password-store       | password manager with GPG                        |
+| pi-coding-agent      | pi CLI, extensions, skills, lat-md               |
+| qpdf                 | PDF tools + `combine-pdfs-in-folder` script      |
+| ripgrep              | search tool                                      |
+| sleep                | `disable-sleep` / `enable-sleep` scripts         |
+| ssh                  | SSH config (GPG agent provides keys)             |
+| starship             | shell prompt                                     |
+| symlinks             | out-of-store symlinks (pi sessions, Music dirs)  |
+| tree                 | directory tree viewer                            |
+| utils                | `listening`, `nukeport`, `trash-empty` scripts   |
+| yazi                 | file manager                                     |
+| yt-dlp               | video downloader                                 |
+| yubikey-manager      | `yk-status` script                               |
+| zoxide               | directory jumper                                 |

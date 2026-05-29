@@ -18,6 +18,10 @@
       url = "github:otahontas/kanttiinit-cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    google-workspace-cli = {
+      url = "github:googleworkspace/cli";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     brew-nix = {
       url = "github:BatteredBunny/brew-nix";
       inputs.brew-api.follows = "brew-api";
@@ -35,6 +39,7 @@
       catppuccin,
       pi-catppuccin,
       kanttiinit-cli,
+      google-workspace-cli,
       brew-nix,
       ...
     }:
@@ -68,6 +73,7 @@
         extraSpecialArgs = {
           inherit
             kanttiinit-cli
+            google-workspace-cli
             system
             pi-mcp-adapter
             pi-web-access
