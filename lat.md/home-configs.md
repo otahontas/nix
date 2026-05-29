@@ -1,6 +1,6 @@
 # Home configs
 
-One directory per tool under `home/configs/` (42 configs), each with `default.nix`. Auto-imported by `lib.filesystem.listFilesRecursive` — add a directory, it appears.
+One directory per tool under `home/configs/` (45 configs), each with `default.nix`. Auto-imported by `lib.filesystem.listFilesRecursive` — add a directory, it appears.
 
 Apply with `devenv tasks run home:apply`. Stage new files before applying; don't commit unless asked.
 
@@ -116,7 +116,7 @@ Once set, restart pi. Status bar shows `5h: 12% (4h) | wk: 35% (2d) | mo: 8% (29
 
 ## Config index
 
-All 44 configs under `home/configs/`:
+All 45 configs under `home/configs/`:
 
 | Config          | What it manages                                 |
 | --------------- | ----------------------------------------------- |
@@ -146,6 +146,7 @@ All 44 configs under `home/configs/`:
 | mas             | Mac App Store installs via activation script    |
 | meetingbar      | calendar menu bar app                           |
 | mermaid-cli     | diagram generation                              |
+| mise            | tool version manager with Bash/Fish hooks       |
 | neovim          | editor, LSPs, spell file, todo/daily scripts    |
 | netnewswire     | RSS reader                                      |
 | ollama          | LLM runner (prebuilt macOS binary)              |
