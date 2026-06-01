@@ -11,34 +11,11 @@
   "defaultThinkingLevel": "xhigh",
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
-  "enabledModels": [
-    "ollama/gemma4:e2b",
-    "github-copilot/claude-haiku-4.5",
-    "github-copilot/gemini-2.5-pro",
-    "github-copilot/gemini-3-flash-preview",
-    "github-copilot/gpt-4.1",
-    "github-copilot/gpt-4o",
-    "github-copilot/gpt-5-mini",
-    "github-copilot/gpt-5.2",
-    "github-copilot/gpt-5.2-codex",
-    "github-copilot/gpt-5.3-codex",
-    "github-copilot/gpt-5.4-mini",
-    "github-copilot/grok-code-fast-1",
-    "openai-codex/gpt-5.5",
-    "opencode-go/*"
-  ],
+  "enabledModels": ["openai-codex/gpt-5.5"],
   "hideThinkingBlock": true,
   "terminal": {
     "showTerminalProgress": true,
     "imageWidthCells": 120
   },
-  "shellCommandPrefix": "export GIT_EDITOR=true\nexport GIT_SEQUENCE_EDITOR=true\nexport GIT_TERMINAL_PROMPT=0",
-  "subagents": {
-    "agentOverrides": {
-      "scout": {
-        "model": "opencode-go/deepseek-v4-flash",
-        "fallbackModels": ["github-copilot/gemini-3-flash-preview"]
-      }
-    }
-  }
+  "shellCommandPrefix": "export GIT_EDITOR=true\nexport GIT_SEQUENCE_EDITOR=true\nexport GIT_TERMINAL_PROMPT=0"
 }

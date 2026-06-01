@@ -66,7 +66,8 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `agents/` — empty; bundled agents come from pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
 - `prompts/` — `merge-worktree.md`; symlinked to `~/.pi/agent/prompts/`
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
-- `models.json`, `settings.json`, `mcp.json` — pi configuration files
+- `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` leaves subagent models unset so bundled agents inherit the current Pi default model
+- `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` so old pinned subagent models cannot survive
 - `home/packages/pi-mcp-adapter.nix` — `buildNpmPackage` fetching pi-mcp-adapter v2.6.0 from GitHub; vendored lockfile copied in `postPatch` (upstream omits it)
 - `home/packages/pi-web-access.nix` — `buildNpmPackage` fetching pi-web-access v0.10.7 from GitHub
 - `home/packages/pi-subagents.nix` — `buildNpmPackage` fetching pi-subagents v0.24.2 from GitHub; vendored lockfile copied in `postPatch` (upstream omits it)
