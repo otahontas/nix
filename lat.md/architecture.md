@@ -8,7 +8,7 @@ Top-level directories and key files.
 
 ```
 home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-coding-agent
-  configs/       per-tool directories, each with default.nix (45 configs)
+  configs/       per-tool directories, each with default.nix (47 configs)
   packages/      manual npm derivations (pi-mcp-adapter, pi-web-access, pi-subagents, pi-ralph-loop); lockfiles vendored when upstream omits them
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
