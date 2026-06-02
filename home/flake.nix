@@ -18,6 +18,10 @@
       url = "github:otahontas/kanttiinit-cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    pi-flakes = {
+      url = "github:otahontas/flakes";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     google-workspace-cli = {
       url = "github:googleworkspace/cli";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -39,6 +43,7 @@
       catppuccin,
       pi-catppuccin,
       kanttiinit-cli,
+      pi-flakes,
       google-workspace-cli,
       brew-nix,
       ...
@@ -62,10 +67,10 @@
 
         ];
       };
-      pi-mcp-adapter = pkgs.callPackage ./packages/pi-mcp-adapter.nix { };
-      pi-web-access = pkgs.callPackage ./packages/pi-web-access.nix { };
-      pi-subagents = pkgs.callPackage ./packages/pi-subagents.nix { };
-      pi-ralph-loop = pkgs.callPackage ./packages/pi-ralph-loop.nix { };
+      pi-mcp-adapter = pi-flakes.packages.${system}.pi-mcp-adapter;
+      pi-web-access = pi-flakes.packages.${system}.pi-web-access;
+      pi-subagents = pi-flakes.packages.${system}.pi-subagents;
+      pi-ralph-loop = pi-flakes.packages.${system}.pi-ralph-loop;
     in
     {
       homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {

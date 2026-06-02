@@ -58,7 +58,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `search-sessions.ts` — BM25 search over past pi conversations
   - `non-interactive.ts` — detects headless mode, injects no-chatter prompt
   - `notify.ts` — sends OSC 777 notification on agent completion
-- Nix-built extensions (symlinked from `home/packages/`):
+- Nix-built extensions (from `github:otahontas/flakes`, symlinked into `~/.pi/agent/extensions/`):
   - `pi-mcp-adapter/` — MCP server integration, OAuth flow, tool discovery
   - `pi-web-access/` — web search, content extraction, YouTube + video understanding
   - `pi-subagents/` — multi-agent orchestration (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
@@ -68,10 +68,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` leaves subagent models unset so bundled agents inherit the current Pi default model
 - `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` so old pinned subagent models cannot survive
-- `home/packages/pi-mcp-adapter.nix` — `buildNpmPackage` fetching pi-mcp-adapter v2.6.0 from GitHub; vendored lockfile copied in `postPatch` (upstream omits it)
-- `home/packages/pi-web-access.nix` — `buildNpmPackage` fetching pi-web-access v0.10.7 from GitHub
-- `home/packages/pi-subagents.nix` — `buildNpmPackage` fetching pi-subagents v0.24.2 from GitHub; vendored lockfile copied in `postPatch` (upstream omits it)
-- `home/packages/pi-ralph-loop.nix` — `buildNpmPackage` fetching pi-ralph-loop v1.8.0 from GitHub; ships skills (ralph-loop, ralph-draft, ralph-finalize) to `~/.pi/agent/skills/`
+- `home/flake.nix` input `pi-flakes` (`github:otahontas/flakes`) supplies `pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, and `pi-ralph-loop`; `pi-ralph-loop` ships skills (ralph-loop, ralph-draft, ralph-finalize) to `~/.pi/agent/skills/`
 
 ### model-quota extension
 
@@ -110,10 +107,9 @@ Once set, restart pi. Status bar shows `5h: 12% (4h) | wk: 35% (2d) | mo: 8% (29
 
 **Complex extensions** (with npm dependencies):
 
-- Add to `home/packages/` as a `buildNpmPackage` derivation — see existing `.nix` files for the pattern (`dontNpmBuild = true`, `cp -r . $out/`)
-- If upstream omits `package-lock.json`, generate one (`npm install --package-lock-only`) and vendored it; reference it via `postPatch` like pi-mcp-adapter and pi-subagents do
-- Pass through `extraSpecialArgs` in `home/flake.nix`
-- Symlink in `default.nix`
+- Package reusable Pi extensions in `github:otahontas/flakes` as Pi package roots (`$out/package.json` plus extension resources)
+- Add the flake package to `home/flake.nix` inputs/`extraSpecialArgs`
+- Symlink it in `default.nix`
 
 ## Config index
 

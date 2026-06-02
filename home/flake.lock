@@ -196,6 +196,26 @@
         "type": "github"
       }
     },
+    "pi-flakes": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1780397206,
+        "narHash": "sha256-/y9C9BN/oncIBoHGzpIum256XPAdFW3zQJ9/CcXTgpY=",
+        "owner": "otahontas",
+        "repo": "flakes",
+        "rev": "db30f650de6cee82c994864104df5bedb34ff3e6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "otahontas",
+        "repo": "flakes",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "brew-api": "brew-api",
@@ -205,7 +225,8 @@
         "home-manager": "home-manager",
         "kanttiinit-cli": "kanttiinit-cli",
         "nixpkgs": "nixpkgs",
-        "pi-catppuccin": "pi-catppuccin"
+        "pi-catppuccin": "pi-catppuccin",
+        "pi-flakes": "pi-flakes"
       }
     },
     "systems": {

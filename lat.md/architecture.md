@@ -9,7 +9,6 @@ Top-level directories and key files.
 ```
 home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-coding-agent
   configs/       per-tool directories, each with default.nix (47 configs)
-  packages/      manual npm derivations (pi-mcp-adapter, pi-web-access, pi-subagents, pi-ralph-loop); lockfiles vendored when upstream omits them
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
 devenv.nix       repo-specific dev shell: typos config, gitignore entries, treefmt overrides, tasks
@@ -37,6 +36,7 @@ Both flakes pin `nixpkgs-unstable` independently. `home/` pulls extra inputs:
 
 - **catppuccin / pi-catppuccin** — global theme (macchiato/blue) across terminal, editor, pi TUI
 - **kanttiinit-cli** — personal CLI tool
+- **pi-flakes** — external flake at `github:otahontas/flakes`; supplies Pi extension packages (`pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, `pi-ralph-loop`)
 - **brew-nix** — package overlay used by `mas` for Mac App Store installs
 
 ## AGENTS.md pipeline
@@ -77,4 +77,4 @@ Defined in `devenv.nix`, run with `devenv tasks run <task>`:
 
 - `home:apply` — home-manager switch
 - `system:apply` — darwin-rebuild switch (requires sudo)
-- `nix:update` — update home/system lockfiles + devenv, then run non-interactive pi to update manually pinned extension packages
+- `nix:update` — update home/system lockfiles + devenv

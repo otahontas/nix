@@ -42,16 +42,11 @@ _: {
       exec = "sudo darwin-rebuild switch --flake ./system";
     };
     "nix:update" = {
-      description = "Update home and system flake lockfiles, devenv, and manually-pinned packages";
+      description = "Update home and system flake lockfiles and devenv";
       exec = ''
         nix flake update --flake ./home
         nix flake update --flake ./system
         devenv update
-        pi -p "Check these two manually-pinned packages for newer versions and update them if newer exists. DO NOT apply any changes (no home-manager switch, no nix-build). DO NOT commit. ONLY update the source files — nothing else.
-
-        1. pi-mcp-adapter (packages/pi-mcp-adapter.nix): check GitHub releases at nicobailon/pi-mcp-adapter for version newer than what's in the nix file. If newer: update version, rev, src hash, and npmDepsHash in packages/pi-mcp-adapter.nix.
-
-        2. pi-web-access (packages/pi-web-access.nix): check GitHub releases at nicobailon/pi-web-access for version newer than what's in the nix file. If newer: update version, rev, src hash, and npmDepsHash in packages/pi-web-access.nix."
       '';
     };
   };
