@@ -42,6 +42,7 @@ Configs worth documenting beyond a table row.
 - **input-source** — disables Control+Space input source switch shortcut for terminal/nvim pass-through
 - **neovim** — blink.cmp with Copilot LSP + blink-copilot source; LSPs for Nix, shell, Lua; Ruby/Python providers disabled; custom spell file; ghost text disabled
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, worktree scripts
+- **yazi** — file manager with git status, starship prompt, relative motions, and character jump; git fetchers share `group = "git"` for Yazi 26.5.6+
 
 ### pi-coding-agent structure
 
