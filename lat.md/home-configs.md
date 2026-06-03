@@ -65,10 +65,12 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `pi-web-access/` — web search, content extraction, YouTube + video understanding
   - `pi-subagents/` — multi-agent orchestration (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
   - `pi-ralph-loop/` — autonomous coding loops with `/ralph` command and RALPH.md goal files
+- NPM Pi packages loaded through `settings.json`:
+  - `@plannotator/pi-extension` — Plannotator commands and skills, installed unpinned and updated with `pi update --extensions`
 - `agents/` — empty; bundled agents come from pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
 - `prompts/` — `merge-worktree.md`; symlinked to `~/.pi/agent/prompts/`
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
-- `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` leaves subagent models unset so bundled agents inherit the current Pi default model
+- `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` leaves subagent models unset so bundled agents inherit the current Pi default model and declares unpinned NPM Pi packages
 - `mcp.json` — chrome-devtools MCP passes `--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome` and `--isolated` so Puppeteer uses Nix Chrome and independent temp profiles
 - `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` so old pinned subagent models cannot survive
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module; `pi-flakes` (`github:otahontas/flakes`) supplies `pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, and `pi-ralph-loop`; `pi-ralph-loop` ships skills (ralph-loop, ralph-draft, ralph-finalize) to `~/.pi/agent/skills/`
@@ -122,7 +124,8 @@ Once set, restart pi. Status bar shows `5h: 12% (4h) | wk: 35% (2d) | mo: 8% (29
 
 **Complex extensions** (with npm dependencies):
 
-- Package reusable Pi extensions in `github:otahontas/flakes` as Pi package roots (`$out/package.json` plus extension resources)
+- Prefer a Pi package in `settings.json` when an npm package exists; Pi installs missing packages on startup and `pi update --extensions` updates unpinned specs
+- Package reusable first-party Pi extensions in `github:otahontas/flakes` as Pi package roots (`$out/package.json` plus extension resources)
 - Add the flake package to `home/flake.nix` inputs/`extraSpecialArgs`
 - Symlink it in `default.nix`
 

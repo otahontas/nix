@@ -78,4 +78,4 @@ Defined in `devenv.nix`, run with `devenv tasks run <task>`:
 
 - `home:apply` — home-manager switch
 - `system:apply` — darwin-rebuild switch (requires sudo)
-- `nix:update` — update home/system lockfiles + devenv
+- `nix:update` — update home/system lockfiles + devenv, apply home-manager, then run `pi update --extensions`
