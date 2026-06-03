@@ -169,19 +169,44 @@ const blockSecretTools: Guard = (event) => {
 
   const cmd = event.input.command;
 
-  // Match pass/gpg in command invocation positions:
-  // - Start of line/command
-  // - After | (pipe)
-  // - After && or ||
-  // - After ; (command separator)
-  // - After $( (command substitution)
-  // - After ` (backtick substitution)
-  const cmdPosition = String.raw`(^|[|&;\`]|\$\()`;
+  // Match pass/gpg invocations, including absolute paths and env/sudo prefixes:
+  // - pass show api/key
+  // - /nix/store/.../bin/pass show api/key
+  // - PATH=/tmp env FOO=bar gpg --decrypt file
+  // - bash -c "/some/path/pass show api/key"
+  const cmdPosition = String.raw`(^|[|&;\`'"]|\$\()`;
+  const commandPrefix = String.raw`\s*(?:sudo\s+)?(?:(?:command|builtin|exec)\s+)?(?:[A-Za-z_][A-Za-z0-9_]*=\S+\s+)*(?:env\s+(?:(?:-\S+|\S+=\S+)\s+)*)?(?:(?:command|builtin|exec)\s+)?`;
+  const secretProgram = String.raw`(?:[^\s'"\`;&|()]+/)?(?:pass|gpg)`;
+  const commandEnd = String.raw`(?=\s|$|[;&|)'"` + "`" + String.raw`])`;
   const secretPattern = new RegExp(
-    cmdPosition + String.raw`\s*(pass|gpg)(\s|$)`,
+    cmdPosition + commandPrefix + secretProgram + commandEnd,
+  );
+  const secretPathPattern = new RegExp(
+    String.raw`(?:^|[\s'"` +
+      "`" +
+      String.raw`])(?:~|\.{1,2}|/|[^\s'"\`;&|()]+/)[^\s'"\`;&|()]*/(?:pass|gpg)` +
+      commandEnd,
+  );
+  const envSecretPattern = new RegExp(
+    cmdPosition +
+      String.raw`\s*(?:sudo\s+)?env\b[^\n;&|` +
+      "`" +
+      String.raw`]*(?:\s|['"])(?:[^\s'"\`;&|()]+/)?(?:pass|gpg)` +
+      commandEnd,
+  );
+  const shellExecPattern = new RegExp(
+    String.raw`\b(?:bash|sh|zsh|fish)\s+-c\s+['"]?` +
+      commandPrefix +
+      secretProgram +
+      commandEnd,
   );
 
-  if (secretPattern.test(cmd)) {
+  if (
+    secretPattern.test(cmd) ||
+    secretPathPattern.test(cmd) ||
+    envSecretPattern.test(cmd) ||
+    shellExecPattern.test(cmd)
+  ) {
     return {
       block: true,
       reason:

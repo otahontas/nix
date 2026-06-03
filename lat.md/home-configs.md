@@ -53,7 +53,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `model-quota.ts` — status bar quota display for GitHub Copilot, OpenAI Codex, and OpenCode Go (see model-quota extension below)
   - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
   - `stop-hook.ts` — gatekeeper model decides whether to nudge agent after each response; tries local Ollama then cloud fallback
-  - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, `pass`/`gpg`, non-standard worktree paths, `--no-verify` commits
+  - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, `pass`/`gpg` command invocations (including absolute paths), non-standard worktree paths, `--no-verify` commits
   - `custom-footer.ts` — starship prompt + token stats + model info in TUI footer
   - `search-sessions.ts` — BM25 search over past pi conversations
   - `non-interactive.ts` — detects headless mode, injects no-chatter prompt
