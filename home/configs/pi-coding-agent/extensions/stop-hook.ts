@@ -6,7 +6,10 @@
  * gets at most one automatic follow-up.
  */
 
-import { completeSimple } from "@earendil-works/pi-ai";
+import {
+  completeSimple,
+  type SimpleStreamOptions,
+} from "@earendil-works/pi-ai";
 import type {
   ExtensionAPI,
   ExtensionContext,
@@ -17,12 +20,6 @@ const STOP_HOOK_CHECK_START_EVENT = "otahontas.stop-hook.check-start";
 const STOP_HOOK_CHECK_END_EVENT = "otahontas.stop-hook.check-end";
 const STOP_CHECK_PROMPT =
   "Review your last response. Did you complete everything the user asked? If not, continue working. If you did complete everything, briefly confirm what was done.";
-
-const LOCAL_GATEKEEPER_PROVIDER = "ollama";
-const LOCAL_GATEKEEPER_MODEL_ID = "gemma4:e2b";
-
-const CLOUD_GATEKEEPER_PROVIDER = "github-copilot";
-const CLOUD_GATEKEEPER_MODEL_ID = "claude-haiku-4.5";
 
 const MAX_GATEKEEPER_FAILURES = 3;
 
@@ -86,25 +83,29 @@ function buildGatekeeperMessages(messages: any[]) {
 }
 
 async function askGatekeeper(
-  provider: string,
-  modelId: string,
   contextMessages: any[],
   ctx: ExtensionContext,
+  thinkingLevel: ReturnType<ExtensionAPI["getThinkingLevel"]>,
 ): Promise<boolean | null> {
-  const model = ctx.modelRegistry.find(provider, modelId);
+  const model = ctx.model;
   if (!model) return null;
 
   const auth = await ctx.modelRegistry.getApiKeyAndHeaders(model);
   if (!auth.ok || !auth.apiKey) return null;
 
+  const options: SimpleStreamOptions = {
+    apiKey: auth.apiKey,
+    headers: auth.headers,
+    maxTokens: 16,
+  };
+  if (thinkingLevel !== "off") {
+    options.reasoning = thinkingLevel;
+  }
+
   const response = await completeSimple(
     model,
     { messages: contextMessages },
-    {
-      apiKey: auth.apiKey,
-      headers: auth.headers,
-      maxTokens: 16,
-    },
+    options,
   );
 
   const text = response.content
@@ -139,6 +140,7 @@ function looksComplete(messages: any[]): boolean {
 async function shouldSendNudge(
   messages: any[],
   ctx: ExtensionContext,
+  thinkingLevel: ReturnType<ExtensionAPI["getThinkingLevel"]>,
   failureCounter: { count: number },
 ): Promise<boolean> {
   // Skip gatekeeper if too many consecutive failures
@@ -149,39 +151,19 @@ async function shouldSendNudge(
 
   const contextMessages = buildGatekeeperMessages(messages);
 
-  // Try local gatekeeper model first
+  // Ask the same model and thinking level Pi is using for this session.
   try {
-    const result = await askGatekeeper(
-      LOCAL_GATEKEEPER_PROVIDER,
-      LOCAL_GATEKEEPER_MODEL_ID,
-      contextMessages,
-      ctx,
-    );
+    const result = await askGatekeeper(contextMessages, ctx, thinkingLevel);
     if (result !== null) {
       failureCounter.count = 0;
       return result;
     }
   } catch {
     failureCounter.count++;
+    return false;
   }
 
-  // Fall back to cloud gatekeeper model
-  try {
-    const result = await askGatekeeper(
-      CLOUD_GATEKEEPER_PROVIDER,
-      CLOUD_GATEKEEPER_MODEL_ID,
-      contextMessages,
-      ctx,
-    );
-    if (result !== null) {
-      failureCounter.count = 0;
-      return result;
-    }
-  } catch {
-    failureCounter.count++;
-  }
-
-  // Both models unavailable — don't nudge without informed decision
+  // Default model unavailable — don't nudge without informed decision
   failureCounter.count++;
   return false;
 }
@@ -214,6 +196,7 @@ export default function (pi: ExtensionAPI) {
       const shouldNudge = await shouldSendNudge(
         event.messages,
         ctx,
+        pi.getThinkingLevel(),
         gatekeeperFailures,
       );
       if (!shouldNudge) return;

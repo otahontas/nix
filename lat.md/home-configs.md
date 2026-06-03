@@ -54,7 +54,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
   - `model-quota.ts` — status bar quota display for GitHub Copilot, OpenAI Codex, and OpenCode Go (see model-quota extension below)
   - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
-  - `stop-hook.ts` — gatekeeper model decides whether to nudge agent after each response, emits in-flight events for `notify.ts`, and tries local Ollama then cloud fallback
+  - `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
   - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, `pass`/`gpg` command invocations (including absolute paths), non-standard worktree paths, `--no-verify` commits
   - `custom-footer.ts` — starship prompt + token stats + model info in TUI footer
   - `search-sessions.ts` — BM25 search over past pi conversations
@@ -74,6 +74,14 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `mcp.json` — chrome-devtools MCP passes `--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome` and `--isolated` so Puppeteer uses Nix Chrome and independent temp profiles
 - `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` so old pinned subagent models cannot survive
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module; `pi-flakes` (`github:otahontas/flakes`) supplies `pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, and `pi-ralph-loop`; `pi-ralph-loop` ships skills (ralph-loop, ralph-draft, ralph-finalize) to `~/.pi/agent/skills/`
+
+### stop-hook extension
+
+Stop-hook gates automatic self-review with the active Pi model, so it follows the configured default model and thinking level instead of pinning a separate gatekeeper.
+
+- [[home/configs/pi-coding-agent/extensions/stop-hook.ts#askGatekeeper]] uses `ctx.model` and sets active thinking as `reasoning` when thinking is not `off`.
+- [[home/configs/pi-coding-agent/extensions/stop-hook.ts#shouldSendNudge]] still skips obvious completions and stops nudging after repeated gatekeeper failures.
+- `agent_end` only queues the self-review prompt after tool-using turns, and shared start/end events let `notify.ts` wait for the gatekeeper.
 
 ### notify extension
 
