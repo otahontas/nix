@@ -33,9 +33,10 @@ let
       GEMINI_API_KEY="$(read_secret api/gemini-pi-coding-agent-web-search)"
       CONTEXT7_API_KEY="$(read_secret api/context7)"
       GITHITS_API_KEY="$(read_secret api/githits)"
+      UIDOTSH_TOKEN="$(read_secret api/uidotsh)"
       OPENCODE_GO_WORKSPACE_ID="$(read_secret api/opencode-go-workspace-id)"
       OPENCODE_GO_AUTH_COOKIE="$(read_secret api/opencode-go-auth-cookie)"
-      export GEMINI_API_KEY CONTEXT7_API_KEY GITHITS_API_KEY OPENCODE_GO_WORKSPACE_ID OPENCODE_GO_AUTH_COOKIE
+      export GEMINI_API_KEY CONTEXT7_API_KEY GITHITS_API_KEY UIDOTSH_TOKEN OPENCODE_GO_WORKSPACE_ID OPENCODE_GO_AUTH_COOKIE
       unset -f read_secret
       unset pass_cmd
     fi

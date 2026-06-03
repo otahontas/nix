@@ -11,6 +11,13 @@
       "auth": "bearer",
       "bearerTokenEnv": "GITHITS_API_KEY"
     },
+    "uidotsh": {
+      "type": "http",
+      "url": "https://ui.sh/mcp",
+      "auth": "bearer",
+      "bearerTokenEnv": "UIDOTSH_TOKEN",
+      "lifecycle": "eager"
+    },
     "chrome-devtools": {
       "command": "npx",
       "args": [
