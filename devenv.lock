@@ -3,11 +3,11 @@
     "devenv": {
       "locked": {
         "dir": "src/modules",
-        "lastModified": 1778281489,
-        "narHash": "sha256-q/E8JCHXLp7+T/SfSR3vN9KjDtCi5lB0xdgh4LcEOJc=",
+        "lastModified": 1780459148,
+        "narHash": "sha256-oIpiel88r8zV/WqTFwcGAjWXKOASHNzq7wjXQ6ORTvg=",
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "23120f1b923e80a27facbeb59433688772e854ab",
+        "rev": "493ed7ef062ba3972c06e60970fe5ebe014f5c33",
         "type": "github"
       },
       "original": {
@@ -20,11 +20,11 @@
     "devenv-base": {
       "flake": false,
       "locked": {
-        "lastModified": 1776667434,
-        "narHash": "sha256-YT+aS82XRgwihsDyiG/OqEzP1lRbAWhx4KU2T8JWE0c=",
+        "lastModified": 1778571552,
+        "narHash": "sha256-4FcKMYI3B338H20LqmrzGRAsL2bBdeB4HSGh3ByFqqg=",
         "owner": "otahontas",
         "repo": "devenv-base",
-        "rev": "888d5ccdd751b8c241d5db55c6ae29abd5e0357f",
+        "rev": "bf2d28533f67d736ab949b3ce230271d0341630d",
         "type": "github"
       },
       "original": {
@@ -140,11 +140,11 @@
     "treefmt-nix": {
       "flake": false,
       "locked": {
-        "lastModified": 1775636079,
-        "narHash": "sha256-pc20NRoMdiar8oPQceQT47UUZMBTiMdUuWrYu2obUP0=",
+        "lastModified": 1780220602,
+        "narHash": "sha256-eynAfOmbmxJnkp7YewvCEbShNnnYJ9gLLqkzsYtBPeM=",
         "owner": "numtide",
         "repo": "treefmt-nix",
-        "rev": "790751ff7fd3801feeaf96d7dc416a8d581265ba",
+        "rev": "db947814a175b7ca6ded66e21383d938df01c227",
         "type": "github"
       },
       "original": {
