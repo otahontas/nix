@@ -24,5 +24,5 @@
     };
   };
 
-  programs.ssh.matchBlocks."*".identityAgent = "${config.home.homeDirectory}/.gnupg/S.gpg-agent.ssh";
+  programs.ssh.settings."*".IdentityAgent = "${config.home.homeDirectory}/.gnupg/S.gpg-agent.ssh";
 }

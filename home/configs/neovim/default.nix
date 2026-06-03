@@ -55,6 +55,8 @@ in
       vimAlias = true;
       vimdiffAlias = true;
       withNodeJs = true;
+      withRuby = false;
+      withPython3 = false;
       autowrapRuntimeDeps = true;
       initLua = builtins.readFile ./nvim/init.lua;
       extraPackages = with pkgs; [

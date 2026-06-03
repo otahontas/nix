@@ -9,6 +9,7 @@ Apply with `devenv tasks run home:apply`. Stage new files before applying; don't
 Conventions for writing home-manager configs.
 
 - **Home manager first** — use `programs`/`services`, fallback to `pkgs`
+- **Catppuccin** — global theme uses `catppuccin.enable = true` plus `autoEnable = true` to keep automatic port enrollment explicit
 - **Session variables** for paths and environment config
 - **GUI apps** — prefer home-manager when nixpkgs has darwin `.app` bundle; `targets.darwin.copyApps.enable = true` for Spotlight
 - **LaunchAgents** via `launchd.agents` for auto-start
@@ -34,12 +35,12 @@ Configs with scripts: `fd`, `git`, `neovim`, `pi-coding-agent`, `qpdf`, `sleep`,
 
 Configs worth documenting beyond a table row.
 
-- **GPG/SSH** (`gpg/`) — YubiKey-based: gpg-agent with SSH support, GPG signing for git, `pinentry_mac` for GUI prompts
+- **GPG/SSH** (`gpg/`) — YubiKey-based: gpg-agent with SSH support, GPG signing for git, `pinentry_mac` for GUI prompts, and SSH `IdentityAgent` through `programs.ssh.settings`
 - **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it
 - **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars and add local helper tools, and symlinks extensions/skills/agents/prompts/models to `~/.pi/agent/`
 - **password-store** — pass with GPG integration
 - **input-source** — disables Control+Space input source switch shortcut for terminal/nvim pass-through
-- **neovim** — blink.cmp with Copilot LSP + blink-copilot source; LSPs for Nix, shell, Lua; custom spell file; ghost text disabled
+- **neovim** — blink.cmp with Copilot LSP + blink-copilot source; LSPs for Nix, shell, Lua; Ruby/Python providers disabled; custom spell file; ghost text disabled
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, worktree scripts
 
 ### pi-coding-agent structure
