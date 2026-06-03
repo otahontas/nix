@@ -4,10 +4,6 @@
   config,
   system,
   pi-nix,
-  pi-mcp-adapter,
-  pi-web-access,
-  pi-subagents,
-  pi-ralph-loop,
   ...
 }:
 
@@ -124,23 +120,6 @@ in
 
     file = {
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
-
-      # Pi MCP adapter extension - built with deps
-      ".pi/agent/extensions/pi-mcp-adapter".source = pi-mcp-adapter;
-
-      # Pi web access extension - built with deps
-      ".pi/agent/extensions/pi-web-access".source = pi-web-access;
-
-      # pi-subagents extension - multi-agent orchestration
-      ".pi/agent/extensions/pi-subagents".source = pi-subagents;
-
-      # pi-ralph-loop extension - autonomous coding loops
-      ".pi/agent/extensions/pi-ralph-loop".source = pi-ralph-loop;
-
-      # pi-ralph-loop skills
-      ".pi/agent/skills/ralph-loop".source = "${pi-ralph-loop}/skills/ralph-loop";
-      ".pi/agent/skills/ralph-draft".source = "${pi-ralph-loop}/skills/ralph-draft";
-      ".pi/agent/skills/ralph-finalize".source = "${pi-ralph-loop}/skills/ralph-finalize";
 
       ".pi/agent/models.json".source = ./models.json;
       ".pi/agent/mcp.json".source = ./mcp.json;

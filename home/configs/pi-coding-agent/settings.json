@@ -18,5 +18,10 @@
     "imageWidthCells": 120
   },
   "shellCommandPrefix": "export GIT_EDITOR=true\nexport GIT_SEQUENCE_EDITOR=true\nexport GIT_TERMINAL_PROMPT=0",
-  "packages": ["npm:@plannotator/pi-extension"]
+  "packages": [
+    "npm:pi-mcp-adapter",
+    "npm:pi-web-access",
+    "npm:pi-subagents",
+    "npm:@plannotator/pi-extension"
+  ]
 }

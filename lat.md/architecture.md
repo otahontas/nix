@@ -37,7 +37,6 @@ Both flakes pin `nixpkgs-unstable` independently. `home/` pulls extra inputs:
 - **catppuccin / pi-catppuccin** — global theme (macchiato/blue) across terminal, editor, pi TUI
 - **kanttiinit-cli** — personal CLI tool
 - **pi-nix** — external flake at `github:lukasl-dev/pi.nix`; supplies the Pi package and Home Manager module
-- **pi-flakes** — external flake at `github:otahontas/flakes`; supplies Pi extension packages (`pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, `pi-ralph-loop`)
 - **brew-nix** — package overlay used by `mas` for Mac App Store installs
 
 ## AGENTS.md pipeline

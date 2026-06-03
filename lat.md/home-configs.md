@@ -48,7 +48,7 @@ Configs worth documenting beyond a table row.
 
 Directory layout of `home/configs/pi-coding-agent/`.
 
-- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed env vars with bounded reads and add `rtk`/Poppler to PATH, shadows `pass`/`gpg` for the child process, then auto-discovers and symlinks everything below; accepts `pi-subagents`, `pi-ralph-loop`, `pi-mcp-adapter`, `pi-web-access` as parameters
+- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed env vars with bounded reads and add `rtk`/Poppler to PATH, shadows `pass`/`gpg` for the child process, then auto-discovers and symlinks local resources below
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
 - `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
@@ -60,20 +60,19 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `search-sessions.ts` — BM25 search over past pi conversations
   - `non-interactive.ts` — detects headless mode, injects no-chatter prompt
   - `notify.ts` — sends session-aware OSC 777 notifications with generated titles, deterministic bodies, and sanitized output
-- Nix-built extensions (from `github:otahontas/flakes`, symlinked into `~/.pi/agent/extensions/`):
-  - `pi-mcp-adapter/` — MCP server integration, OAuth flow, tool discovery
-  - `pi-web-access/` — web search, content extraction, YouTube + video understanding
-  - `pi-subagents/` — multi-agent orchestration (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
-  - `pi-ralph-loop/` — autonomous coding loops with `/ralph` command and RALPH.md goal files
 - NPM Pi packages loaded through `settings.json`:
-  - `@plannotator/pi-extension` — Plannotator commands and skills, installed unpinned and updated with `pi update --extensions`
+  - `pi-mcp-adapter` — MCP server integration, OAuth flow, tool discovery
+  - `pi-web-access` — web search, content extraction, YouTube + video understanding
+  - `pi-subagents` — multi-agent orchestration (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
+  - `@plannotator/pi-extension` — Plannotator commands and skills
+  - Unpinned NPM packages are updated with `pi update --extensions`
 - `agents/` — empty; bundled agents come from pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
 - `prompts/` — `merge-worktree.md`; symlinked to `~/.pi/agent/prompts/`
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` leaves subagent models unset so bundled agents inherit the current Pi default model and declares unpinned NPM Pi packages
 - `mcp.json` — chrome-devtools MCP passes `--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome` and `--isolated` so Puppeteer uses Nix Chrome and independent temp profiles
 - `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` so old pinned subagent models cannot survive
-- `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module; `pi-flakes` (`github:otahontas/flakes`) supplies `pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, and `pi-ralph-loop`; `pi-ralph-loop` ships skills (ralph-loop, ralph-draft, ralph-finalize) to `~/.pi/agent/skills/`
+- `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module
 
 ### stop-hook extension
 
@@ -132,10 +131,8 @@ Once set, restart pi. Status bar shows `5h: 12% (4h) | wk: 35% (2d) | mo: 8% (29
 
 **Complex extensions** (with npm dependencies):
 
-- Prefer a Pi package in `settings.json` when an npm package exists; Pi installs missing packages on startup and `pi update --extensions` updates unpinned specs
-- Package reusable first-party Pi extensions in `github:otahontas/flakes` as Pi package roots (`$out/package.json` plus extension resources)
-- Add the flake package to `home/flake.nix` inputs/`extraSpecialArgs`
-- Symlink it in `default.nix`
+- Prefer a Pi package in `settings.json`; Pi installs missing packages on startup and `pi update --extensions` updates unpinned specs
+- For first-party reusable extensions, publish an npm Pi package or use a direct git/local package source in `settings.json`
 
 ## Config index
 
