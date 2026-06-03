@@ -13,6 +13,8 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 
 const MAX_FOLLOWUPS = 1;
+const STOP_HOOK_CHECK_START_EVENT = "otahontas.stop-hook.check-start";
+const STOP_HOOK_CHECK_END_EVENT = "otahontas.stop-hook.check-end";
 const STOP_CHECK_PROMPT =
   "Review your last response. Did you complete everything the user asked? If not, continue working. If you did complete everything, briefly confirm what was done.";
 
@@ -194,7 +196,7 @@ export default function (pi: ExtensionAPI) {
     }
   });
 
-  pi.on("agent_end", async (event, _ctx) => {
+  pi.on("agent_end", async (event, ctx) => {
     if (followupCount >= MAX_FOLLOWUPS) return;
 
     // Skip nudge when agent made no tool calls (simple Q&A)
@@ -206,15 +208,20 @@ export default function (pi: ExtensionAPI) {
     );
     if (!hasToolUse) return;
 
-    // Ask gatekeeper model whether to nudge
-    const shouldNudge = await shouldSendNudge(
-      event.messages,
-      _ctx,
-      gatekeeperFailures,
-    );
-    if (!shouldNudge) return;
+    pi.events.emit(STOP_HOOK_CHECK_START_EVENT, undefined);
+    try {
+      // Ask gatekeeper model whether to nudge
+      const shouldNudge = await shouldSendNudge(
+        event.messages,
+        ctx,
+        gatekeeperFailures,
+      );
+      if (!shouldNudge) return;
 
-    followupCount++;
-    pi.sendUserMessage(STOP_CHECK_PROMPT, { deliverAs: "followUp" });
+      followupCount++;
+      pi.sendUserMessage(STOP_CHECK_PROMPT, { deliverAs: "followUp" });
+    } finally {
+      pi.events.emit(STOP_HOOK_CHECK_END_EVENT, undefined);
+    }
   });
 }

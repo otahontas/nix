@@ -53,12 +53,12 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
   - `model-quota.ts` — status bar quota display for GitHub Copilot, OpenAI Codex, and OpenCode Go (see model-quota extension below)
   - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
-  - `stop-hook.ts` — gatekeeper model decides whether to nudge agent after each response; tries local Ollama then cloud fallback
+  - `stop-hook.ts` — gatekeeper model decides whether to nudge agent after each response, emits in-flight events for `notify.ts`, and tries local Ollama then cloud fallback
   - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, `pass`/`gpg` command invocations (including absolute paths), non-standard worktree paths, `--no-verify` commits
   - `custom-footer.ts` — starship prompt + token stats + model info in TUI footer
   - `search-sessions.ts` — BM25 search over past pi conversations
   - `non-interactive.ts` — detects headless mode, injects no-chatter prompt
-  - `notify.ts` — sends OSC 777 notification on agent completion
+  - `notify.ts` — sends session-aware OSC 777 notifications with generated titles, deterministic bodies, and sanitized output
 - Nix-built extensions (from `github:otahontas/flakes`, symlinked into `~/.pi/agent/extensions/`):
   - `pi-mcp-adapter/` — MCP server integration, OAuth flow, tool discovery
   - `pi-web-access/` — web search, content extraction, YouTube + video understanding
@@ -71,6 +71,18 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `mcp.json` — chrome-devtools MCP passes `--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome` and `--isolated` so Puppeteer uses Nix Chrome and independent temp profiles
 - `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` so old pinned subagent models cannot survive
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module; `pi-flakes` (`github:otahontas/flakes`) supplies `pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, and `pi-ralph-loop`; `pi-ralph-loop` ships skills (ralph-loop, ralph-draft, ralph-finalize) to `~/.pi/agent/skills/`
+
+### notify extension
+
+Pi notifications carry useful context without calling a model for every completion.
+
+Key behavior lives in [[home/configs/pi-coding-agent/extensions/notify.ts#generateTitle]], [[home/configs/pi-coding-agent/extensions/notify.ts#buildNotificationBody]], [[home/configs/pi-coding-agent/extensions/notify.ts#canWriteNativeNotification]], and [[home/configs/pi-coding-agent/extensions/notify.ts#notify]].
+
+- In interactive TTY sessions, the first real user prompt can generate a 2-6 word session title with the current Pi model. Manual and restored names win, greetings and extension-generated prompts are skipped, and the result is guarded against session switches before `pi.setSessionName` runs.
+- `agent_end` notifications only run in interactive TTY sessions. They wait for stop-hook gatekeeper checks, then send only if Pi is idle and has no pending messages.
+- `stop-hook.ts` emits shared start/end events around [[home/configs/pi-coding-agent/extensions/stop-hook.ts#shouldSendNudge]], so notification timers can cancel stale turn-complete alerts when a follow-up starts.
+- Body text is deterministic: failed bash command first, then `needs input` when the final assistant message appears blocked, otherwise `done`.
+- OSC 777 title/body fields collapse whitespace, remove control characters, replace semicolons, and truncate output before writing to stdout.
 
 ### model-quota extension
 
