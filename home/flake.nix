@@ -22,6 +22,10 @@
       url = "github:otahontas/flakes";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    pi-nix = {
+      url = "github:lukasl-dev/pi.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     google-workspace-cli = {
       url = "github:googleworkspace/cli";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -44,6 +48,7 @@
       pi-catppuccin,
       kanttiinit-cli,
       pi-flakes,
+      pi-nix,
       google-workspace-cli,
       brew-nix,
       ...
@@ -80,6 +85,7 @@
             kanttiinit-cli
             google-workspace-cli
             system
+            pi-nix
             pi-mcp-adapter
             pi-web-access
             pi-subagents
@@ -89,6 +95,7 @@
         modules = [
           catppuccin.homeModules.catppuccin
           pi-catppuccin.homeManagerModules.default
+          pi-nix.homeModules.default
           (
             { lib, ... }:
             let

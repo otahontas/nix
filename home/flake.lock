@@ -216,6 +216,27 @@
         "type": "github"
       }
     },
+    "pi-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "systems": "systems_2"
+      },
+      "locked": {
+        "lastModified": 1780390085,
+        "narHash": "sha256-QxqhqenhltMfpvRBE3qJ+hic3wqGVNM7cCzHNV+thms=",
+        "owner": "lukasl-dev",
+        "repo": "pi.nix",
+        "rev": "36f07522adfbe92d0ebe02cb0082e3989a2870c7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lukasl-dev",
+        "repo": "pi.nix",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "brew-api": "brew-api",
@@ -226,10 +247,26 @@
         "kanttiinit-cli": "kanttiinit-cli",
         "nixpkgs": "nixpkgs",
         "pi-catppuccin": "pi-catppuccin",
-        "pi-flakes": "pi-flakes"
+        "pi-flakes": "pi-flakes",
+        "pi-nix": "pi-nix"
       }
     },
     "systems": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_2": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",

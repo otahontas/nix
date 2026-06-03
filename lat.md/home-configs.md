@@ -36,7 +36,7 @@ Configs worth documenting beyond a table row.
 
 - **GPG/SSH** (`gpg/`) — YubiKey-based: gpg-agent with SSH support, GPG signing for git, `pinentry_mac` for GUI prompts
 - **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it
-- **pi-coding-agent** — wraps `pkgs.pi-coding-agent` with PATH, API keys, and Node module aliases for extensions; extensions/skills/agents/prompts/models symlink to `~/.pi/agent/`
+- **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars and add local helper tools, and symlinks extensions/skills/agents/prompts/models to `~/.pi/agent/`
 - **password-store** — pass with GPG integration
 - **input-source** — disables Control+Space input source switch shortcut for terminal/nvim pass-through
 - **neovim** — blink.cmp with Copilot LSP + blink-copilot source; LSPs for Nix, shell, Lua; custom spell file; ghost text disabled
@@ -46,7 +46,7 @@ Configs worth documenting beyond a table row.
 
 Directory layout of `home/configs/pi-coding-agent/`.
 
-- `default.nix` — main config, wraps `pkgs.pi-coding-agent` to load pass secrets, PATH tools, and Node module aliases for extensions, then auto-discovers and symlinks everything below; accepts `pi-subagents`, `pi-ralph-loop`, `pi-mcp-adapter`, `pi-web-access` as parameters
+- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed env vars with bounded reads and add `rtk`/Poppler to PATH, shadows `pass`/`gpg` for the child process, then auto-discovers and symlinks everything below; accepts `pi-subagents`, `pi-ralph-loop`, `pi-mcp-adapter`, `pi-web-access` as parameters
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
 - `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
@@ -69,7 +69,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` leaves subagent models unset so bundled agents inherit the current Pi default model
 - `mcp.json` — chrome-devtools MCP passes `--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome` and `--isolated` so Puppeteer uses Nix Chrome and independent temp profiles
 - `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` so old pinned subagent models cannot survive
-- `home/flake.nix` input `pi-flakes` (`github:otahontas/flakes`) supplies `pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, and `pi-ralph-loop`; `pi-ralph-loop` ships skills (ralph-loop, ralph-draft, ralph-finalize) to `~/.pi/agent/skills/`
+- `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module; `pi-flakes` (`github:otahontas/flakes`) supplies `pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, and `pi-ralph-loop`; `pi-ralph-loop` ships skills (ralph-loop, ralph-draft, ralph-finalize) to `~/.pi/agent/skills/`
 
 ### model-quota extension
 

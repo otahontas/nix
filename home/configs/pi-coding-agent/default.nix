@@ -2,6 +2,8 @@
   pkgs,
   lib,
   config,
+  system,
+  pi-nix,
   pi-mcp-adapter,
   pi-web-access,
   pi-subagents,
@@ -10,33 +12,40 @@
 }:
 
 let
-  inherit (pkgs) pi-coding-agent;
+  piPackage = pi-nix.packages.${system}.coding-agent;
 
-  piNodeAliases = pkgs.runCommand "pi-node-aliases" { } ''
-    mkdir -p $out/node_modules/@earendil-works
-
-    piRoot=$(find ${pi-coding-agent}/lib/node_modules -mindepth 1 -maxdepth 1 -type d | head -n1)
-    piNodeModules="$piRoot/node_modules"
-
-    makeAlias() {
-      target="$1"
-      package="$2"
-      aliasDir="$out/node_modules/@earendil-works/$package"
-
-      mkdir -p "$aliasDir"
-      ln -s "$target/dist" "$aliasDir/dist"
-      printf '{"name":"@earendil-works/%s","type":"module","main":"./dist/index.js","types":"./dist/index.d.ts"}\n' "$package" > "$aliasDir/package.json"
-    }
-
-    makeAlias "$piRoot" pi-coding-agent
-
-    for package in pi-ai pi-agent-core pi-tui; do
-      if [ -e "$piNodeModules/@earendil-works/$package" ]; then
-        makeAlias "$piNodeModules/@earendil-works/$package" "$package"
-      elif [ -e "$piNodeModules/@mariozechner/$package" ]; then
-        makeAlias "$piNodeModules/@mariozechner/$package" "$package"
-      fi
+  piCommandBlockers = pkgs.runCommand "pi-command-blockers" { } ''
+    mkdir -p "$out/bin"
+    for cmd in pass gpg; do
+      {
+        echo '#!/bin/sh'
+        echo "echo \"$cmd is not available to pi\" >&2"
+        echo 'exit 127'
+      } > "$out/bin/$cmd"
+      chmod +x "$out/bin/$cmd"
     done
+  '';
+
+  piWrapper = pkgs.writeShellScriptBin "pi" ''
+    # Load API keys from pass before pi starts. Do not add pass to pi's runtime PATH.
+    pass_cmd="$(command -v pass 2>/dev/null || true)"
+    if [ -n "$pass_cmd" ]; then
+      read_secret() {
+        ${pkgs.coreutils}/bin/timeout 2 "$pass_cmd" show "$1" 2>/dev/null || true
+      }
+
+      GEMINI_API_KEY="$(read_secret api/gemini-pi-coding-agent-web-search)"
+      CONTEXT7_API_KEY="$(read_secret api/context7)"
+      GITHITS_API_KEY="$(read_secret api/githits)"
+      OPENCODE_GO_WORKSPACE_ID="$(read_secret api/opencode-go-workspace-id)"
+      OPENCODE_GO_AUTH_COOKIE="$(read_secret api/opencode-go-auth-cookie)"
+      export GEMINI_API_KEY CONTEXT7_API_KEY GITHITS_API_KEY OPENCODE_GO_WORKSPACE_ID OPENCODE_GO_AUTH_COOKIE
+      unset -f read_secret
+      unset pass_cmd
+    fi
+
+    export PATH="${piCommandBlockers}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
+    exec ${piPackage}/bin/pi "$@"
   '';
 
   # Auto-discover extensions (.ts files and directories with index.ts)
@@ -110,22 +119,6 @@ in
 {
   home = {
     packages = [
-      (pkgs.writeShellScriptBin "pi" ''
-        export PATH="${pkgs.nodejs_24}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
-        export NODE_PATH="${piNodeAliases}/node_modules''${NODE_PATH:+:$NODE_PATH}"
-
-        # Load API keys from pass
-        if command -v ${pkgs.pass}/bin/pass &>/dev/null; then
-          GEMINI_API_KEY="$(${pkgs.pass}/bin/pass show api/gemini-pi-coding-agent-web-search 2>/dev/null || true)"
-          CONTEXT7_API_KEY="$(${pkgs.pass}/bin/pass show api/context7 2>/dev/null || true)"
-          GITHITS_API_KEY="$(${pkgs.pass}/bin/pass show api/githits 2>/dev/null || true)"
-          OPENCODE_GO_WORKSPACE_ID="$(${pkgs.pass}/bin/pass show api/opencode-go-workspace-id 2>/dev/null || true)"
-          OPENCODE_GO_AUTH_COOKIE="$(${pkgs.pass}/bin/pass show api/opencode-go-auth-cookie 2>/dev/null || true)"
-          export GEMINI_API_KEY CONTEXT7_API_KEY GITHITS_API_KEY OPENCODE_GO_WORKSPACE_ID OPENCODE_GO_AUTH_COOKIE
-        fi
-        exec ${pi-coding-agent}/bin/pi "$@"
-      '')
-
       pkgs."poppler-utils"
     ];
 
@@ -197,7 +190,14 @@ in
       pir = "pi -r";
     };
 
-    # Catppuccin theme (follows global catppuccin.flavor)
-    pi.catppuccin.enable = true;
+    pi = {
+      # Catppuccin theme (follows global catppuccin.flavor)
+      catppuccin.enable = true;
+
+      coding-agent = {
+        enable = true;
+        package = piWrapper;
+      };
+    };
   };
 }
