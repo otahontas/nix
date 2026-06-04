@@ -1,4 +1,15 @@
-_: {
+{
+  pkgs,
+  config,
+  ...
+}:
+{
+  env.LAT_LLM_KEY = config.secretspec.secrets.LAT_LLM_KEY;
+
+  packages = [
+    pkgs.secretspec
+  ];
+
   files = {
     ".typos.toml".text = ''
       [default.extend-words]

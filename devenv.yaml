@@ -14,3 +14,7 @@ inputs:
     flake: false
 imports:
   - devenv-base
+secretspec:
+  enable: true
+  provider: pass
+  profile: default

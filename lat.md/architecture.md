@@ -12,7 +12,8 @@ home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-co
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
 devenv.nix       repo-specific dev shell: typos config, gitignore entries, treefmt overrides, tasks
-devenv.yaml      imports devenv-base as flake input
+devenv.yaml      imports devenv-base as flake input and enables SecretSpec
+secretspec.toml  pass-backed secret requirements for the root shell
 lat.md/          this documentation
 ```
 
@@ -70,6 +71,14 @@ devenv-base.agents-md.extraEntries = [
 Both AGENTS.md files are nix store symlinks — never edit them directly. Always modify the source (`GLOBAL_AGENTS.md` for global, `devenv.nix` extra entries for project) and rebuild.
 
 This applies broadly in this repo: if `readlink` shows a nix store path, find the source (flake config, home-manager module, or devenv-base option) and change that instead.
+
+## Secrets
+
+Root devenv exports only `LAT_LLM_KEY` for LAT tooling. SecretSpec declares the requirement while `pass` stores the value outside git.
+
+- `secretspec.toml` declares `LAT_LLM_KEY` in the default profile.
+- `devenv.yaml` enables SecretSpec with `provider: pass` and `profile: default`.
+- `devenv.nix` exports `config.secretspec.secrets.LAT_LLM_KEY` directly, so a missing value fails instead of falling back to a blank string.
 
 ## Tasks
 
