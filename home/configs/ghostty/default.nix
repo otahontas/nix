@@ -5,6 +5,7 @@
     package = pkgs.ghostty-bin;
     settings = {
       macos-option-as-alt = "left";
+      bell-features = "title,attention,border";
     };
   };
 

@@ -63,6 +63,7 @@ function notify(title: string, body: string): void {
   const safeTitle = sanitizeOscPart(title, TITLE_MAX_LENGTH) || "Pi";
   const safeBody = sanitizeOscPart(body, BODY_MAX_LENGTH) || "done";
   process.stdout.write(`\x1b]777;notify;${safeTitle};${safeBody}\x07`);
+  process.stdout.write("\x07");
 }
 
 function getCliMode(): string | undefined {
