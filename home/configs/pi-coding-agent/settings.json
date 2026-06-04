@@ -11,7 +11,7 @@
   "defaultThinkingLevel": "xhigh",
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
-  "enabledModels": ["openai-codex/gpt-5.5"],
+  "enabledModels": ["openai-codex/gpt-5.5", "openai-codex/gpt-5.3-codex-spark"],
   "hideThinkingBlock": true,
   "terminal": {
     "showTerminalProgress": true,
@@ -23,6 +23,7 @@
     "npm:pi-web-access",
     "npm:pi-subagents",
     "npm:@plannotator/pi-extension",
+    "npm:@narumitw/pi-codex-usage",
     "npm:pi-rtk-optimizer"
   ]
 }

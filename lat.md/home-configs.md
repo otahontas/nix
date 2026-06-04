@@ -36,7 +36,7 @@ Configs with scripts: `fd`, `git`, `neovim`, `pi-coding-agent`, `qpdf`, `sleep`,
 Configs worth documenting beyond a table row.
 
 - **GPG/SSH** (`gpg/`) — YubiKey-based: gpg-agent with SSH support, GPG signing for git, `pinentry_mac` for GUI prompts, and SSH `IdentityAgent` through `programs.ssh.settings`
-- **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it
+- **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it; enables title, attention, and border bell effects for Pi notifications
 - **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars and add local helper tools, and symlinks extensions/skills/prompts/models to `~/.pi/agent/`
 - **password-store** — pass with GPG integration
 - **input-source** — disables Control+Space input source switch shortcut for terminal/nvim pass-through
@@ -52,11 +52,10 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
 - `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
-  - `model-quota.ts` — status bar quota display for OpenAI Codex only (see model-quota extension below)
   - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
   - `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
   - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, `pass`/`gpg` command invocations (including absolute paths), non-standard worktree paths, `--no-verify` commits
-  - `custom-footer.ts` — starship prompt + token stats + model info in TUI footer
+  - `custom-footer.ts` — starship prompt, token stats, model info, and extension statuses in TUI footer
   - `search-sessions.ts` — BM25 search over past pi conversations
   - `non-interactive.ts` — detects headless mode, injects no-chatter prompt
   - `name-session.ts` — names UI sessions from the first real user prompt with the current Pi model
@@ -66,11 +65,12 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `pi-web-access` — web search, content extraction, YouTube + video understanding
   - `pi-subagents` — multi-agent orchestration (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
   - `@plannotator/pi-extension` — Plannotator commands and skills
+  - `@narumitw/pi-codex-usage` — Codex subscription usage command and footer status
   - Unpinned NPM packages are updated with `pi update --extensions`
 - Bundled agents come from the pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate); no local `agents/` directory is needed
 - `prompts/` — `merge-worktree.md`; symlinked to `~/.pi/agent/prompts/`
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
-- `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` defaults to OpenAI Codex `gpt-5.5` with `xhigh` thinking, leaves subagent models unset so bundled agents inherit the current Pi default model, and declares unpinned NPM Pi packages
+- `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` defaults to OpenAI Codex `gpt-5.5` with `xhigh` thinking, enables `gpt-5.5` and `gpt-5.3-codex-spark`, leaves subagent models unset so bundled agents inherit the current Pi default model, and declares unpinned NPM Pi packages
 - `mcp.json` — chrome-devtools MCP passes `--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome` and `--isolated` so Puppeteer uses Nix Chrome and independent temp profiles
 - `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` so old pinned subagent models cannot survive
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module
@@ -102,17 +102,16 @@ Key behavior lives in [[home/configs/pi-coding-agent/extensions/notify.ts#buildN
 - `agent_end` notifications only run in interactive TTY sessions. They wait for stop-hook gatekeeper checks, then send only if Pi is idle and has no pending messages.
 - `stop-hook.ts` emits shared start/end events around [[home/configs/pi-coding-agent/extensions/stop-hook.ts#shouldSendNudge]], so notification timers can cancel stale turn-complete alerts when a follow-up starts.
 - Body text is deterministic: failed bash command first, then `needs input` when the final assistant message appears blocked, otherwise `done`.
-- OSC 777 title/body fields collapse whitespace, remove control characters, replace semicolons, and truncate output before writing to stdout.
+- OSC 777 title/body fields collapse whitespace, remove control characters, replace semicolons, and truncate output before writing to stdout. The notifier also emits BEL so Ghostty can trigger its configured title, attention, and border bell effects.
 
-### model-quota extension
+### pi-codex-usage package
 
-Status bar quota display for OpenAI Codex. Returns `QuotaInfo` (never null) — errors display inline.
+Codex subscription usage now comes from the package-managed `@narumitw/pi-codex-usage` extension instead of a local quota extension.
 
-- Supported provider: `openai-codex` only. Other providers show `OpenAI Codex quota only` and do not trigger GitHub Copilot or OpenCode Go quota fetches.
-- OpenAI Codex needs OAuth login via `/login`. The extension calls `https://chatgpt.com/backend-api/wham/usage` with `auth.json["openai-codex"].access`.
-- Status text formats the session window, optional weekly window, reset times, optional credits, and quota warnings.
-- Manual `/model-quota` clears only Codex/auth caches and shows Codex quota only. Startup, model selection, and the 5-minute timer refresh active-model status.
-- Removed support: GitHub Copilot `/copilot_internal/user`, OpenCode Go `/zen/go/v1/usage`, and the OpenCode Go dashboard scraper.
+- Pi loads `npm:@narumitw/pi-codex-usage` from `settings.json`; the package stays unpinned so `pi update --extensions` can update it.
+- The package provides `/codex-status` and `/codex-status --refresh` for ChatGPT Codex usage reports.
+- It uses Pi's OpenAI Codex model auth first, then falls back to `codex app-server --listen stdio://` when Pi auth is unavailable.
+- It publishes footer text with `ctx.ui.setStatus("codex-usage", ...)`; `custom-footer.ts` renders that automatically through `footerData.getExtensionStatuses()`.
 
 ### Adding skills or extensions
 
