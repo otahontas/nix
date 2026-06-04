@@ -9,12 +9,6 @@
   - `devenv search <query>` to find packages and options
 - When working with external libraries, use MCP tools (`context7`, `githits`) to look up docs and examples instead of guessing APIs
 
-## Caveman mode
-
-- Always use the `caveman` skill (full intensity) for all responses. Active from first message, every session.
-- Off only when user says "stop caveman" or "normal mode".
-- Do NOT use caveman-commit, caveman-review, or caveman-help — use `git-commit` and `writing-clearly-and-concisely` instead.
-
 ## Writing
 
 - Use sentence case: "Next steps" not "Next Steps", "Plan overview" not "Plan Overview"

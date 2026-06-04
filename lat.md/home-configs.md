@@ -50,7 +50,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
 
 - `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars with bounded reads and add `rtk`/Poppler to PATH, shadows `pass`/`gpg` for the child process, then auto-discovers and symlinks local extensions, skills, and prompts
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
-- `skills/` — symlinked to `~/.pi/agent/skills/`
+- `skills/` — local skills symlinked to `~/.pi/agent/skills/`; package-managed skills and extensions stay in `settings.json`
 - `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
   - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
   - `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
@@ -64,8 +64,10 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `pi-mcp-adapter` — MCP server integration, OAuth flow, tool discovery
   - `pi-web-access` — web search, content extraction, YouTube + video understanding
   - `pi-subagents` — multi-agent orchestration (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
+  - `pi-caveman` — owns caveman prompt injection, `/caveman` session toggle, config UI, and footer status
   - `@plannotator/pi-extension` — Plannotator commands and skills
   - `@narumitw/pi-codex-usage` — Codex subscription usage command and footer status
+  - `pi-rtk-optimizer` — RTK command rewriting and tool output compaction
   - Unpinned NPM packages are updated with `pi update --extensions`
 - Bundled agents come from the pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate); no local `agents/` directory is needed
 - `prompts/` — `merge-worktree.md`; symlinked to `~/.pi/agent/prompts/`
@@ -103,6 +105,14 @@ Key behavior lives in [[home/configs/pi-coding-agent/extensions/notify.ts#buildN
 - `stop-hook.ts` emits shared start/end events around [[home/configs/pi-coding-agent/extensions/stop-hook.ts#shouldSendNudge]], so notification timers can cancel stale turn-complete alerts when a follow-up starts.
 - Body text is deterministic: failed bash command first, then `needs input` when the final assistant message appears blocked, otherwise `done`.
 - OSC 777 title/body fields collapse whitespace, remove control characters, replace semicolons, and truncate output before writing to stdout. The notifier also emits BEL so Ghostty can trigger its configured title, attention, and border bell effects.
+
+### pi-caveman package
+
+Caveman response style comes from the package-managed `pi-caveman` extension instead of a local skill and AGENTS.md rule.
+
+- Pi loads `npm:pi-caveman` from `settings.json`; the package stays unpinned so `pi update --extensions` can update it.
+- The package provides `/caveman` for session-level toggles and `/caveman config` for the default level and footer status setting.
+- The extension defaults new sessions to `full` caveman mode when `~/.pi/agent/caveman.json` is absent or sets `defaultLevel` to `full`.
 
 ### pi-codex-usage package
 

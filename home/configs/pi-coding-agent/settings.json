@@ -22,6 +22,7 @@
     "npm:pi-mcp-adapter",
     "npm:pi-web-access",
     "npm:pi-subagents",
+    "npm:pi-caveman",
     "npm:@plannotator/pi-extension",
     "npm:@narumitw/pi-codex-usage",
     "npm:pi-rtk-optimizer"
