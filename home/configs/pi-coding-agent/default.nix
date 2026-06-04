@@ -34,9 +34,7 @@ let
       CONTEXT7_API_KEY="$(read_secret api/context7)"
       GITHITS_API_KEY="$(read_secret api/githits)"
       UIDOTSH_TOKEN="$(read_secret api/uidotsh)"
-      OPENCODE_GO_WORKSPACE_ID="$(read_secret api/opencode-go-workspace-id)"
-      OPENCODE_GO_AUTH_COOKIE="$(read_secret api/opencode-go-auth-cookie)"
-      export GEMINI_API_KEY CONTEXT7_API_KEY GITHITS_API_KEY UIDOTSH_TOKEN OPENCODE_GO_WORKSPACE_ID OPENCODE_GO_AUTH_COOKIE
+      export GEMINI_API_KEY CONTEXT7_API_KEY GITHITS_API_KEY UIDOTSH_TOKEN
       unset -f read_secret
       unset pass_cmd
     fi
@@ -73,19 +71,7 @@ let
     ]
   );
 
-  # Agent definitions now come from pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
-  # Custom agents can be added to ./agents/ directory — auto-discovered and symlinked to ~/.pi/agent/agents/
-  agentFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
-    builtins.attrNames (builtins.readDir ./agents)
-  );
-  agentSymlinks = builtins.listToAttrs (
-    map (name: {
-      name = ".pi/agent/agents/${name}";
-      value = {
-        source = ./agents/${name};
-      };
-    }) agentFiles
-  );
+  # Agent definitions come from pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate).
 
   # Auto-discover simple skills (no deps) - symlink entire directories
   skillDirs = builtins.attrNames (builtins.readDir ./skills);
@@ -126,7 +112,6 @@ in
       ".pi/agent/mcp.json".source = ./mcp.json;
     }
     // extensionSymlinks
-    // agentSymlinks
     // skillSymlinks
     // promptSymlinks;
 

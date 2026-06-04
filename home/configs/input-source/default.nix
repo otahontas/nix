@@ -1,5 +1,6 @@
 { lib, ... }:
 {
+  # TODO: this doesn't work, fix
   # Disable Control+Space shortcut for switching input sources
   # so it passes through to terminal/neovim (blink.cmp uses C-space for completion menu)
   home.activation.disableCspaceInputSource = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

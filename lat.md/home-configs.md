@@ -37,7 +37,7 @@ Configs worth documenting beyond a table row.
 
 - **GPG/SSH** (`gpg/`) — YubiKey-based: gpg-agent with SSH support, GPG signing for git, `pinentry_mac` for GUI prompts, and SSH `IdentityAgent` through `programs.ssh.settings`
 - **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it
-- **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars and add local helper tools, and symlinks extensions/skills/agents/prompts/models to `~/.pi/agent/`
+- **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars and add local helper tools, and symlinks extensions/skills/prompts/models to `~/.pi/agent/`
 - **password-store** — pass with GPG integration
 - **input-source** — disables Control+Space input source switch shortcut for terminal/nvim pass-through
 - **neovim** — blink.cmp with Copilot LSP + blink-copilot source; LSPs for Nix, shell, Lua; Ruby/Python providers disabled; custom spell file; ghost text disabled
@@ -48,11 +48,11 @@ Configs worth documenting beyond a table row.
 
 Directory layout of `home/configs/pi-coding-agent/`.
 
-- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed env vars with bounded reads and add `rtk`/Poppler to PATH, shadows `pass`/`gpg` for the child process, then auto-discovers and symlinks local resources below
+- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars with bounded reads and add `rtk`/Poppler to PATH, shadows `pass`/`gpg` for the child process, then auto-discovers and symlinks local extensions, skills, and prompts
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — symlinked to `~/.pi/agent/skills/`
 - `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
-  - `model-quota.ts` — status bar quota display for GitHub Copilot, OpenAI Codex, and OpenCode Go (see model-quota extension below)
+  - `model-quota.ts` — status bar quota display for OpenAI Codex only (see model-quota extension below)
   - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
   - `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
   - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, `pass`/`gpg` command invocations (including absolute paths), non-standard worktree paths, `--no-verify` commits
@@ -66,10 +66,10 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `pi-subagents` — multi-agent orchestration (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
   - `@plannotator/pi-extension` — Plannotator commands and skills
   - Unpinned NPM packages are updated with `pi update --extensions`
-- `agents/` — empty; bundled agents come from pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
+- Bundled agents come from the pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate); no local `agents/` directory is needed
 - `prompts/` — `merge-worktree.md`; symlinked to `~/.pi/agent/prompts/`
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
-- `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` leaves subagent models unset so bundled agents inherit the current Pi default model and declares unpinned NPM Pi packages
+- `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` defaults to OpenAI Codex `gpt-5.5` with `xhigh` thinking, leaves subagent models unset so bundled agents inherit the current Pi default model, and declares unpinned NPM Pi packages
 - `mcp.json` — chrome-devtools MCP passes `--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome` and `--isolated` so Puppeteer uses Nix Chrome and independent temp profiles
 - `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` so old pinned subagent models cannot survive
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module
@@ -96,30 +96,13 @@ Key behavior lives in [[home/configs/pi-coding-agent/extensions/notify.ts#genera
 
 ### model-quota extension
 
-Status bar quota display for GitHub Copilot, OpenAI Codex, and OpenCode Go. Returns `QuotaInfo` (never null) — errors display inline:
+Status bar quota display for OpenAI Codex. Returns `QuotaInfo` (never null) — errors display inline.
 
-- GitHub Copilot: `unavailable`, `no premium data`, `cannot parse usage`
-- OpenAI Codex: `unavailable (check /login)` — needs OAuth login via `/login`; fetches from `https://chatgpt.com/backend-api/wham/usage` using the access token from `auth.json["openai-codex"]`
-- OpenCode Go: `quota API pending` (API endpoint 404, no scraper creds), `check auth` (scraper configured but failed), `no auth` (no API key or scraper creds)
-
-Manual `/model-quota` command shows all three providers. Auto-refreshes every 5 minutes.
-
-**OpenCode Go quota fetching:**
-
-- First tries API endpoint `/zen/go/v1/usage` (PR #16513, unmerged) with the API key from `auth.json`
-- Falls back to scraping `https://opencode.ai/workspace/{id}/go` with env vars `OPENCODE_GO_WORKSPACE_ID` and `OPENCODE_GO_AUTH_COOKIE` (auth cookie from browser)
-
-**To enable the scraper:**
-
-1. Log into opencode.ai in your browser and navigate to your Go dashboard
-2. Get workspace ID from the URL: `https://opencode.ai/workspace/{ID}/go`
-3. Get auth cookie from browser dev tools (F12 → Application → Storage → Cookies → copy `auth` value, starts with `Fe26.2**`)
-4. Store in pass:
-   - `pass insert api/opencode-go-workspace-id` — paste your workspace ID
-   - `pass insert api/opencode-go-auth-cookie` — paste your auth cookie
-5. Rebuild home-manager (`devenv tasks run home:apply`) to pick up the new pass entries in the pi wrapper script
-
-Once set, restart pi. Status bar shows `5h: 12% (4h) | wk: 35% (2d) | mo: 8% (29d)`. If cookie expires, refresh it from browser and update pass.
+- Supported provider: `openai-codex` only. Other providers show `OpenAI Codex quota only` and do not trigger GitHub Copilot or OpenCode Go quota fetches.
+- OpenAI Codex needs OAuth login via `/login`. The extension calls `https://chatgpt.com/backend-api/wham/usage` with `auth.json["openai-codex"].access`.
+- Status text formats the session window, optional weekly window, reset times, optional credits, and quota warnings.
+- Manual `/model-quota` clears only Codex/auth caches and shows Codex quota only. Startup, model selection, and the 5-minute timer refresh active-model status.
+- Removed support: GitHub Copilot `/copilot_internal/user`, OpenCode Go `/zen/go/v1/usage`, and the OpenCode Go dashboard scraper.
 
 ### Adding skills or extensions
 
