@@ -83,6 +83,7 @@ Stop-hook gates automatic self-review with the active Pi model, so it follows th
 
 - [[home/configs/pi-coding-agent/extensions/stop-hook.ts#askGatekeeper]] uses `ctx.model` and sets active thinking as `reasoning` when thinking is not `off`.
 - [[home/configs/pi-coding-agent/extensions/stop-hook.ts#shouldSendNudge]] still skips obvious completions and stops nudging after repeated gatekeeper failures.
+- [[home/configs/pi-coding-agent/extensions/stop-hook.ts#STOP_CHECK_PROMPT]] keeps follow-ups within the requested scope, so investigation-only requests report findings instead of starting fixes.
 - `agent_end` only queues the self-review prompt after tool-using turns, and shared start/end events let `notify.ts` wait for the gatekeeper.
 
 ### name-session extension
