@@ -48,13 +48,13 @@ Configs worth documenting beyond a table row.
 
 Directory layout of `home/configs/pi-coding-agent/`.
 
-- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars with bounded reads and add `rtk`/Poppler to PATH, shadows `pass`/`gpg` for the child process, then auto-discovers and symlinks local extensions, skills, and prompts
+- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars with bounded reads, adds `rtk`/Poppler to PATH, blocks `pass`, wraps `gpg` so only Git signing and signature verification can reach real GPG, then auto-discovers and symlinks local extensions, skills, and prompts
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — local skills symlinked to `~/.pi/agent/skills/`; package-managed skills and extensions stay in `settings.json`
 - `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
   - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
   - `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
-  - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, `pass`/`gpg` command invocations (including absolute paths), non-standard worktree paths, `--no-verify` commits
+  - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, `pass`/`gpg` command invocations (including absolute paths), non-standard worktree paths, and `--no-verify` commits
   - `custom-footer.ts` — starship prompt, token stats, model info, and extension statuses in TUI footer
   - `search-sessions.ts` — BM25 search over past pi conversations
   - `non-interactive.ts` — detects headless mode, injects no-chatter prompt

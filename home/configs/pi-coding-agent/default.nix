@@ -9,17 +9,45 @@
 
 let
   piPackage = pi-nix.packages.${system}.coding-agent;
+  gitSigningKey = config.programs.git.signing.key;
+
+  piGitGpg = pkgs.writeShellScriptBin "pi-git-gpg" ''
+    parent="$(/bin/ps -p "$PPID" -o comm= 2>/dev/null | ${pkgs.coreutils}/bin/tr -d '[:space:]')"
+    parent="''${parent##*/}"
+
+    if [ "$parent" != "git" ]; then
+      echo "gpg is only available to git in pi" >&2
+      exit 127
+    fi
+
+    if [ "$#" -eq 3 ] \
+      && [ "$1" = "--status-fd=2" ] \
+      && [ "$2" = "-bsau" ] \
+      && [ "$3" = "${gitSigningKey}" ]; then
+      exec ${pkgs.gnupg}/bin/gpg "$@"
+    fi
+
+    for arg in "$@"; do
+      if [ "$arg" = "--verify" ]; then
+        exec ${pkgs.gnupg}/bin/gpg "$@"
+      fi
+    done
+
+    echo "gpg is only available for git signing and signature verification in pi" >&2
+    exit 127
+  '';
 
   piCommandBlockers = pkgs.runCommand "pi-command-blockers" { } ''
     mkdir -p "$out/bin"
-    for cmd in pass gpg; do
-      {
-        echo '#!/bin/sh'
-        echo "echo \"$cmd is not available to pi\" >&2"
-        echo 'exit 127'
-      } > "$out/bin/$cmd"
-      chmod +x "$out/bin/$cmd"
-    done
+
+    {
+      echo '#!/bin/sh'
+      echo 'echo "pass is not available to pi" >&2'
+      echo 'exit 127'
+    } > "$out/bin/pass"
+    chmod +x "$out/bin/pass"
+
+    ln -s ${piGitGpg}/bin/pi-git-gpg "$out/bin/gpg"
   '';
 
   piWrapper = pkgs.writeShellScriptBin "pi" ''
