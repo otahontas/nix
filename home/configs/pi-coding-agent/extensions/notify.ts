@@ -3,7 +3,6 @@
  * Uses OSC 777 (supported by Ghostty).
  */
 
-import { completeSimple } from "@earendil-works/pi-ai";
 import type {
   ExtensionAPI,
   ExtensionContext,
@@ -17,51 +16,6 @@ const NOTIFICATION_RETRY_MS = 250;
 const NOTIFICATION_MAX_RETRIES = 40;
 const STOP_HOOK_CHECK_START_EVENT = "otahontas.stop-hook.check-start";
 const STOP_HOOK_CHECK_END_EVENT = "otahontas.stop-hook.check-end";
-
-const GREETING_WORDS = new Set([
-  "ahoy",
-  "cool",
-  "hello",
-  "hey",
-  "hi",
-  "hola",
-  "jou",
-  "jouu",
-  "lol",
-  "nice",
-  "ok",
-  "okay",
-  "sup",
-  "thanks",
-  "thx",
-  "yo",
-  "yollooo",
-]);
-
-const TASK_VERBS = [
-  "add",
-  "audit",
-  "build",
-  "change",
-  "check",
-  "create",
-  "debug",
-  "explain",
-  "fix",
-  "help",
-  "implement",
-  "inspect",
-  "investigate",
-  "plan",
-  "refactor",
-  "remove",
-  "review",
-  "run",
-  "suggest",
-  "test",
-  "update",
-  "write",
-];
 
 const NEEDS_INPUT_PATTERNS = [
   /\?\s*$/,
@@ -184,28 +138,6 @@ function formatCommand(command: string): string {
   return truncate(collapseWhitespace(command), COMMAND_MAX_LENGTH);
 }
 
-function looksLikeRealTask(prompt: string): boolean {
-  const text = collapseWhitespace(prompt).toLowerCase();
-  if (!text) {
-    return false;
-  }
-
-  if (text.includes("?")) {
-    return true;
-  }
-
-  const words = text.match(/[a-z0-9]+/g) ?? [];
-  if (words.length > 0 && words.every((word) => GREETING_WORDS.has(word))) {
-    return false;
-  }
-
-  if (text.length <= 16 && !words.some((word) => TASK_VERBS.includes(word))) {
-    return false;
-  }
-
-  return text.length > 48 || words.some((word) => TASK_VERBS.includes(word));
-}
-
 function looksLikeNeedsInput(finalAssistantText: string): boolean {
   const text = finalAssistantText.trim();
   return (
@@ -229,129 +161,11 @@ function buildNotificationBody(
   return "done";
 }
 
-function buildTitlePrompt(prompt: string): string {
-  return [
-    "Name this Pi coding conversation.",
-    "Return only a concise title: 2-6 words, no quotes, no trailing period.",
-    "Return EMPTY if the input is only a greeting, thanks, acknowledgement, or test message.",
-    "Focus on the user's concrete task.",
-    "",
-    "<user_input>",
-    prompt,
-    "</user_input>",
-  ].join("\n");
-}
-
-function cleanGeneratedTitle(value: string): string | undefined {
-  const title = collapseWhitespace(
-    value
-      .split("\n")[0]
-      ?.replace(/^title:\s*/i, "")
-      .replace(/^["'`]+|["'`.!?]+$/g, "") ?? "",
-  );
-
-  if (!title || title.toUpperCase() === "EMPTY") {
-    return undefined;
-  }
-
-  return truncate(title, TITLE_MAX_LENGTH - "Pi: ".length);
-}
-
-async function generateTitle(
-  prompt: string,
-  ctx: ExtensionContext,
-): Promise<string | undefined> {
-  const model = ctx.model;
-  if (!model) {
-    return undefined;
-  }
-
-  const auth = await ctx.modelRegistry.getApiKeyAndHeaders(model);
-  if (!auth.ok || !auth.apiKey) {
-    return undefined;
-  }
-
-  const response = await completeSimple(
-    model,
-    {
-      messages: [
-        {
-          role: "user" as const,
-          content: [{ type: "text" as const, text: buildTitlePrompt(prompt) }],
-          timestamp: Date.now(),
-        },
-      ],
-    },
-    {
-      apiKey: auth.apiKey,
-      headers: auth.headers,
-      maxTokens: 32,
-    },
-  );
-
-  const rawTitle = response.content
-    .filter(
-      (part): part is { type: "text"; text: string } => part.type === "text",
-    )
-    .map((part) => part.text)
-    .join("\n");
-
-  return cleanGeneratedTitle(rawTitle);
-}
-
 export default function (pi: ExtensionAPI) {
   let failedBashCommand: string | undefined;
-  let titleGenerationAttempted = false;
-  let titleGenerationInFlight = false;
   let sessionGeneration = 0;
   let agentRunGeneration = 0;
-  let nextPromptFromUser = true;
   let stopHookChecksInFlight = 0;
-
-  async function ensureSessionTitle(
-    prompt: string,
-    ctx: ExtensionContext,
-  ): Promise<void> {
-    if (
-      !canWriteNativeNotification(ctx) ||
-      pi.getSessionName() ||
-      titleGenerationAttempted ||
-      titleGenerationInFlight
-    ) {
-      return;
-    }
-
-    if (!looksLikeRealTask(prompt)) {
-      return;
-    }
-
-    titleGenerationAttempted = true;
-    titleGenerationInFlight = true;
-
-    const generation = sessionGeneration;
-    const sessionFile = ctx.sessionManager.getSessionFile();
-
-    try {
-      const title = await generateTitle(prompt, ctx);
-      if (!title) {
-        return;
-      }
-
-      if (
-        generation !== sessionGeneration ||
-        ctx.sessionManager.getSessionFile() !== sessionFile ||
-        pi.getSessionName()
-      ) {
-        return;
-      }
-
-      pi.setSessionName(title);
-    } catch {
-      // Title generation is best effort. Never break the agent loop.
-    } finally {
-      titleGenerationInFlight = false;
-    }
-  }
 
   function notificationTitle(): string {
     const sessionName = pi.getSessionName();
@@ -368,29 +182,15 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("session_start", async () => {
     failedBashCommand = undefined;
-    titleGenerationInFlight = false;
-    titleGenerationAttempted = Boolean(pi.getSessionName());
+    stopHookChecksInFlight = 0;
     sessionGeneration += 1;
-    nextPromptFromUser = true;
   });
 
   pi.on("session_shutdown", async () => {
     cleanupStopHookStart();
     cleanupStopHookEnd();
+    stopHookChecksInFlight = 0;
     sessionGeneration += 1;
-  });
-
-  pi.on("input", async (event) => {
-    nextPromptFromUser = event.source !== "extension";
-  });
-
-  pi.on("before_agent_start", async (event, ctx) => {
-    const shouldNameFromThisPrompt = nextPromptFromUser;
-    nextPromptFromUser = false;
-
-    if (shouldNameFromThisPrompt) {
-      await ensureSessionTitle(event.prompt, ctx);
-    }
   });
 
   pi.on("agent_start", async () => {

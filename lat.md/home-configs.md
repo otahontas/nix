@@ -59,7 +59,8 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `custom-footer.ts` — starship prompt + token stats + model info in TUI footer
   - `search-sessions.ts` — BM25 search over past pi conversations
   - `non-interactive.ts` — detects headless mode, injects no-chatter prompt
-  - `notify.ts` — sends session-aware OSC 777 notifications with generated titles, deterministic bodies, and sanitized output
+  - `name-session.ts` — names UI sessions from the first real user prompt with the current Pi model
+  - `notify.ts` — sends session-aware OSC 777 notifications with deterministic bodies and sanitized output
 - NPM Pi packages loaded through `settings.json`:
   - `pi-mcp-adapter` — MCP server integration, OAuth flow, tool discovery
   - `pi-web-access` — web search, content extraction, YouTube + video understanding
@@ -82,13 +83,22 @@ Stop-hook gates automatic self-review with the active Pi model, so it follows th
 - [[home/configs/pi-coding-agent/extensions/stop-hook.ts#shouldSendNudge]] still skips obvious completions and stops nudging after repeated gatekeeper failures.
 - `agent_end` only queues the self-review prompt after tool-using turns, and shared start/end events let `notify.ts` wait for the gatekeeper.
 
+### name-session extension
+
+Name-session assigns display names without depending on native notifications.
+
+Key behavior lives in [[home/configs/pi-coding-agent/extensions/name-session.ts#generateTitle]] and [[home/configs/pi-coding-agent/extensions/name-session.ts#looksLikeRealTask]].
+
+- In UI sessions, the first real user prompt can generate a 2-6 word session title with the current Pi model. Manual and restored names win, greetings and extension-generated prompts are skipped, and the result is guarded against session switches before `pi.setSessionName` runs.
+- Extension-generated prompts are skipped so `stop-hook.ts` follow-ups do not rename the session.
+- Title generation is best effort and never breaks the agent loop.
+
 ### notify extension
 
-Pi notifications carry useful context without calling a model for every completion.
+Pi notifications carry useful context without model calls.
 
-Key behavior lives in [[home/configs/pi-coding-agent/extensions/notify.ts#generateTitle]], [[home/configs/pi-coding-agent/extensions/notify.ts#buildNotificationBody]], [[home/configs/pi-coding-agent/extensions/notify.ts#canWriteNativeNotification]], and [[home/configs/pi-coding-agent/extensions/notify.ts#notify]].
+Key behavior lives in [[home/configs/pi-coding-agent/extensions/notify.ts#buildNotificationBody]], [[home/configs/pi-coding-agent/extensions/notify.ts#canWriteNativeNotification]], and [[home/configs/pi-coding-agent/extensions/notify.ts#notify]].
 
-- In interactive TTY sessions, the first real user prompt can generate a 2-6 word session title with the current Pi model. Manual and restored names win, greetings and extension-generated prompts are skipped, and the result is guarded against session switches before `pi.setSessionName` runs.
 - `agent_end` notifications only run in interactive TTY sessions. They wait for stop-hook gatekeeper checks, then send only if Pi is idle and has no pending messages.
 - `stop-hook.ts` emits shared start/end events around [[home/configs/pi-coding-agent/extensions/stop-hook.ts#shouldSendNudge]], so notification timers can cancel stale turn-complete alerts when a follow-up starts.
 - Body text is deterministic: failed bash command first, then `needs input` when the final assistant message appears blocked, otherwise `done`.
