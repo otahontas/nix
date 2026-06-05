@@ -60,6 +60,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `search-sessions.ts` — BM25 search over past pi conversations
   - `non-interactive.ts` — detects headless mode, injects no-chatter prompt
   - `name-session.ts` — names UI sessions from the first real user prompt with the current Pi model
+  - `clone-cmd.ts` — `/clone-cmd` clones the current branch to a new session and copies a launch command
   - `notify.ts` — sends session-aware OSC 777 notifications with deterministic bodies and sanitized output
 - NPM Pi packages loaded through `settings.json`:
   - `pi-mcp-adapter` — MCP server integration, OAuth flow, tool discovery
@@ -96,6 +97,15 @@ Key behavior lives in [[home/configs/pi-coding-agent/extensions/name-session.ts#
 - In UI sessions, the first real user prompt can generate a 2-6 word session title with the current Pi model. Manual and restored names win, greetings and extension-generated prompts are skipped, and the result is guarded against session switches before `pi.setSessionName` runs.
 - Extension-generated prompts are skipped so `stop-hook.ts` follow-ups do not rename the session.
 - Title generation is best effort and never breaks the agent loop.
+
+### clone-cmd extension
+
+Clone-cmd creates a new Pi session from the current branch without switching the active pane.
+
+Key behavior lives in [[home/configs/pi-coding-agent/extensions/clone-cmd.ts#copyToClipboard]].
+
+- `/clone-cmd` copies `cd <cwd> && pi --session <session-id>` for a cloned session at the current leaf.
+- The extension opens the current session file through a separate `SessionManager`, so the active pane stays on the original session.
 
 ### notify extension
 
