@@ -1,6 +1,6 @@
 # Home configs
 
-One directory per tool under `home/configs/` (47 configs), each with `default.nix`. Auto-imported by `lib.filesystem.listFilesRecursive` — add a directory, it appears.
+One directory per tool under `home/configs/` (48 configs), each with `default.nix`. Auto-imported by `lib.filesystem.listFilesRecursive` — add a directory, it appears.
 
 Apply with `devenv tasks run home:apply`. Stage new files before applying; don't commit unless asked.
 
@@ -140,7 +140,7 @@ Codex subscription usage now comes from the package-managed `@narumitw/pi-codex-
 
 ## Config index
 
-All 47 configs under `home/configs/`:
+All 48 configs under `home/configs/`:
 
 | Config               | What it manages                                  |
 | -------------------- | ------------------------------------------------ |
@@ -150,6 +150,7 @@ All 47 configs under `home/configs/`:
 | bat                  | cat replacement, catppuccin theme                |
 | cargo                | Rust package manager                             |
 | coreutils            | GNU coreutils                                    |
+| csvlens              | CSV terminal viewer                              |
 | delta                | git diff pager                                   |
 | devenv               | devenv fish completions                          |
 | eza                  | ls replacement                                   |
