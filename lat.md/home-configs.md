@@ -1,6 +1,6 @@
 # Home configs
 
-One directory per tool under `home/configs/` (48 configs), each with `default.nix`. Auto-imported by `lib.filesystem.listFilesRecursive` — add a directory, it appears.
+One directory per tool under `home/configs/` (49 configs), each with `default.nix`. Auto-imported by `lib.filesystem.listFilesRecursive` — add a directory, it appears.
 
 Apply with `devenv tasks run home:apply`. Stage new files before applying; don't commit unless asked.
 
@@ -150,7 +150,7 @@ Codex subscription usage now comes from the package-managed `@narumitw/pi-codex-
 
 ## Config index
 
-All 48 configs under `home/configs/`:
+All 49 configs under `home/configs/`:
 
 | Config               | What it manages                                  |
 | -------------------- | ------------------------------------------------ |
@@ -170,6 +170,7 @@ All 48 configs under `home/configs/`:
 | fzf                  | fuzzy finder                                     |
 | ghostty              | terminal emulator (darwin-bin variant)           |
 | git                  | git, gh CLI, signing, worktree scripts           |
+| glow                 | terminal markdown reader                         |
 | gnugrep              | GNU grep                                         |
 | google-chrome        | browser                                          |
 | google-workspace-cli | Google Workspace CLI (`gws`) from upstream flake |
