@@ -9,6 +9,22 @@
 
 let
   piPackage = pi-nix.packages.${system}.coding-agent;
+  plannotatorVersion = "0.19.27";
+  plannotatorCli = pkgs.stdenvNoCC.mkDerivation {
+    pname = "plannotator";
+    version = plannotatorVersion;
+
+    src = pkgs.fetchurl {
+      url = "https://github.com/backnotprop/plannotator/releases/download/v${plannotatorVersion}/plannotator-darwin-arm64";
+      hash = "sha256-3KawFZVwa3jeD3rj2WGZiIlIdW9Ue83x2/yYOfm9toQ=";
+    };
+
+    dontUnpack = true;
+
+    installPhase = ''
+      install -Dm755 "$src" "$out/bin/plannotator"
+    '';
+  };
   gitSigningKey = config.programs.git.signing.key;
 
   piGitGpg = pkgs.writeShellScriptBin "pi-git-gpg" ''
@@ -67,7 +83,7 @@ let
       unset pass_cmd
     fi
 
-    export PATH="${piCommandBlockers}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
+    export PATH="${piCommandBlockers}/bin:${plannotatorCli}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
     exec ${piPackage}/bin/pi "$@"
   '';
 

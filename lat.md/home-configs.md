@@ -48,7 +48,7 @@ Configs worth documenting beyond a table row.
 
 Directory layout of `home/configs/pi-coding-agent/`.
 
-- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars before startup, adds `rtk`/Poppler to PATH, blocks `pass`, wraps `gpg` so only Git signing and signature verification can reach real GPG, then auto-discovers and symlinks local extensions, skills, and prompts
+- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars before startup, adds the Plannotator CLI, `rtk`, and Poppler to Pi's PATH, blocks `pass`, wraps `gpg` so only Git signing and signature verification can reach real GPG, then auto-discovers and symlinks local extensions, skills, and prompts
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — local skills symlinked to `~/.pi/agent/skills/`; package-managed skills and extensions stay in `settings.json`
   - `ui/` — ui.sh Agent Skills stub matching the generic skill installed by `@uidotsh/install`; it points agents at the `uidotsh://ui` MCP resource
@@ -62,12 +62,13 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `name-session.ts` — names UI sessions from the first real user prompt with the current Pi model
   - `clone-cmd.ts` — `/clone-cmd` clones the current branch to a new session and copies a launch command
   - `notify.ts` — sends session-aware OSC 777 notifications with deterministic bodies and sanitized output
-- NPM Pi packages loaded through `settings.json`:
+- Pi package resources and wrapper-only helper commands:
   - `pi-mcp-adapter` — MCP server integration, OAuth flow, tool discovery
   - `pi-web-access` — web search, content extraction, YouTube + video understanding
   - `pi-subagents` — multi-agent orchestration (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
   - `pi-caveman` — owns caveman prompt injection, `/caveman` session toggle, config UI, and footer status
   - `@plannotator/pi-extension` — Plannotator commands and skills
+  - Plannotator CLI — pinned GitHub release binary exposed only inside Pi's wrapper PATH so the `plannotator-setup-goal` skill can run `plannotator setup-goal ...`
   - `@narumitw/pi-codex-usage` — Codex subscription usage command and footer status
   - `pi-rtk-optimizer` — RTK command rewriting and tool output compaction
   - Unpinned NPM packages are updated with `pi update --extensions`
