@@ -69,6 +69,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `pi-caveman` — owns caveman prompt injection, `/caveman` session toggle, config UI, and footer status
   - `@plannotator/pi-extension` — Plannotator commands and skills
   - Plannotator CLI — pinned GitHub release binary exposed only inside Pi's wrapper PATH so the `plannotator-setup-goal` skill can run `plannotator setup-goal ...`
+  - `pi-agent-goal` — provides the `/goal` command, `/goal import <path> --start`, branch-aware goal state, and goal progress tools
   - `@narumitw/pi-codex-usage` — Codex subscription usage command and footer status
   - `pi-rtk-optimizer` — RTK command rewriting and tool output compaction
   - Unpinned NPM packages are updated with `pi update --extensions`
