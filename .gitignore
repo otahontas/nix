@@ -1,4 +1,4 @@
-### devenv-base gitignore
+### repo devenv gitignore
 .devenv*
 .gitignore
 .nvim.lua

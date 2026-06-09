@@ -55,7 +55,7 @@ let
     pass_cmd="$(command -v pass 2>/dev/null || true)"
     if [ -n "$pass_cmd" ]; then
       read_secret() {
-        ${pkgs.coreutils}/bin/timeout 2 "$pass_cmd" show "$1" 2>/dev/null || true
+        "$pass_cmd" show "$1" 2>/dev/null || true
       }
 
       GEMINI_API_KEY="$(read_secret api/gemini-pi-coding-agent-web-search)"

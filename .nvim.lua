@@ -1,1 +1,1 @@
-/nix/store/wv4riwywp5g81xq5cx5iw4h1c4ygdsdn-nvim.lua
+/nix/store/8nj9j9jqg2kcjwh7pzdardkkdvswi3fg-nvim.lua

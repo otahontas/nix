@@ -48,7 +48,7 @@ Configs worth documenting beyond a table row.
 
 Directory layout of `home/configs/pi-coding-agent/`.
 
-- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars with bounded reads, adds `rtk`/Poppler to PATH, blocks `pass`, wraps `gpg` so only Git signing and signature verification can reach real GPG, then auto-discovers and symlinks local extensions, skills, and prompts
+- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars before startup, adds `rtk`/Poppler to PATH, blocks `pass`, wraps `gpg` so only Git signing and signature verification can reach real GPG, then auto-discovers and symlinks local extensions, skills, and prompts
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — local skills symlinked to `~/.pi/agent/skills/`; package-managed skills and extensions stay in `settings.json`
   - `ui/` — ui.sh Agent Skills stub matching the generic skill installed by `@uidotsh/install`; it points agents at the `uidotsh://ui` MCP resource

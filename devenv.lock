@@ -17,22 +17,6 @@
         "type": "github"
       }
     },
-    "devenv-base": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1778571552,
-        "narHash": "sha256-4FcKMYI3B338H20LqmrzGRAsL2bBdeB4HSGh3ByFqqg=",
-        "owner": "otahontas",
-        "repo": "devenv-base",
-        "rev": "bf2d28533f67d736ab949b3ce230271d0341630d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "otahontas",
-        "repo": "devenv-base",
-        "type": "github"
-      }
-    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -131,7 +115,6 @@
     "root": {
       "inputs": {
         "devenv": "devenv",
-        "devenv-base": "devenv-base",
         "git-hooks": "git-hooks",
         "nixpkgs": "nixpkgs",
         "treefmt-nix": "treefmt-nix"

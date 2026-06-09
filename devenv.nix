@@ -4,6 +4,18 @@
   ...
 }:
 {
+  imports = [
+    ./devenv/modules/languages
+    ./devenv/modules/treefmt
+    ./devenv/modules/tk
+    ./devenv/modules/git-hooks
+    ./devenv/modules/ai
+    ./devenv/modules/nvim
+    ./devenv/modules/gitignore
+    ./devenv/modules/agents-md
+    ./devenv/modules/lat-md
+  ];
+
   env.LAT_LLM_KEY = config.secretspec.secrets.LAT_LLM_KEY;
 
   packages = [
@@ -32,7 +44,7 @@
     '';
   };
 
-  devenv-base.treefmt = {
+  repoDevenv.treefmt = {
     settings.global.excludes = [
       "home/configs/git/allowed_signers"
       "home/configs/neovim/nvim/spell/en.utf-8.add"

@@ -1,7 +1,4 @@
 inputs:
-  devenv-base:
-    url: github:otahontas/devenv-base
-    flake: false
   git-hooks:
     url: github:cachix/git-hooks.nix
     inputs:
@@ -12,8 +9,6 @@ inputs:
   treefmt-nix:
     url: github:numtide/treefmt-nix
     flake: false
-imports:
-  - devenv-base
 secretspec:
   enable: true
   provider: pass

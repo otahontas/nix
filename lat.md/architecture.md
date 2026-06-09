@@ -11,22 +11,23 @@ home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-co
   configs/       per-tool directories, each with default.nix (48 configs)
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
-devenv.nix       repo-specific dev shell: typos config, gitignore entries, treefmt overrides, tasks
-devenv.yaml      imports devenv-base as flake input and enables SecretSpec
+devenv.nix       repo-specific dev shell: imports local modules, typos config, treefmt overrides, tasks
+devenv.yaml      declares root devenv inputs and enables SecretSpec
+devenv/modules/  inlined root devenv modules: languages, formatters, hooks, AI tooling
 secretspec.toml  pass-backed secret requirements for the root shell
 lat.md/          this documentation
 ```
 
-## devenv-base
+## Root devenv modules
 
-Shared module collection at `github:otahontas/devenv-base`, imported in `devenv.yaml`. Provides languages, formatters, git hooks, neovim, AI tooling, gitignore management, and more.
+Root shell imports local modules from `devenv/modules/`, so this repo does not depend on an external shared base module.
 
-Each module lives in `modules/<name>/` and exposes options under the `devenv-base.<name>` namespace. To extend a module, set its options in `devenv.nix`:
+Each module lives in `devenv/modules/<name>/`. Options that remain configurable live under the `repoDevenv.<name>` namespace. To extend a module, set its options in `devenv.nix`:
 
 ```nix
-devenv-base.agents-md.extraEntries = [ ... ];
-devenv-base.treefmt.programs = { ... };
-devenv-base.gitignore.extraEntries = [ ... ];
+repoDevenv.agents-md.extraEntries = [ ... ];
+repoDevenv.treefmt.programs = { ... };
+repoDevenv.gitignore.extraEntries = [ ... ];
 ```
 
 Check the module's `default.nix` for available options. Don't edit generated files directly — extend the module config and rebuild.
@@ -48,18 +49,18 @@ Pi loads AGENTS.md from multiple locations (global + parent dirs + cwd), all con
 
 `home/configs/pi-coding-agent/sources/GLOBAL_AGENTS.md` → symlinked to `~/.pi/agent/AGENTS.md` by home-manager. Edit the source file, then `devenv tasks run home:apply`.
 
-### Project: devenv-base module
+### Project: root devenv module
 
-`devenv-base` provides `modules/agents-md/` which generates a project-level AGENTS.md at `${DEVENV_ROOT}/.pi/agent/AGENTS.md` on every `devenv shell` entry:
+`devenv/modules/agents-md/` generates a project-level AGENTS.md at `${DEVENV_ROOT}/.pi/agent/AGENTS.md` on every `devenv shell` entry:
 
-1. Base content from `modules/agents-md/BASE_AGENTS.md`
-2. Appends any strings from `devenv-base.agents-md.extraEntries`
+1. Base content from `devenv/modules/agents-md/BASE_AGENTS.md`
+2. Appends any strings from `repoDevenv.agents-md.extraEntries`
 3. Writes result to nix store, `enter-shell.sh` symlinks it into `.pi/agent/`
 
 To add project-specific instructions, extend in `devenv.nix`:
 
 ```nix
-devenv-base.agents-md.extraEntries = [
+repoDevenv.agents-md.extraEntries = [
   "## My section"
   ""
   "- Some instruction"
@@ -68,9 +69,9 @@ devenv-base.agents-md.extraEntries = [
 
 ### Key takeaway
 
-Both AGENTS.md files are nix store symlinks — never edit them directly. Always modify the source (`GLOBAL_AGENTS.md` for global, `devenv.nix` extra entries for project) and rebuild.
+Both AGENTS.md files are nix store symlinks — never edit them directly. Always modify the source (`GLOBAL_AGENTS.md` for global, `repoDevenv.agents-md.extraEntries` or local module files for project) and rebuild.
 
-This applies broadly in this repo: if `readlink` shows a nix store path, find the source (flake config, home-manager module, or devenv-base option) and change that instead.
+This applies broadly in this repo: if `readlink` shows a nix store path, find the source (flake config, home-manager module, or root devenv module option) and change that instead.
 
 ## Secrets
 
