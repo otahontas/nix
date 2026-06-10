@@ -12,6 +12,16 @@
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
   "enabledModels": ["openai-codex/gpt-5.5", "openai-codex/gpt-5.3-codex-spark"],
+  "subagents": {
+    "agentOverrides": {
+      "reviewer": {
+        "model": "openai-codex/gpt-5.3-codex-spark"
+      },
+      "scout": {
+        "model": "openai-codex/gpt-5.3-codex-spark"
+      }
+    }
+  },
   "hideThinkingBlock": true,
   "terminal": {
     "showTerminalProgress": true,
