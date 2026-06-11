@@ -13,7 +13,7 @@ system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix da
   keyboard/      custom US International no-dead-keys layout
 devenv.nix       repo-specific dev shell: imports local modules, typos config, treefmt overrides, tasks
 devenv.yaml      declares root devenv inputs and enables SecretSpec
-devenv/modules/  inlined root devenv modules: languages, formatters, hooks, AI tooling
+devenv/modules/  inlined root devenv modules: languages, formatters, hooks, AI/nvim tooling, generated AGENTS.md, lat.md support
 secretspec.toml  pass-backed secret requirements for the root shell
 lat.md/          this documentation
 ```

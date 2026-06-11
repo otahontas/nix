@@ -7,7 +7,6 @@
   imports = [
     ./devenv/modules/languages
     ./devenv/modules/treefmt
-    ./devenv/modules/tk
     ./devenv/modules/git-hooks
     ./devenv/modules/ai
     ./devenv/modules/nvim

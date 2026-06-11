@@ -8,10 +8,6 @@
 - This devenv setup keeps its reusable modules in `devenv/modules/`.
   - Customize root devenv behavior in `devenv.nix` first; edit local modules only when shared behavior must change.
 
-## Tickets and tasks
-
-- Use `tk` CLI for ticket and task management. Run `tk help` for usage.
-
 ## Lat
 
 - Run `lat search` to find sections relevant to your task. Read them to understand the design intent before writing code.
