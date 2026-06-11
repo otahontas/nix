@@ -11,18 +11,17 @@ home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-co
   configs/       per-tool directories, each with default.nix (48 configs)
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
-devenv.nix       repo-specific dev shell: imports local modules, typos config, treefmt overrides, tasks
+devenv.nix       repo-specific dev shell: tools, hooks, generated files, tasks, lat.md support
 devenv.yaml      declares root devenv inputs and enables SecretSpec
-devenv/modules/  inlined root devenv modules: languages, formatters, hooks, AI/nvim tooling, generated AGENTS.md, lat.md support
 secretspec.toml  pass-backed secret requirements for the root shell
 lat.md/          this documentation
 ```
 
-## Root devenv modules
+## Root devenv setup
 
-Root shell imports local modules from `devenv/modules/`, so this repo does not depend on an external shared base module.
+Root shell keeps repo-specific devenv behavior in `devenv.nix`, so generated files, hooks, tools, tasks, and package wiring live in one file.
 
-Each module lives in `devenv/modules/<name>/`. Options that remain configurable live under the `repoDevenv.<name>` namespace. To extend a module, set its options in `devenv.nix`:
+Configurable repo options still live under `repoDevenv.<name>` inside `devenv.nix`:
 
 ```nix
 repoDevenv.agents-md.extraEntries = [ ... ];
@@ -30,7 +29,7 @@ repoDevenv.treefmt.programs = { ... };
 repoDevenv.gitignore.extraEntries = [ ... ];
 ```
 
-Check the module's `default.nix` for available options. Don't edit generated files directly — extend the module config and rebuild.
+Generated files stay store-backed. Don't edit `.gitignore`, `.nvim.lua`, or `.pi/*` outputs directly; update `devenv.nix` and re-enter the shell.
 
 ## Flakes
 
@@ -49,15 +48,15 @@ Pi loads AGENTS.md from multiple locations (global + parent dirs + cwd), all con
 
 `home/configs/pi-coding-agent/sources/GLOBAL_AGENTS.md` → symlinked to `~/.pi/agent/AGENTS.md` by home-manager. Edit the source file, then `devenv tasks run home:apply`.
 
-### Project: root devenv module
+### Project: root devenv file
 
-`devenv/modules/agents-md/` generates a project-level AGENTS.md at `${DEVENV_ROOT}/.pi/agent/AGENTS.md` on every `devenv shell` entry:
+`devenv.nix` generates a project-level AGENTS.md at `${DEVENV_ROOT}/.pi/agent/AGENTS.md` on every `devenv shell` entry:
 
-1. Base content from `devenv/modules/agents-md/BASE_AGENTS.md`
+1. Decodes embedded base content into the nix store
 2. Appends any strings from `repoDevenv.agents-md.extraEntries`
-3. Writes result to nix store, `enter-shell.sh` symlinks it into `.pi/agent/`
+3. Symlinks the generated file into `.pi/agent/`
 
-To add project-specific instructions, extend in `devenv.nix`:
+To add project-specific instructions, extend the `repoDevenv.agents-md.extraEntries` block in `devenv.nix`:
 
 ```nix
 repoDevenv.agents-md.extraEntries = [
@@ -69,9 +68,9 @@ repoDevenv.agents-md.extraEntries = [
 
 ### Key takeaway
 
-Both AGENTS.md files are nix store symlinks — never edit them directly. Always modify the source (`GLOBAL_AGENTS.md` for global, `repoDevenv.agents-md.extraEntries` or local module files for project) and rebuild.
+Both AGENTS.md files are nix store symlinks — never edit them directly. Always modify the source (`GLOBAL_AGENTS.md` for global, `devenv.nix` for project) and rebuild.
 
-This applies broadly in this repo: if `readlink` shows a nix store path, find the source (flake config, home-manager module, or root devenv module option) and change that instead.
+This applies broadly in this repo: if `readlink` shows a nix store path, find the source (flake config, home-manager module, or root devenv setting) and change that instead.
 
 ## Secrets
 
@@ -87,4 +86,5 @@ Defined in `devenv.nix`, run with `devenv tasks run <task>`:
 
 - `home:apply` — home-manager switch
 - `system:apply` — darwin-rebuild switch (requires sudo)
+- `nix:format` — treefmt formatters
 - `nix:update` — update home/system lockfiles + devenv, apply home-manager, then run `pi update --extensions`
