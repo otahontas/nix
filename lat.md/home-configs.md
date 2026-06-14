@@ -70,7 +70,6 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `@plannotator/pi-extension` — Plannotator commands and skills
   - Plannotator CLI — pinned GitHub release binary exposed only inside Pi's wrapper PATH so the `plannotator-setup-goal` skill can run `plannotator setup-goal ...`
   - `pi-agent-goal` — provides the `/goal` command, `/goal import <path> --start`, branch-aware goal state, and goal progress tools
-  - `@narumitw/pi-codex-usage` — Codex subscription usage command and footer status
   - `pi-rtk-optimizer` — RTK command rewriting and tool output compaction
   - Unpinned NPM packages are updated with `pi update --extensions`
 - Bundled agents come from the pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate); no local `agents/` directory is needed
@@ -127,15 +126,6 @@ Caveman response style comes from the package-managed `pi-caveman` extension ins
 - Pi loads `npm:pi-caveman` from `settings.json`; the package stays unpinned so `pi update --extensions` can update it.
 - The package provides `/caveman` for session-level toggles and `/caveman config` for the default level and footer status setting.
 - The extension defaults new sessions to `full` caveman mode when `~/.pi/agent/caveman.json` is absent or sets `defaultLevel` to `full`.
-
-### pi-codex-usage package
-
-Codex subscription usage now comes from the package-managed `@narumitw/pi-codex-usage` extension instead of a local quota extension.
-
-- Pi loads `npm:@narumitw/pi-codex-usage` from `settings.json`; the package stays unpinned so `pi update --extensions` can update it.
-- The package provides `/codex-status` and `/codex-status --refresh` for ChatGPT Codex usage reports.
-- It uses Pi's OpenAI Codex model auth first, then falls back to `codex app-server --listen stdio://` when Pi auth is unavailable.
-- It publishes footer text with `ctx.ui.setStatus("codex-usage", ...)`; `custom-footer.ts` renders that automatically through `footerData.getExtensionStatuses()`.
 
 ### Adding skills or extensions
 

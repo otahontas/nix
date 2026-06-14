@@ -35,7 +35,6 @@
     "npm:pi-caveman",
     "npm:@plannotator/pi-extension",
     "npm:pi-agent-goal",
-    "npm:@narumitw/pi-codex-usage",
     "npm:pi-rtk-optimizer"
   ]
 }
