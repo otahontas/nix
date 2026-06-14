@@ -57,11 +57,13 @@ The retired root `AGENTS.md` carried repo-local rules that now live here.
 
 ### Project: root devenv file
 
-`devenv.nix` generates a project-level AGENTS.md at `${DEVENV_ROOT}/.pi/agent/AGENTS.md` on every `devenv shell` entry:
+`devenv.nix` generates a project-level AGENTS.md at `${DEVENV_ROOT}/.pi/agent/AGENTS.md` on every `devenv shell` entry. It also symlinks repo `.pi/mcp.json` and `.pi/extensions/post-edit-hook.ts`:
 
 1. Decodes embedded base content into the nix store
 2. Appends any strings from `repoDevenv.agents-md.extraEntries`
 3. Symlinks the generated file into `.pi/agent/`
+
+Root devenv no longer generates repo-local `lat-md` skill or `lat.ts` Pi extension files; use built-in lat tools and the `lat` CLI instead.
 
 To add project-specific instructions, extend the `repoDevenv.agents-md.extraEntries` block in `devenv.nix`:
 

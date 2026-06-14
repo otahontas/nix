@@ -50,8 +50,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
 
 - `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars before startup, adds the Plannotator CLI, `rtk`, and Poppler to Pi's PATH, blocks `pass`, wraps `gpg` so only Git signing and signature verification can reach real GPG, then auto-discovers and symlinks local extensions, skills, and prompts
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
-- `skills/` — local skills symlinked to `~/.pi/agent/skills/`; package-managed skills and extensions stay in `settings.json`
-  - `ui/` — ui.sh Agent Skills stub matching the generic skill installed by `@uidotsh/install`; it points agents at the `uidotsh://ui` MCP resource
+- `skills/` — repo-owned skills symlinked to `~/.pi/agent/skills/`; package-managed skills and extensions stay in `settings.json`; ui.sh local skills are installed globally to `~/.agents/skills/` with `pi-uidotsh-install` from the devenv shell
 - `extensions/` — `.ts` extensions, auto-discovered and symlinked to `~/.pi/agent/extensions/`:
   - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
   - `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
@@ -73,10 +72,10 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `pi-rtk-optimizer` — RTK command rewriting and tool output compaction
   - Unpinned NPM packages are updated with `pi update --extensions`
 - Bundled agents come from the pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate); no local `agents/` directory is needed
-- `prompts/` — `merge-worktree.md`; symlinked to `~/.pi/agent/prompts/`
+- `prompts/` — `merge-worktree.md` and `security-review.md`; symlinked to `~/.pi/agent/prompts/`
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
 - `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` defaults to OpenAI Codex `gpt-5.5` with `xhigh` thinking, enables `gpt-5.5` and `gpt-5.3-codex-spark`, pins bundled `scout` and `reviewer` to Spark, and declares unpinned NPM Pi packages
-- `mcp.json` — chrome-devtools MCP passes `--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome` and `--isolated` so Puppeteer uses Nix Chrome and independent temp profiles
+- `mcp.json` — context7, githits, and chrome-devtools MCP config; chrome-devtools passes `--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome` and `--isolated` so Puppeteer uses Nix Chrome and independent temp profiles; ui.sh MCP is removed because ui.sh skills install locally
 - `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` before applying repo-managed overrides
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module
 
@@ -128,6 +127,16 @@ Caveman response style comes from the package-managed `pi-caveman` extension ins
 - The extension defaults new sessions to `full` caveman mode when `~/.pi/agent/caveman.json` is absent or sets `defaultLevel` to `full`.
 
 ### Adding skills or extensions
+
+Local skills and extensions either live in the repo and get symlinked by Home Manager, install through package settings, or use official upstream installers.
+
+### ui.sh local skills
+
+ui.sh skills come from the official installer instead of a remote MCP server or repo-local stub.
+
+- `pi-uidotsh-install` reads the token from `api/uidotsh`, puts Nix `nodejs` on `PATH`, then runs `npm exec --yes @uidotsh/install -- --token "$token"` with normal terminal stdin/stdout.
+- In the installer, choose global install, Codex target, all desired skills, and no renames. Pi loads the resulting skills from `~/.agents/skills/`.
+- Re-run `pi-uidotsh-install` to update skills. The installer owns writes under `~/.agents/skills/`; Home Manager no longer exports `UIDOTSH_TOKEN` to Pi runtime.
 
 **Simple extensions** (single `.ts` files, no npm deps):
 

@@ -77,8 +77,7 @@ let
       GEMINI_API_KEY="$(read_secret api/gemini-pi-coding-agent-web-search)"
       CONTEXT7_API_KEY="$(read_secret api/context7)"
       GITHITS_API_KEY="$(read_secret api/githits)"
-      UIDOTSH_TOKEN="$(read_secret api/uidotsh)"
-      export GEMINI_API_KEY CONTEXT7_API_KEY GITHITS_API_KEY UIDOTSH_TOKEN
+      export GEMINI_API_KEY CONTEXT7_API_KEY GITHITS_API_KEY
       unset -f read_secret
       unset pass_cmd
     fi
