@@ -42,7 +42,14 @@ Both flakes pin `nixpkgs-unstable` independently. `home/` pulls extra inputs:
 
 ## AGENTS.md pipeline
 
-Pi loads AGENTS.md from multiple locations (global + parent dirs + cwd), all concatenated. This repo has two managed layers.
+Pi loads AGENTS.md from multiple locations (global + parent dirs + cwd), all concatenated. This repo keeps generated agent instructions in two managed layers; repo-local operating rules live in lat.md.
+
+### Repository operating rules
+
+The retired root `AGENTS.md` carried repo-local rules that now live here.
+
+- All commits can be pushed directly to default branch (`main`) in GitHub.
+- Run `devenv tasks run home:apply` after changing Home Manager config.
 
 ### Global: home-manager
 
