@@ -83,11 +83,12 @@ This applies broadly in this repo: if `readlink` shows a nix store path, find th
 
 ## Secrets
 
-Root devenv exports only `LAT_LLM_KEY` for LAT tooling. SecretSpec declares the requirement while `pass` stores the value outside git.
+LAT tooling gets `LAT_LLM_KEY` from pass-backed runtime paths, keeping the value outside git and avoiding per-repo setup for Pi sessions.
 
-- `secretspec.toml` declares `LAT_LLM_KEY` in the default profile.
+- `secretspec.toml` declares `LAT_LLM_KEY` in the default profile for the root devenv shell.
 - `devenv.yaml` enables SecretSpec with `provider: pass` and `profile: default`.
 - `devenv.nix` exports `config.secretspec.secrets.LAT_LLM_KEY` directly, so a missing value fails instead of falling back to a blank string.
+- The Pi wrapper in `home/configs/pi-coding-agent/default.nix` reads pass entry `api/lat-md` directly into `LAT_LLM_KEY`.
 
 ## Tasks
 
