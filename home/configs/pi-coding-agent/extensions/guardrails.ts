@@ -160,71 +160,6 @@ const blockNonStandardWorktreePath: Guard = (event) => {
 };
 
 /**
- * Block secret tools
- *
- * Prevents running commands that expose secrets (pass, gpg).
- */
-const blockSecretTools: Guard = (event) => {
-  if (event.toolName !== "bash") return;
-
-  const cmd = event.input.command;
-
-  // Match pass/gpg invocations, including absolute paths and env/sudo prefixes:
-  // - pass show api/key
-  // - /nix/store/.../bin/pass show api/key
-  // - PATH=/tmp env FOO=bar gpg --decrypt file
-  // - bash -c "/some/path/pass show api/key"
-  const cmdPosition = String.raw`(^|[|&;\`'"]|\$\()`;
-  const commandPrefix = String.raw`\s*(?:sudo\s+)?(?:(?:command|builtin|exec)\s+)?(?:[A-Za-z_][A-Za-z0-9_]*=\S+\s+)*(?:env\s+(?:(?:-\S+|\S+=\S+)\s+)*)?(?:(?:command|builtin|exec)\s+)?`;
-  const secretProgram = String.raw`(?:[^\s'"\`;&|()]+/)?(?:pass|gpg)`;
-  const commandEnd = String.raw`(?=\s|$|[;&|)'"` + "`" + String.raw`])`;
-  const secretPattern = new RegExp(
-    cmdPosition + commandPrefix + secretProgram + commandEnd,
-  );
-  const secretPathPattern = new RegExp(
-    String.raw`(?:^|[\s'"` +
-      "`" +
-      String.raw`])(?:~|\.{1,2}|/|[^\s'"\`;&|()]+/)[^\s'"\`;&|()]*/(?:pass|gpg)` +
-      commandEnd,
-  );
-  const envSecretPattern = new RegExp(
-    cmdPosition +
-      String.raw`\s*(?:sudo\s+)?env\b[^\n;&|` +
-      "`" +
-      String.raw`]*(?:\s|['"])(?:[^\s'"\`;&|()]+/)?(?:pass|gpg)` +
-      commandEnd,
-  );
-  const shellExecPattern = new RegExp(
-    String.raw`\b(?:bash|sh|zsh|fish)\s+-c\s+['"]?` +
-      commandPrefix +
-      secretProgram +
-      commandEnd,
-  );
-
-  if (
-    secretPattern.test(cmd) ||
-    secretPathPattern.test(cmd) ||
-    envSecretPattern.test(cmd) ||
-    shellExecPattern.test(cmd)
-  ) {
-    return {
-      block: true,
-      reason:
-        "🔒 **Secret management command blocked**\n\n" +
-        "You've configured pi to never run commands that could expose secrets:\n" +
-        "- `pass` (password-store)\n" +
-        "- `gpg`\n\n" +
-        "**Why this is blocked:**\n" +
-        "Running these commands would expose your secrets in the conversation context, which is a security risk.\n\n" +
-        "**What to do instead:**\n" +
-        "- Run these commands manually in your terminal\n" +
-        "- Use launchd agents in your nix-darwin config to generate config files from secrets\n" +
-        "- Create wrapper scripts that use secrets without exposing them to pi",
-    };
-  }
-};
-
-/**
  * Block git commit --no-verify
  *
  * Prevents bypassing git hooks (linting, formatting, etc.).
@@ -257,7 +192,6 @@ const guards: Guard[] = [
   blockRmCommand,
   blockNonStandardWorktreePath,
   blockNoVerifyCommit,
-  blockSecretTools,
 ];
 
 export default function (pi: ExtensionAPI) {

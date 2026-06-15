@@ -4,70 +4,15 @@
   config,
   system,
   pi-nix,
+  piPlannotator,
   ...
 }:
 
 let
   piPackage = pi-nix.packages.${system}.coding-agent;
-  plannotatorVersion = "0.19.27";
-  plannotatorCli = pkgs.stdenvNoCC.mkDerivation {
-    pname = "plannotator";
-    version = plannotatorVersion;
-
-    src = pkgs.fetchurl {
-      url = "https://github.com/backnotprop/plannotator/releases/download/v${plannotatorVersion}/plannotator-darwin-arm64";
-      hash = "sha256-3KawFZVwa3jeD3rj2WGZiIlIdW9Ue83x2/yYOfm9toQ=";
-    };
-
-    dontUnpack = true;
-
-    installPhase = ''
-      install -Dm755 "$src" "$out/bin/plannotator"
-    '';
-  };
-  gitSigningKey = config.programs.git.signing.key;
-
-  piGitGpg = pkgs.writeShellScriptBin "pi-git-gpg" ''
-    parent="$(/bin/ps -p "$PPID" -o comm= 2>/dev/null | ${pkgs.coreutils}/bin/tr -d '[:space:]')"
-    parent="''${parent##*/}"
-
-    if [ "$parent" != "git" ]; then
-      echo "gpg is only available to git in pi" >&2
-      exit 127
-    fi
-
-    if [ "$#" -eq 3 ] \
-      && [ "$1" = "--status-fd=2" ] \
-      && [ "$2" = "-bsau" ] \
-      && [ "$3" = "${gitSigningKey}" ]; then
-      exec ${pkgs.gnupg}/bin/gpg "$@"
-    fi
-
-    for arg in "$@"; do
-      if [ "$arg" = "--verify" ]; then
-        exec ${pkgs.gnupg}/bin/gpg "$@"
-      fi
-    done
-
-    echo "gpg is only available for git signing and signature verification in pi" >&2
-    exit 127
-  '';
-
-  piCommandBlockers = pkgs.runCommand "pi-command-blockers" { } ''
-    mkdir -p "$out/bin"
-
-    {
-      echo '#!/bin/sh'
-      echo 'echo "pass is not available to pi" >&2'
-      echo 'exit 127'
-    } > "$out/bin/pass"
-    chmod +x "$out/bin/pass"
-
-    ln -s ${piGitGpg}/bin/pi-git-gpg "$out/bin/gpg"
-  '';
 
   piWrapper = pkgs.writeShellScriptBin "pi" ''
-    # Load API keys from pass before pi starts. Do not add pass to pi's runtime PATH.
+    # Load API keys from pass before pi starts.
     pass_cmd="$(command -v pass 2>/dev/null || true)"
     if [ -n "$pass_cmd" ]; then
       read_secret() {
@@ -83,36 +28,20 @@ let
       unset pass_cmd
     fi
 
-    export PATH="${piCommandBlockers}/bin:${plannotatorCli}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
+    export PATH="${piPlannotator}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
     exec ${piPackage}/bin/pi "$@"
   '';
 
-  # Auto-discover extensions (.ts files and directories with index.ts)
-  extensionEntries = builtins.readDir ./extensions;
+  extensionFiles = builtins.filter (name: lib.hasSuffix ".ts" name) (
+    builtins.attrNames (builtins.readDir ./extensions)
+  );
   extensionSymlinks = builtins.listToAttrs (
-    builtins.concatLists [
-      # Single .ts files
-      (map (name: {
-        name = ".pi/agent/extensions/${name}";
-        value = {
-          source = ./extensions/${name};
-        };
-      }) (builtins.filter (name: lib.hasSuffix ".ts" name) (builtins.attrNames extensionEntries)))
-      # Directories (extension subdirectories like subagent/)
-      (map
-        (name: {
-          name = ".pi/agent/extensions/${name}";
-          value = {
-            source = ./extensions/${name};
-          };
-        })
-        (
-          builtins.filter (name: extensionEntries.${name} == "directory") (
-            builtins.attrNames extensionEntries
-          )
-        )
-      )
-    ]
+    map (name: {
+      name = ".pi/agent/extensions/${name}";
+      value = {
+        source = ./extensions/${name};
+      };
+    }) extensionFiles
   );
 
   # Agent definitions come from pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate).
@@ -145,10 +74,6 @@ in
 
 {
   home = {
-    packages = [
-      pkgs."poppler-utils"
-    ];
-
     file = {
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
       ".pi/agent/mcp.json".source = ./mcp.json;
