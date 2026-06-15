@@ -11,7 +11,7 @@ home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-co
   configs/       per-tool directories, each with default.nix (48 configs)
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
-devenv.nix       repo-specific dev shell: tools, hooks, generated files, tasks, lat.md support
+devenv.nix       repo-specific dev shell: tools, hooks, generated files, tasks
 devenv.yaml      declares root devenv inputs
 lat.md/          this documentation
 ```
@@ -26,6 +26,7 @@ This repo uses devenv for reproducible development environments.
 - Always use devenv to install tools and services or to define tasks.
 - This devenv setup keeps repo-specific tools, hooks, generated files, and tasks in `devenv.nix`.
   - Customize root devenv behavior in `devenv.nix`; generated files are rebuilt on shell entry.
+- Home Manager installs the global `lat.md` CLI from `home/configs/pi-coding-agent/lat-md.nix`, not from root `devenv.nix`.
 
 ## Root devenv setup
 
@@ -81,7 +82,7 @@ This applies broadly in this repo: if `readlink` shows a nix store path, find th
 LAT tooling gets `LAT_LLM_KEY` from the global Pi wrapper, keeping the value outside git and avoiding per-repo secret setup.
 
 - The Pi wrapper in `home/configs/pi-coding-agent/default.nix` reads pass entry `api/lat-md` directly into `LAT_LLM_KEY`.
-- Root devenv installs the `lat` CLI but no longer declares or exports a repo-specific `LAT_LLM_KEY`.
+- Root `devenv.nix` no longer installs the `lat.md` CLI; Home Manager installs it from `home/configs/pi-coding-agent/lat-md.nix` and exposes it in `home/configs/pi-coding-agent/default.nix`.
 
 ## Tasks
 

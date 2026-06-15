@@ -4,6 +4,7 @@
   config,
   system,
   pi-nix,
+  piLatMd,
   piPlannotator,
   ...
 }:
@@ -28,7 +29,7 @@ let
       unset pass_cmd
     fi
 
-    export PATH="${piPlannotator}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
+    export PATH="${piLatMd}/bin:${piPlannotator}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
     exec ${piPackage}/bin/pi "$@"
   '';
 
@@ -74,6 +75,8 @@ in
 
 {
   home = {
+    packages = [ piLatMd ];
+
     file = {
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
       ".pi/agent/mcp.json".source = ./mcp.json;

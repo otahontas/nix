@@ -38,7 +38,7 @@ Configs worth documenting beyond a table row.
 
 - **GPG/SSH** (`gpg/`) — YubiKey-based: gpg-agent with SSH support, GPG signing for git, `pinentry_mac` for GUI prompts, and SSH `IdentityAgent` through `programs.ssh.settings`
 - **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it; enables title, attention, and border bell effects for Pi notifications
-- **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars plus `LAT_LLM_KEY`, adds Pi-only helper tools, and symlinks extensions/skills/prompts/models to `~/.pi/agent/`
+- **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars plus `LAT_LLM_KEY`, installs the `lat.md` CLI globally, adds Pi helper tools, and symlinks extensions/skills/prompts/models to `~/.pi/agent/`
 - **iina** — installs the app and uses `duti` only from the activation store path for media file associations
 - **password-store** — pass with GPG integration plus `pass-otp`, `pass-genphrase`, and `pass-update`
 - **input-source** — disables Control+Space input source switch shortcut for terminal/nvim pass-through
@@ -50,7 +50,8 @@ Configs worth documenting beyond a table row.
 
 Directory layout of `home/configs/pi-coding-agent/`.
 
-- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars and `LAT_LLM_KEY` before startup, adds the Plannotator CLI, `rtk`, and Poppler only to Pi's PATH, then symlinks local single-file extensions, skills, and prompts
+- `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars and `LAT_LLM_KEY` before startup, installs the `lat.md` CLI globally, adds wrapper PATH tools, then symlinks local single-file extensions, skills, and prompts
+- `lat-md.nix` — publishes the pinned `lat.md` CLI package through `_module.args.piLatMd` for global PATH and the Pi wrapper
 - `plannotator.nix` — publishes the pinned Plannotator CLI package through `_module.args.piPlannotator` for the Pi wrapper
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — repo-owned skills symlinked to `~/.pi/agent/skills/`; package-managed skills and extensions stay in `settings.json`; ui.sh local skills are installed globally to `~/.agents/skills/` with `pi-uidotsh-install` from the devenv shell
@@ -70,6 +71,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `pi-subagents` — multi-agent orchestration (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
   - `pi-caveman` — owns caveman prompt injection, `/caveman` session toggle, config UI, and footer status
   - `@plannotator/pi-extension` — Plannotator commands and skills
+  - `lat.md` CLI — pinned npm package installed globally through Home Manager and exposed inside Pi's wrapper PATH for repo documentation commands
   - Plannotator CLI — pinned GitHub release binary exposed only inside Pi's wrapper PATH so the `plannotator-setup-goal` skill can run `plannotator setup-goal ...`
   - `pi-agent-goal` — provides the `/goal` command, `/goal import <path> --start`, branch-aware goal state, and goal progress tools
   - `pi-rtk-optimizer` — RTK command rewriting and tool output compaction
