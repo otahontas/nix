@@ -9,7 +9,3 @@ inputs:
   treefmt-nix:
     url: github:numtide/treefmt-nix
     flake: false
-secretspec:
-  enable: true
-  provider: pass
-  profile: default

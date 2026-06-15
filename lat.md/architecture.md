@@ -12,8 +12,7 @@ home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-co
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
 devenv.nix       repo-specific dev shell: tools, hooks, generated files, tasks, lat.md support
-devenv.yaml      declares root devenv inputs and enables SecretSpec
-secretspec.toml  pass-backed secret requirements for the root shell
+devenv.yaml      declares root devenv inputs
 lat.md/          this documentation
 ```
 
@@ -83,12 +82,10 @@ This applies broadly in this repo: if `readlink` shows a nix store path, find th
 
 ## Secrets
 
-LAT tooling gets `LAT_LLM_KEY` from pass-backed runtime paths, keeping the value outside git and avoiding per-repo setup for Pi sessions.
+LAT tooling gets `LAT_LLM_KEY` from the global Pi wrapper, keeping the value outside git and avoiding per-repo secret setup.
 
-- `secretspec.toml` declares `LAT_LLM_KEY` in the default profile for the root devenv shell.
-- `devenv.yaml` enables SecretSpec with `provider: pass` and `profile: default`.
-- `devenv.nix` exports `config.secretspec.secrets.LAT_LLM_KEY` directly, so a missing value fails instead of falling back to a blank string.
 - The Pi wrapper in `home/configs/pi-coding-agent/default.nix` reads pass entry `api/lat-md` directly into `LAT_LLM_KEY`.
+- Root devenv installs the `lat` CLI but no longer declares or exports a repo-specific `LAT_LLM_KEY`.
 
 ## Tasks
 

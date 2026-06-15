@@ -2301,10 +2301,7 @@ in
       shell.enable = true;
     };
 
-    env.LAT_LLM_KEY = config.secretspec.secrets.LAT_LLM_KEY;
-
     packages = [
-      pkgs.secretspec
       treefmtEval.config.build.wrapper
       latMd
       piUidotshInstall
