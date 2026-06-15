@@ -40,7 +40,7 @@ Configs worth documenting beyond a table row.
 - **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it; enables title, attention, and border bell effects for Pi notifications
 - **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars plus `LAT_LLM_KEY`, adds local helper tools, and symlinks extensions/skills/prompts/models to `~/.pi/agent/`
 - **iina** — installs the app and uses `duti` only from the activation store path for media file associations
-- **password-store** — pass with GPG integration
+- **password-store** — pass with GPG integration plus `pass-otp`, `pass-genphrase`, and `pass-update`
 - **input-source** — disables Control+Space input source switch shortcut for terminal/nvim pass-through
 - **neovim** — blink.cmp with Copilot LSP + blink-copilot source; LSPs for Nix, shell, Lua; Ruby/Python providers disabled; custom spell file; ghost text disabled
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, worktree scripts
