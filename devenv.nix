@@ -282,7 +282,10 @@ in
       };
       typos = {
         enable = true;
-        excludes = [ "\\.tickets/" ];
+        excludes = [
+          "\\.tickets/"
+          "^AGENTS\\.md$"
+        ];
       };
       commitlint = {
         enable = true;
@@ -301,6 +304,7 @@ in
       treefmt = {
         enable = true;
         package = treefmtEval.config.build.wrapper;
+        excludes = [ "^AGENTS\\.md$" ];
       };
     };
   };

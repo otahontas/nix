@@ -41,6 +41,8 @@ repoDevenv.gitignore.extraEntries = [ ... ];
 
 Generated files stay store-backed. Don't edit `.gitignore`, `.nvim.lua`, `.pi/mcp.json`, or `.pi/extensions/post-edit-hook.ts` directly; update `devenv.nix` and re-enter the shell.
 
+Pre-commit typos and treefmt hooks exclude only root `AGENTS.md`; other `AGENTS.md` files still lint and format normally.
+
 Root devenv does not generate repo-local `.pi/agent/AGENTS.md`, `.pi/extensions/lat.ts`, or `.pi/skills/lat-md/SKILL.md`; use built-in lat tools and the `lat` CLI instead.
 
 ## Flakes
