@@ -1,14 +1,4 @@
-### repo devenv gitignore
 .devenv*
-.gitignore
-.nvim.lua
 .pre-commit-config.yaml
-.pi/*
-!.pi/extensions/
-.pi/extensions/*
-!.pi/extensions/post-edit-hook.ts
-devenv.local.nix
-devenv.local.yaml
-lat.md/.cache/
+lat.md/.cache
 result
-### end

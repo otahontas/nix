@@ -38,49 +38,6 @@ let
     builtins.toJSON { mcpServers = baseMcpServers // config.repoDevenv.ai.mcp.extraServers; }
   );
 
-  gitignoreFile = pkgs.writeText "gitignore" (
-    "### repo devenv gitignore\n"
-    + (lib.concatStringsSep "\n" [
-      ".devenv*"
-      ".gitignore"
-      ".nvim.lua"
-      ".pre-commit-config.yaml"
-      ".pi/*"
-      "!.pi/extensions/"
-      ".pi/extensions/*"
-      "!.pi/extensions/post-edit-hook.ts"
-      "devenv.local.nix"
-      "devenv.local.yaml"
-      "lat.md/.cache/"
-      "result"
-    ])
-    + "\n"
-    + "### end\n"
-    + (lib.optionalString (config.repoDevenv.gitignore.extraEntries != [ ]) (
-      "\n" + lib.concatStringsSep "\n" config.repoDevenv.gitignore.extraEntries + "\n"
-    ))
-  );
-
-  nvimConfig =
-    let
-      baseLsps = [
-        "nixd"
-        "bashls"
-      ];
-      baseLines = [
-        "vim.cmd([[set runtimepath+=.nvim]])"
-      ]
-      ++ map (lsp: ''vim.lsp.enable("${lsp}")'') baseLsps;
-      extraLines =
-        map (lsp: ''vim.lsp.enable("${lsp}")'') config.repoDevenv.nvim.extraLsps
-        ++ lib.optional (config.repoDevenv.nvim.extraConfig != "") config.repoDevenv.nvim.extraConfig;
-    in
-    "-- ### repo devenv nvim\n"
-    + lib.concatStringsSep "\n" baseLines
-    + "\n"
-    + "-- ### end\n"
-    + lib.optionalString (extraLines != [ ]) ("\n" + lib.concatStringsSep "\n" extraLines + "\n");
-
   piUidotshInstall = pkgs.writeShellScriptBin "pi-uidotsh-install" ''
     set -euo pipefail
 
@@ -125,12 +82,6 @@ let
 
     mkdir -p "$root/.pi"
     safe_ln ${mcpConfig} "$root/.pi/mcp.json"
-
-    if ! cmp -s ${gitignoreFile} "$root/.gitignore"; then
-      chflags nouchg "$root/.gitignore" 2>/dev/null || true
-      install -m 444 ${gitignoreFile} "$root/.gitignore"
-      chflags uchg "$root/.gitignore" 2>/dev/null || true
-    fi
   '';
 in
 {
@@ -138,22 +89,6 @@ in
     ai.mcp.extraServers = lib.mkOption {
       type = lib.types.attrsOf lib.types.attrs;
       default = { };
-    };
-
-    gitignore.extraEntries = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-    };
-
-    nvim = {
-      extraLsps = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-      };
-      extraConfig = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-      };
     };
 
     treefmt = lib.mkOption {
@@ -176,29 +111,6 @@ in
     claude.code.enable = lib.mkForce false;
 
     enterShell = "bash ${enterShellScript}";
-
-    files = {
-      ".nvim.lua".text = nvimConfig;
-      ".typos.toml".text = ''
-        [default.extend-words]
-        # Home Assistant abbreviation
-        hass = "hass"
-        # Universal Plug and Play
-        Pn = "Pn"
-        # Proper name (sculptor in Browning's "My Last Duchess")
-        Claus = "Claus"
-
-        [type.md]
-        extend-ignore-re = [
-          "nix-[a-z0-9]{4}\\.md",
-          "(?m)^id:\\s+nix-[a-z0-9]{4}$",
-        ]
-
-        [type.asc]
-        extend-glob = ["*.asc"]
-        check-file = false
-      '';
-    };
 
     repoDevenv.treefmt = {
       settings.global.excludes = [

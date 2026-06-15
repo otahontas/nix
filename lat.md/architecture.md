@@ -11,7 +11,7 @@ home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-co
   configs/       per-tool directories, each with default.nix (48 configs)
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
-devenv.nix       repo-specific dev shell: tools, generated files, tasks
+devenv.nix       repo-specific dev shell: tools, tasks, hooks, package wiring
 .pi/extensions/ post-edit Pi hook source
 devenv.yaml      declares root devenv inputs
 lat.md/          this documentation
@@ -25,22 +25,24 @@ This repo uses devenv for reproducible development environments.
 - Use `devenv tasks run <task>` to run defined tasks.
 - Use `devenv up` for process services.
 - Always use devenv to install tools and services or to define tasks.
-- This devenv setup keeps repo-specific tools, generated files, and tasks in `devenv.nix`.
-  - Keep Pi extension source in `.pi/extensions/post-edit-hook.ts`; generated files rebuild on shell entry.
+- This devenv setup keeps repo-specific tools, tasks, and hooks in `devenv.nix`.
+  - Keep `.gitignore`, `.nvim.lua`, `.typos.toml`, and Pi extension source as tracked files; `.pi/mcp.json` still rebuilds on shell entry.
 - Home Manager installs the global `lat.md` CLI from `home/configs/pi-coding-agent/lat-md.nix`, not from root `devenv.nix`.
 
 ## Root devenv setup
 
-Root shell keeps repo-specific devenv behavior in `devenv.nix`, so generated files, tools, tasks, and package wiring live in one file.
+Root shell keeps repo-specific devenv behavior in `devenv.nix`, while tracked dotfiles stay editable normal files.
 
 Configurable repo options still live under `repoDevenv.<name>` inside `devenv.nix`:
 
 ```nix
 repoDevenv.treefmt.programs = { ... };
-repoDevenv.gitignore.extraEntries = [ ... ];
+repoDevenv.ai.mcp.extraServers = { ... };
 ```
 
-Generated files stay store-backed. Don't edit `.gitignore`, `.nvim.lua`, or `.pi/mcp.json` directly; update `devenv.nix` and re-enter the shell.
+Only `.pi/mcp.json` stays store-backed. `.gitignore`, `.nvim.lua`, and `.typos.toml` are tracked normal files; edit them directly.
+
+`.nvim.lua` owns root Neovim LSP setup, including the nixd Home Manager options that previously lived in `.nvim/lsp/nixd.lua`.
 
 The Pi post-edit hook is tracked source at `.pi/extensions/post-edit-hook.ts`, not a generated devenv install.
 
@@ -74,7 +76,7 @@ The retired root `AGENTS.md` carried repo-local rules that now live here.
 
 ### Project: root devenv file
 
-`devenv.nix` symlinks repo `.pi/mcp.json` on shell entry. It leaves `.pi/extensions/post-edit-hook.ts` as tracked source and no longer generates project-level AGENTS.md, `lat.ts`, or `lat-md` skill files.
+`devenv.nix` symlinks repo `.pi/mcp.json` on shell entry. It leaves `.gitignore`, `.nvim.lua`, `.typos.toml`, and `.pi/extensions/post-edit-hook.ts` as tracked source files.
 
 ### Key takeaway
 
