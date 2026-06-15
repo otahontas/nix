@@ -6,17 +6,6 @@
   ...
 }:
 let
-  writeBase64DecodedFile =
-    name: contentBase64:
-    pkgs.runCommand name
-      {
-        preferLocalBuild = true;
-        allowSubstitutes = false;
-      }
-      ''
-        ${pkgs.coreutils}/bin/base64 -d ${pkgs.writeText "${name}.b64" contentBase64} > $out
-      '';
-
   treefmt-nix = import inputs.treefmt-nix;
   treefmtEval = treefmt-nix.evalModule pkgs {
     imports = [
@@ -49,34 +38,6 @@ let
     builtins.toJSON { mcpServers = baseMcpServers // config.repoDevenv.ai.mcp.extraServers; }
   );
 
-  postEditHookFile = writeBase64DecodedFile "post-edit-hook.ts" ''
-    LyoqCiAqIFBvc3QtZWRpdCBob29rIGV4dGVuc2lvbgogKgogKiBSdW5zIHByZWsgaG9va3Mgb24gdGhlIHNwZWNpZmljIGZpbGUg
-    YWZ0ZXIgYW55IGZpbGUtbXV0YXRpbmcgdG9vbCBjYWxsLgogKiBJbmplY3RzIGlzc3VlcyBpbnRvIHRoZSB0b29sIHJlc3VsdCBz
-    byB0aGUgTExNIGNhbiBmaXggdGhlbSBiZWZvcmUgY29tbWl0dGluZy4KICovCgppbXBvcnQgdHlwZSB7IEV4dGVuc2lvbkFQSSB9
-    IGZyb20gIkBtYXJpb3plY2huZXIvcGktY29kaW5nLWFnZW50IjsKCmNvbnN0IEZJTEVfTVVUQVRJTkdfVE9PTFMgPSBuZXcgU2V0
-    KFsiZWRpdCIsICJ3cml0ZSJdKTsKCmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIChwaTogRXh0ZW5zaW9uQVBJKSB7CiAgcGkub24o
-    InRvb2xfcmVzdWx0IiwgYXN5bmMgKGV2ZW50LCBjdHgpID0+IHsKICAgIGlmICghRklMRV9NVVRBVElOR19UT09MUy5oYXMoZXZl
-    bnQudG9vbE5hbWUudG9Mb3dlckNhc2UoKSkpIHJldHVybjsKICAgIGlmIChldmVudC5pc0Vycm9yKSByZXR1cm47CgogICAgY29u
-    c3QgZmlsZVBhdGggPSAoZXZlbnQuaW5wdXQgYXMgYW55KT8ucGF0aDsKICAgIGlmICghZmlsZVBhdGgpIHJldHVybjsKCiAgICBj
-    b25zdCBkZXZlbnZSb290ID0gcHJvY2Vzcy5lbnYuREVWRU5WX1JPT1QgPz8gY3R4LmN3ZDsKCiAgICAvLyBSZXNvbHZlIHRvIHJl
-    bGF0aXZlIHBhdGggZm9yIHByZWsKICAgIGxldCByZWxQYXRoID0gZmlsZVBhdGg7CiAgICBpZiAoZmlsZVBhdGguc3RhcnRzV2l0
-    aChkZXZlbnZSb290ICsgIi8iKSkgewogICAgICByZWxQYXRoID0gZmlsZVBhdGguc2xpY2UoZGV2ZW52Um9vdC5sZW5ndGggKyAx
-    KTsKICAgIH0KCiAgICBjb25zdCByZXN1bHQgPSBhd2FpdCBwaS5leGVjKAogICAgICAiYmFzaCIsCiAgICAgIFsKICAgICAgICAi
-    LWMiLAogICAgICAgIGBjZCAiJHtkZXZlbnZSb290fSIgJiYgLmRldmVudi9wcm9maWxlL2Jpbi9wcmVrIHJ1biAtLWZpbGVzICIk
-    e3JlbFBhdGh9ImAsCiAgICAgIF0sCiAgICAgIHsKICAgICAgICB0aW1lb3V0OiAzMDAwMCwKICAgICAgfSwKICAgICk7CgogICAg
-    aWYgKHJlc3VsdC5jb2RlICE9PSAwKSB7CiAgICAgIC8vIHByZWsgcmVzdWx0cyBhcmUgaW4gc3Rkb3V0IChkZXZlbnYgLS1xdWll
-    dCBzdXBwcmVzc2VzIHNoZWxsIHNldHVwIG5vaXNlKQogICAgICBjb25zdCBvdXRwdXQgPSAocmVzdWx0LnN0ZG91dCB8fCAiIiku
-    dHJpbSgpOwogICAgICBjb25zdCBmYWlsdXJlcyA9IG91dHB1dAogICAgICAgIC5zcGxpdCgiXG4iKQogICAgICAgIC5maWx0ZXIo
-    KGxpbmUpID0+IGxpbmUuaW5jbHVkZXMoIkZhaWxlZCIpKQogICAgICAgIC5tYXAoKGxpbmUpID0+IGxpbmUudHJpbSgpKQogICAg
-    ICAgIC5qb2luKCJcbiIpOwoKICAgICAgY29uc3QgbXNnID0gZmFpbHVyZXMgfHwgb3V0cHV0LnNsaWNlKDAsIDUwMCk7CgogICAg
-    ICBjdHgudWkubm90aWZ5KGBwcmVrIGlzc3VlczogJHttc2cuc2xpY2UoMCwgMzAwKX1gLCAid2FybiIpOwoKICAgICAgLy8gSW5q
-    ZWN0IGludG8gdG9vbCByZXN1bHQgc28gdGhlIExMTSBzZWVzIHRoZSBpc3N1ZXMgYW5kIGNhbiBmaXggdGhlbQogICAgICByZXR1
-    cm4gewogICAgICAgIGNvbnRlbnQ6IFsKICAgICAgICAgIC4uLmV2ZW50LmNvbnRlbnQsCiAgICAgICAgICB7CiAgICAgICAgICAg
-    IHR5cGU6ICJ0ZXh0IiBhcyBjb25zdCwKICAgICAgICAgICAgdGV4dDogYOKaoO+4jyBwcmVrIGZvdW5kIGlzc3VlcyB3aXRoIHRo
-    aXMgZmlsZSAoYXV0by1mb3JtYXR0aW5nIG1heSBoYXZlIGJlZW4gYXBwbGllZCwgYnV0IHNvbWUgY2hlY2tzIGZhaWxlZCk6XG4k
-    e21zZ31gLAogICAgICAgICAgfSwKICAgICAgICBdLAogICAgICB9OwogICAgfQogIH0pOwp9Cg==
-  '';
-
   gitignoreFile = pkgs.writeText "gitignore" (
     "### repo devenv gitignore\n"
     + (lib.concatStringsSep "\n" [
@@ -84,7 +45,10 @@ let
       ".gitignore"
       ".nvim.lua"
       ".pre-commit-config.yaml"
-      ".pi"
+      ".pi/*"
+      "!.pi/extensions/"
+      ".pi/extensions/*"
+      "!.pi/extensions/post-edit-hook.ts"
       "devenv.local.nix"
       "devenv.local.yaml"
       "lat.md/.cache/"
@@ -159,9 +123,8 @@ let
 
     root="''${DEVENV_ROOT:-$PWD}"
 
-    mkdir -p "$root/.pi/extensions"
+    mkdir -p "$root/.pi"
     safe_ln ${mcpConfig} "$root/.pi/mcp.json"
-    safe_ln ${postEditHookFile} "$root/.pi/extensions/post-edit-hook.ts"
 
     if ! cmp -s ${gitignoreFile} "$root/.gitignore"; then
       chflags nouchg "$root/.gitignore" 2>/dev/null || true
@@ -242,6 +205,9 @@ in
         "home/configs/git/allowed_signers"
         "home/configs/neovim/nvim/spell/en.utf-8.add"
         "system/keyboard/*.keylayout"
+        ".pi/extensions/lat.ts"
+        "AGENTS.md"
+        ".pi/skills/lat-md/SKILL.md"
       ];
       programs = {
         fish_indent.enable = true;
