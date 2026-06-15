@@ -2072,101 +2072,6 @@ let
     e21zZ31gLAogICAgICAgICAgfSwKICAgICAgICBdLAogICAgICB9OwogICAgfQogIH0pOwp9Cg==
   '';
 
-  agentsMdBaseFile = writeBase64DecodedFile "agents-md-base" ''
-    IyMgRGV2ZW52CgotIFRoaXMgcmVwbyB1c2VzIGRldmVudiBmb3IgcmVwcm9kdWNpYmxlIGRldmVsb3BtZW50IGVudmlyb25tZW50
-    cwotIFVzZSBgZGV2ZW52IHNoZWxsIC0tIDxjbWQ+YCB0byBydW4gY29tbWFuZHMgaW4gdGhlIGRldiBlbnZpcm9ubWVudAotIFVz
-    ZSBgZGV2ZW52IHRhc2tzIHJ1biA8dGFzaz5gIHRvIHJ1biBkZWZpbmVkIHRhc2tzCi0gVXNlIGBkZXZlbnYgdXBgIGZvciBwcm9j
-    ZXNzIHNlcnZpY2VzCi0gQWx3YXlzIHVzZSBkZXZlbnYgdG8gaW5zdGFsbCB0b29scyBhbmQgc2VydmljZXMgb3IgdG8gZGVmaW5l
-    IHRhc2tzLgotIFRoaXMgZGV2ZW52IHNldHVwIGtlZXBzIHJlcG8tc3BlY2lmaWMgdG9vbHMsIGhvb2tzLCBnZW5lcmF0ZWQgZmls
-    ZXMsIGFuZCB0YXNrcyBpbiBgZGV2ZW52Lm5peGAuCiAgLSBDdXN0b21pemUgcm9vdCBkZXZlbnYgYmVoYXZpb3IgaW4gYGRldmVu
-    di5uaXhgOyBnZW5lcmF0ZWQgZmlsZXMgYXJlIHJlYnVpbHQgb24gc2hlbGwgZW50cnkuCgojIyBMYXQKCi0gUnVuIGBsYXQgc2Vh
-    cmNoYCB0byBmaW5kIHNlY3Rpb25zIHJlbGV2YW50IHRvIHlvdXIgdGFzay4gUmVhZCB0aGVtIHRvIHVuZGVyc3RhbmQgdGhlIGRl
-    c2lnbiBpbnRlbnQgYmVmb3JlIHdyaXRpbmcgY29kZS4KLSBSdW4gYGxhdCBleHBhbmRgIG9uIHVzZXIgcHJvbXB0cyB0byBleHBh
-    bmQgYW55IGBbW3JlZnNdXWAg4oCUIHRoaXMgcmVzb2x2ZXMgc2VjdGlvbiBuYW1lcyB0byBmaWxlIGxvY2F0aW9ucyBhbmQgcHJv
-    dmlkZXMgY29udGV4dC4KCiMjIyBQb3N0LXRhc2sgY2hlY2tsaXN0IChSRVFVSVJFRCDigJQgZG8gbm90IHNraXApCgpBZnRlciBF
-    VkVSWSB0YXNrLCBiZWZvcmUgcmVzcG9uZGluZyB0byB0aGUgdXNlcjoKCi0gWyBdIFVwZGF0ZSBgbGF0Lm1kL2AgaWYgeW91IGFk
-    ZGVkIG9yIGNoYW5nZWQgYW55IGZ1bmN0aW9uYWxpdHksIGFyY2hpdGVjdHVyZSwgdGVzdHMsIG9yIGJlaGF2aW9yCi0gWyBdIFJ1
-    biBgbGF0IGNoZWNrYCDigJQgYWxsIHdpa2kgbGlua3MgYW5kIGNvZGUgcmVmcyBtdXN0IHBhc3MKLSBbIF0gRG8gbm90IHNraXAg
-    dGhlc2Ugc3RlcHMuIERvIG5vdCBjb25zaWRlciB5b3VyIHRhc2sgZG9uZSB1bnRpbCBib3RoIGFyZSBjb21wbGV0ZS4KCiMjIyBX
-    aGF0IGlzIGxhdC5tZD8KClRoaXMgcHJvamVjdCB1c2VzIFtsYXQubWRdKGh0dHBzOi8vd3d3Lm5wbWpzLmNvbS9wYWNrYWdlL2xh
-    dC5tZCkgdG8gbWFpbnRhaW4gYSBzdHJ1Y3R1cmVkIGtub3dsZWRnZSBncmFwaCBvZiBpdHMgYXJjaGl0ZWN0dXJlLCBkZXNpZ24g
-    ZGVjaXNpb25zLCBhbmQgdGVzdCBzcGVjcyBpbiB0aGUgYGxhdC5tZC9gIGRpcmVjdG9yeS4gSXQgaXMgYSBzZXQgb2YgY3Jvc3Mt
-    bGlua2VkIG1hcmtkb3duIGZpbGVzIHRoYXQgZGVzY3JpYmUgKip3aGF0KiogdGhpcyBwcm9qZWN0IGRvZXMgYW5kICoqd2h5Kiog
-    4oCUIHRoZSBkb21haW4gY29uY2VwdHMsIGtleSBkZXNpZ24gZGVjaXNpb25zLCBidXNpbmVzcyBsb2dpYywgYW5kIHRlc3Qgc3Bl
-    Y2lmaWNhdGlvbnMuIFVzZSBpdCB0byBncm91bmQgeW91ciB3b3JrIGluIHRoZSBhY3R1YWwgYXJjaGl0ZWN0dXJlIHJhdGhlciB0
-    aGFuIGd1ZXNzaW5nLgoKIyMjIENvbW1hbmRzCgpgYGBiYXNoCmxhdCBsb2NhdGUgIlNlY3Rpb24gTmFtZSIgICAgICAjIGZpbmQg
-    YSBzZWN0aW9uIGJ5IG5hbWUgKGV4YWN0LCBmdXp6eSkKbGF0IHJlZnMgImZpbGUjU2VjdGlvbiIgICAgICAgICMgZmluZCB3aGF0
-    IHJlZmVyZW5jZXMgYSBzZWN0aW9uCmxhdCBzZWFyY2ggIm5hdHVyYWwgbGFuZ3VhZ2UiICAjIHNlbWFudGljIHNlYXJjaCBhY3Jv
-    c3MgYWxsIHNlY3Rpb25zCmxhdCBleHBhbmQgInVzZXIgcHJvbXB0IHRleHQiICAjIGV4cGFuZCBbW3JlZnNdXSB0byByZXNvbHZl
-    ZCBsb2NhdGlvbnMKbGF0IGNoZWNrICAgICAgICAgICAgICAgICAgICAgICMgdmFsaWRhdGUgYWxsIGxpbmtzIGFuZCBjb2RlIHJl
-    ZnMKYGBgCgpSdW4gYGxhdCAtLWhlbHBgIHdoZW4gaW4gZG91YnQgYWJvdXQgYXZhaWxhYmxlIGNvbW1hbmRzIG9yIG9wdGlvbnMu
-    CgpJZiBgbGF0IHNlYXJjaGAgZmFpbHMgYmVjYXVzZSBubyBBUEkga2V5IGlzIGNvbmZpZ3VyZWQsIGV4cGxhaW4gdG8gdGhlIHVz
-    ZXIgdGhhdCBzZW1hbnRpYyBzZWFyY2ggcmVxdWlyZXMgYSBrZXkgcHJvdmlkZWQgdmlhIGBMQVRfTExNX0tFWWAgKGRpcmVjdCB2
-    YWx1ZSksIGBMQVRfTExNX0tFWV9GSUxFYCAocGF0aCB0byBrZXkgZmlsZSksIG9yIGBMQVRfTExNX0tFWV9IRUxQRVJgIChjb21t
-    YW5kIHRoYXQgcHJpbnRzIHRoZSBrZXkpLiBTdXBwb3J0ZWQga2V5IHByZWZpeGVzOiBgc2stLi4uYCAoT3BlbkFJKSBvciBgdmNr
-    Xy4uLmAgKFZlcmNlbCkuIElmIHRoZSB1c2VyIGRvZXNuJ3Qgd2FudCB0byBzZXQgaXQgdXAsIHVzZSBgbGF0IGxvY2F0ZWAgZm9y
-    IGRpcmVjdCBsb29rdXBzIGluc3RlYWQuCgojIyMgU3ludGF4IHByaW1lcgoKLSAqKlNlY3Rpb24gaWRzKio6IGBsYXQubWQvcGF0
-    aC90by9maWxlI0hlYWRpbmcjU3ViSGVhZGluZ2Ag4oCUIGZ1bGwgZm9ybSB1c2VzIHByb2plY3Qtcm9vdC1yZWxhdGl2ZSBwYXRo
-    IChlLmcuIGBsYXQubWQvdGVzdHMvc2VhcmNoI1JBRyBSZXBsYXkgVGVzdHNgKS4gU2hvcnQgZm9ybSB1c2VzIGJhcmUgZmlsZSBu
-    YW1lIHdoZW4gdW5pcXVlIChlLmcuIGBzZWFyY2gjUkFHIFJlcGxheSBUZXN0c2AsIGBjbGkjc2VhcmNoI0luZGV4aW5nYCkuCi0g
-    KipXaWtpIGxpbmtzKio6IGBbW3RhcmdldF1dYCBvciBgW1t0YXJnZXR8YWxpYXNdXWAg4oCUIGNyb3NzLXJlZmVyZW5jZXMgYmV0
-    d2VlbiBzZWN0aW9ucy4gQ2FuIGFsc28gcmVmZXJlbmNlIHNvdXJjZSBjb2RlOiBgW1tzcmMvZm9vLnRzI215RnVuY3Rpb25dXWAu
-    Ci0gKipTb3VyY2UgY29kZSBsaW5rcyoqOiBXaWtpIGxpbmtzIGluIGBsYXQubWQvYCBmaWxlcyBjYW4gcmVmZXJlbmNlIGZ1bmN0
-    aW9ucywgY2xhc3NlcywgY29uc3RhbnRzLCBhbmQgbWV0aG9kcyBpbiBUeXBlU2NyaXB0L0phdmFTY3JpcHQvUHl0aG9uL1J1c3Qv
-    R28vQyBmaWxlcy4gVXNlIHRoZSBmdWxsIHBhdGg6IGBbW3NyYy9jb25maWcudHMjZ2V0Q29uZmlnRGlyXV1gLCBgW1tzcmMvc2Vy
-    dmVyLnRzI0FwcCNsaXN0ZW5dXWAgKGNsYXNzIG1ldGhvZCksIGBbW2xpYi91dGlscy5weSNwYXJzZV9hcmdzXV1gLCBgW1tzcmMv
-    bGliLnJzI0dyZWV0ZXIjZ3JlZXRdXWAgKFJ1c3QgaW1wbCBtZXRob2QpLCBgW1tzcmMvYXBwLmdvI0dyZWV0ZXIjR3JlZXRdXWAg
-    KEdvIG1ldGhvZCksIGBbW3NyYy9hcHAuaCNHcmVldGVyXV1gIChDIHN0cnVjdCkuIGBsYXQgY2hlY2tgIHZhbGlkYXRlcyB0aGVz
-    ZSBleGlzdC4KLSAqKkNvZGUgcmVmcyoqOiBgLy8gQGxhdDogW1tzZWN0aW9uLWlkXV1gIChKUy9UUy9SdXN0L0dvL0MpIG9yIGAj
-    IEBsYXQ6IFtbc2VjdGlvbi1pZF1dYCAoUHl0aG9uKSDigJQgdGllcyBzb3VyY2UgY29kZSB0byBjb25jZXB0cwoKIyMjIFRlc3Qg
-    c3BlY3MKCktleSB0ZXN0cyBjYW4gYmUgZGVzY3JpYmVkIGFzIHNlY3Rpb25zIGluIGBsYXQubWQvYCBmaWxlcyAoZS5nLiBgdGVz
-    dHMubWRgKS4gQWRkIGZyb250bWF0dGVyIHRvIHJlcXVpcmUgdGhhdCBldmVyeSBsZWFmIHNlY3Rpb24gaXMgcmVmZXJlbmNlZCBi
-    eSBhIGAvLyBAbGF0OmAgb3IgYCMgQGxhdDpgIGNvbW1lbnQgaW4gdGVzdCBjb2RlOgoKYGBgbWFya2Rvd24KLS0tCmxhdDoKICBy
-    ZXF1aXJlLWNvZGUtbWVudGlvbjogdHJ1ZQotLS0KCiMgVGVzdHMKCkF1dGhlbnRpY2F0aW9uIGFuZCBhdXRob3JpemF0aW9uIHRl
-    c3Qgc3BlY2lmaWNhdGlvbnMuCgojIyBVc2VyIGxvZ2luCgpWZXJpZnkgY3JlZGVudGlhbCB2YWxpZGF0aW9uIGFuZCBlcnJvciBo
-    YW5kbGluZyBmb3IgdGhlIGxvZ2luIGVuZHBvaW50LgoKIyMjIFJlamVjdHMgZXhwaXJlZCB0b2tlbnMKClRva2VucyBwYXN0IHRo
-    ZWlyIGV4cGlyeSB0aW1lc3RhbXAgYXJlIHJlamVjdGVkIHdpdGggNDAxLCBldmVuIGlmIG90aGVyd2lzZSB2YWxpZC4KCiMjIyBI
-    YW5kbGVzIG1pc3NpbmcgcGFzc3dvcmQKCkxvZ2luIHJlcXVlc3Qgd2l0aG91dCBhIHBhc3N3b3JkIGZpZWxkIHJldHVybnMgNDAw
-    IHdpdGggYSBkZXNjcmlwdGl2ZSBlcnJvci4KYGBgCgpFdmVyeSBzZWN0aW9uIE1VU1QgaGF2ZSBhIGRlc2NyaXB0aW9uIOKAlCBh
-    dCBsZWFzdCBvbmUgc2VudGVuY2UgZXhwbGFpbmluZyB3aGF0IHRoZSB0ZXN0IHZlcmlmaWVzIGFuZCB3aHkuIEVtcHR5IHNlY3Rp
-    b25zIHdpdGgganVzdCBhIGhlYWRpbmcgYXJlIG5vdCBhY2NlcHRhYmxlLiAoVGhpcyBpcyBhIHNwZWNpZmljIGNhc2Ugb2YgdGhl
-    IGdlbmVyYWwgbGVhZGluZyBwYXJhZ3JhcGggcnVsZSBiZWxvdy4pCgpFYWNoIHRlc3QgaW4gY29kZSBzaG91bGQgcmVmZXJlbmNl
-    IGl0cyBzcGVjIHdpdGggZXhhY3RseSBvbmUgY29tbWVudCBwbGFjZWQgbmV4dCB0byB0aGUgcmVsZXZhbnQgdGVzdCDigJQgbm90
-    IGF0IHRoZSB0b3Agb2YgdGhlIGZpbGU6CgpgYGBweXRob24KIyBAbGF0OiBbW3Rlc3RzI1VzZXIgbG9naW4jUmVqZWN0cyBleHBp
-    cmVkIHRva2Vuc11dCmRlZiB0ZXN0X3JlamVjdHNfZXhwaXJlZF90b2tlbnMoKToKICAgIC4uLgoKIyBAbGF0OiBbW3Rlc3RzI1Vz
-    ZXIgbG9naW4jSGFuZGxlcyBtaXNzaW5nIHBhc3N3b3JkXV0KZGVmIHRlc3RfaGFuZGxlc19taXNzaW5nX3Bhc3N3b3JkKCk6CiAg
-    ICAuLi4KYGBgCgpEbyBub3QgZHVwbGljYXRlIHJlZnMuIE9uZSBgQGxhdDpgIGNvbW1lbnQgcGVyIHNwZWMgc2VjdGlvbiwgcGxh
-    Y2VkIGF0IHRoZSB0ZXN0IHRoYXQgY292ZXJzIGl0LiBgbGF0IGNoZWNrYCB3aWxsIGZsYWcgYW55IHNwZWMgc2VjdGlvbiBub3Qg
-    Y292ZXJlZCBieSBhIGNvZGUgcmVmZXJlbmNlLCBhbmQgYW55IGNvZGUgcmVmZXJlbmNlIHBvaW50aW5nIHRvIGEgbm9uZXhpc3Rl
-    bnQgc2VjdGlvbi4KCiMjIyBTZWN0aW9uIHN0cnVjdHVyZQoKRXZlcnkgc2VjdGlvbiBpbiBgbGF0Lm1kL2AgKiptdXN0KiogaGF2
-    ZSBhIGxlYWRpbmcgcGFyYWdyYXBoIOKAlCBhdCBsZWFzdCBvbmUgc2VudGVuY2UgaW1tZWRpYXRlbHkgYWZ0ZXIgdGhlIGhlYWRp
-    bmcsIGJlZm9yZSBhbnkgY2hpbGQgaGVhZGluZ3Mgb3Igb3RoZXIgYmxvY2sgY29udGVudC4gVGhlIGZpcnN0IHBhcmFncmFwaCBt
-    dXN0IGJlIOKJpDI1MCBjaGFyYWN0ZXJzIChleGNsdWRpbmcgYFtbd2lraSBsaW5rXV1gIGNvbnRlbnQpLiBUaGlzIHBhcmFncmFw
-    aCBzZXJ2ZXMgYXMgdGhlIHNlY3Rpb24ncyBvdmVydmlldyBhbmQgaXMgdXNlZCBpbiBzZWFyY2ggcmVzdWx0cywgY29tbWFuZCBv
-    dXRwdXQsIGFuZCBSQUcgY29udGV4dCDigJQga2VlcGluZyBpdCBjb25jaXNlIGd1YXJhbnRlZXMgdGhlIHNlY3Rpb24ncyBlc3Nl
-    bmNlIGlzIGFsd2F5cyBjYXB0dXJlZC4KCmBgYG1hcmtkb3duCiMgR29vZCBTZWN0aW9uCgpCcmllZiBvdmVydmlldyBvZiB3aGF0
-    IHRoaXMgc2VjdGlvbiBkb2N1bWVudHMgYW5kIHdoeSBpdCBtYXR0ZXJzLgoKTW9yZSBkZXRhaWwgY2FuIGdvIGluIHN1YnNlcXVl
-    bnQgcGFyYWdyYXBocywgY29kZSBibG9ja3MsIG9yIGxpc3RzLgoKIyMgQ2hpbGQgaGVhZGluZwoKRGV0YWlscyBhYm91dCB0aGlz
-    IGNoaWxkIHRvcGljLgpgYGAKCmBgYG1hcmtkb3duCiMgQmFkIFNlY3Rpb24KCiMjIENoaWxkIGhlYWRpbmcKCkRldGFpbHMgYWJv
-    dXQgdGhpcyBjaGlsZCB0b3BpYy4KYGBgCgpUaGUgc2Vjb25kIGV4YW1wbGUgaXMgaW52YWxpZCBiZWNhdXNlIGBCYWQgU2VjdGlv
-    bmAgaGFzIG5vIGxlYWRpbmcgcGFyYWdyYXBoLiBgbGF0IGNoZWNrYCB2YWxpZGF0ZXMgdGhpcyBydWxlIGFuZCByZXBvcnRzIGVy
-    cm9ycyBmb3IgbWlzc2luZyBvciBvdmVybHkgbG9uZyBsZWFkaW5nIHBhcmFncmFwaHMuCg==
-  '';
-  agentsMdExtraFile = pkgs.writeText "agents-md-extra" (
-    lib.optionalString (config.repoDevenv.agents-md.extraEntries != [ ]) (
-      "\n\n" + (lib.concatStringsSep "\n" config.repoDevenv.agents-md.extraEntries) + "\n"
-    )
-  );
-  agentsMdFile =
-    pkgs.runCommand "agents-md"
-      {
-        preferLocalBuild = true;
-        allowSubstitutes = false;
-      }
-      ''
-        ${pkgs.coreutils}/bin/cat ${agentsMdBaseFile} ${agentsMdExtraFile} > $out
-      '';
-
   gitignoreFile = pkgs.writeText "gitignore" (
     "### repo devenv gitignore\n"
     + (lib.concatStringsSep "\n" [
@@ -2249,10 +2154,9 @@ let
 
     root="''${DEVENV_ROOT:-$PWD}"
 
-    mkdir -p "$root/.pi/agent" "$root/.pi/extensions"
+    mkdir -p "$root/.pi/extensions"
     safe_ln ${mcpConfig} "$root/.pi/mcp.json"
     safe_ln ${postEditHookFile} "$root/.pi/extensions/post-edit-hook.ts"
-    safe_ln ${agentsMdFile} "$root/.pi/agent/AGENTS.md"
 
     if ! cmp -s ${gitignoreFile} "$root/.gitignore"; then
       chflags nouchg "$root/.gitignore" 2>/dev/null || true
@@ -2266,11 +2170,6 @@ in
     ai.mcp.extraServers = lib.mkOption {
       type = lib.types.attrsOf lib.types.attrs;
       default = { };
-    };
-
-    agents-md.extraEntries = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
     };
 
     gitignore.extraEntries = lib.mkOption {

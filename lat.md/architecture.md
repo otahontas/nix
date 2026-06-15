@@ -16,6 +16,17 @@ devenv.yaml      declares root devenv inputs
 lat.md/          this documentation
 ```
 
+## Devenv
+
+This repo uses devenv for reproducible development environments.
+
+- Use `devenv shell -- <cmd>` to run commands in the dev environment.
+- Use `devenv tasks run <task>` to run defined tasks.
+- Use `devenv up` for process services.
+- Always use devenv to install tools and services or to define tasks.
+- This devenv setup keeps repo-specific tools, hooks, generated files, and tasks in `devenv.nix`.
+  - Customize root devenv behavior in `devenv.nix`; generated files are rebuilt on shell entry.
+
 ## Root devenv setup
 
 Root shell keeps repo-specific devenv behavior in `devenv.nix`, so generated files, hooks, tools, tasks, and package wiring live in one file.
@@ -23,12 +34,13 @@ Root shell keeps repo-specific devenv behavior in `devenv.nix`, so generated fil
 Configurable repo options still live under `repoDevenv.<name>` inside `devenv.nix`:
 
 ```nix
-repoDevenv.agents-md.extraEntries = [ ... ];
 repoDevenv.treefmt.programs = { ... };
 repoDevenv.gitignore.extraEntries = [ ... ];
 ```
 
-Generated files stay store-backed. Don't edit `.gitignore`, `.nvim.lua`, or `.pi/*` outputs directly; update `devenv.nix` and re-enter the shell.
+Generated files stay store-backed. Don't edit `.gitignore`, `.nvim.lua`, `.pi/mcp.json`, or `.pi/extensions/post-edit-hook.ts` directly; update `devenv.nix` and re-enter the shell.
+
+Root devenv does not generate repo-local `.pi/agent/AGENTS.md`, `.pi/extensions/lat.ts`, or `.pi/skills/lat-md/SKILL.md`; use built-in lat tools and the `lat` CLI instead.
 
 ## Flakes
 
@@ -41,7 +53,7 @@ Both flakes pin `nixpkgs-unstable` independently. `home/` pulls extra inputs:
 
 ## AGENTS.md pipeline
 
-Pi loads AGENTS.md from multiple locations (global + parent dirs + cwd), all concatenated. This repo keeps generated agent instructions in two managed layers; repo-local operating rules live in lat.md.
+Pi loads AGENTS.md from multiple locations (global + parent dirs + cwd), all concatenated. This repo uses the global managed AGENTS.md; repo-local operating rules live in lat.md.
 
 ### Repository operating rules
 
@@ -56,27 +68,11 @@ The retired root `AGENTS.md` carried repo-local rules that now live here.
 
 ### Project: root devenv file
 
-`devenv.nix` generates a project-level AGENTS.md at `${DEVENV_ROOT}/.pi/agent/AGENTS.md` on every `devenv shell` entry. It also symlinks repo `.pi/mcp.json` and `.pi/extensions/post-edit-hook.ts`:
-
-1. Decodes embedded base content into the nix store
-2. Appends any strings from `repoDevenv.agents-md.extraEntries`
-3. Symlinks the generated file into `.pi/agent/`
-
-Root devenv no longer generates repo-local `lat-md` skill or `lat.ts` Pi extension files; use built-in lat tools and the `lat` CLI instead.
-
-To add project-specific instructions, extend the `repoDevenv.agents-md.extraEntries` block in `devenv.nix`:
-
-```nix
-repoDevenv.agents-md.extraEntries = [
-  "## My section"
-  ""
-  "- Some instruction"
-];
-```
+`devenv.nix` symlinks repo `.pi/mcp.json` and `.pi/extensions/post-edit-hook.ts` on shell entry. It no longer generates project-level AGENTS.md, `lat.ts`, or `lat-md` skill files.
 
 ### Key takeaway
 
-Both AGENTS.md files are nix store symlinks — never edit them directly. Always modify the source (`GLOBAL_AGENTS.md` for global, `devenv.nix` for project) and rebuild.
+Global AGENTS.md is a home-manager symlink — never edit it directly. Modify `home/configs/pi-coding-agent/sources/GLOBAL_AGENTS.md`, then run `devenv tasks run home:apply`.
 
 This applies broadly in this repo: if `readlink` shows a nix store path, find the source (flake config, home-manager module, or root devenv setting) and change that instead.
 

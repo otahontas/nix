@@ -1,1 +1,0 @@
-/nix/store/acms5yx5ylvbha2h22vbipb0zfl219bg-lat-md-SKILL.md
