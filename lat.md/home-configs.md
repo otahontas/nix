@@ -14,7 +14,7 @@ Conventions for writing home-manager configs.
 - **GUI apps** — prefer home-manager when nixpkgs has darwin `.app` bundle; `targets.darwin.copyApps.enable = true` for Spotlight
 - **LaunchAgents** via `launchd.agents` for auto-start
 - **Out-of-store symlinks** via `config.lib.file.mkOutOfStoreSymlink` (see `symlinks/`)
-- **Mac App Store** apps via `mas` activation script (pending native nix-darwin module)
+- **Mac App Store** apps via a `mas` activation script that calls the store path directly; `mas` stays out of the user PATH (pending native nix-darwin module)
 
 ## Fish integration
 
@@ -39,6 +39,7 @@ Configs worth documenting beyond a table row.
 - **GPG/SSH** (`gpg/`) — YubiKey-based: gpg-agent with SSH support, GPG signing for git, `pinentry_mac` for GUI prompts, and SSH `IdentityAgent` through `programs.ssh.settings`
 - **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it; enables title, attention, and border bell effects for Pi notifications
 - **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars plus `LAT_LLM_KEY`, adds local helper tools, and symlinks extensions/skills/prompts/models to `~/.pi/agent/`
+- **iina** — installs the app and uses `duti` only from the activation store path for media file associations
 - **password-store** — pass with GPG integration
 - **input-source** — disables Control+Space input source switch shortcut for terminal/nvim pass-through
 - **neovim** — blink.cmp with Copilot LSP + blink-copilot source; LSPs for Nix, shell, Lua; Ruby/Python providers disabled; custom spell file; ghost text disabled
