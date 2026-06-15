@@ -151,8 +151,6 @@ in
 
     file = {
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
-
-      ".pi/agent/models.json".source = ./models.json;
       ".pi/agent/mcp.json".source = ./mcp.json;
     }
     // extensionSymlinks
@@ -164,15 +162,6 @@ in
     activation = {
       mergeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${pkgs.bash}/bin/bash ${./merge-settings.sh} ${./settings.json}
-      '';
-
-      # Clean up redundant extension deps (pi's jiti resolves these internally)
-      cleanExtensionDeps = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        ext_dir="$HOME/.pi/agent/extensions"
-        for f in "$ext_dir/package.json" "$ext_dir/package-lock.json"; do
-          [ -f "$f" ] && run rm "$f"
-        done
-        [ -d "$ext_dir/node_modules" ] && run rm -rf "$ext_dir/node_modules"
       '';
     };
   };
@@ -198,11 +187,9 @@ in
       pic = "pi -c";
       pir = "pi -r";
     };
-
     pi = {
       # Catppuccin theme (follows global catppuccin.flavor)
       catppuccin.enable = true;
-
       coding-agent = {
         enable = true;
         package = piWrapper;

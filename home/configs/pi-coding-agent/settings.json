@@ -1,11 +1,4 @@
 {
-  "retry": {
-    "baseDelayMs": 1000,
-    "provider": {
-      "maxRetryDelayMs": 900000,
-      "timeoutMs": 3600000
-    }
-  },
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.5",
   "defaultThinkingLevel": "xhigh",
