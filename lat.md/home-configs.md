@@ -51,7 +51,7 @@ Configs worth documenting beyond a table row.
 Directory layout of `home/configs/pi-coding-agent/`.
 
 - `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars and `LAT_LLM_KEY` before startup, installs the `lat.md` CLI globally, adds wrapper PATH tools, then symlinks local single-file extensions, skills, and prompts
-- `lat-md.nix` — publishes the pinned `lat.md` CLI package through `_module.args.piLatMd` for global PATH and the Pi wrapper
+- `lat-md.nix` — builds the pinned `lat.md` CLI from the upstream GitHub tag with `pnpm-lock.yaml`, then publishes it through `_module.args.piLatMd` for global PATH and the Pi wrapper
 - `plannotator.nix` — publishes the pinned Plannotator CLI package through `_module.args.piPlannotator` for the Pi wrapper
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — repo-owned skills symlinked to `~/.pi/agent/skills/`; package-managed skills and extensions stay in `settings.json`; ui.sh local skills are installed globally to `~/.agents/skills/` with `pi-uidotsh-install` from the devenv shell
@@ -71,7 +71,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - `pi-subagents` — multi-agent orchestration (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate)
   - `pi-caveman` — owns caveman prompt injection, `/caveman` session toggle, config UI, and footer status
   - `@plannotator/pi-extension` — Plannotator commands and skills
-  - `lat.md` CLI — pinned npm package installed globally through Home Manager and exposed inside Pi's wrapper PATH for repo documentation commands
+  - `lat.md` CLI — pinned upstream package installed globally through Home Manager and exposed inside Pi's wrapper PATH for repo documentation commands
   - Plannotator CLI — pinned GitHub release binary exposed only inside Pi's wrapper PATH so the `plannotator-setup-goal` skill can run `plannotator setup-goal ...`
   - `pi-agent-goal` — provides the `/goal` command, `/goal import <path> --start`, branch-aware goal state, and goal progress tools
   - `pi-rtk-optimizer` — RTK command rewriting and tool output compaction
