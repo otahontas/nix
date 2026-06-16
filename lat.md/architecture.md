@@ -26,29 +26,23 @@ This repo uses devenv for reproducible development environments.
 - Use `devenv up` for process services.
 - Always use devenv to install tools and services or to define tasks.
 - This devenv setup keeps repo-specific tools, tasks, and hooks in `devenv.nix`.
-  - Keep `.gitignore`, `.nvim.lua`, `.typos.toml`, and Pi extension source as tracked files; `.pi/mcp.json` still rebuilds on shell entry.
 - Home Manager installs the global `lat.md` CLI from `home/configs/pi-coding-agent/lat-md.nix`, not from root `devenv.nix`.
 
 ## Root devenv setup
 
 Root shell keeps repo-specific devenv behavior in `devenv.nix`, while tracked dotfiles stay editable normal files.
 
-Configurable repo options still live under `repoDevenv.<name>` inside `devenv.nix`:
+Treefmt config lives under the built-in `treefmt` key in `devenv.nix`; there are no manual wrappers or `repoDevenv.treefmt` overrides.
 
-```nix
-repoDevenv.treefmt.programs = { ... };
-repoDevenv.ai.mcp.extraServers = { ... };
-```
-
-Only `.pi/mcp.json` stays store-backed. `.gitignore`, `.nvim.lua`, and `.typos.toml` are tracked normal files; edit them directly.
+`.gitignore`, `.nvim.lua`, and `.typos.toml` are tracked normal files; edit them directly.
 
 `.nvim.lua` owns root Neovim LSP setup, including the nixd Home Manager options that previously lived in `.nvim/lsp/nixd.lua`.
 
 The Pi post-edit hook is tracked source at `.pi/extensions/post-edit-hook.ts`, not a generated devenv install.
 
-Pre-commit typos and treefmt hooks exclude only root `AGENTS.md`; other `AGENTS.md` files still lint and format normally.
+Treefmt excludes root `AGENTS.md` through global treefmt excludes; typos keeps its own root `AGENTS.md` hook exclude.
 
-Root devenv does not generate repo-local `.pi/agent/AGENTS.md`, `.pi/extensions/lat.ts`, `.pi/extensions/post-edit-hook.ts`, or `.pi/skills/lat-md/SKILL.md`; use built-in lat tools and the `lat` CLI instead.
+Root devenv does not generate repo-local `.pi/mcp.json`, `.pi/agent/AGENTS.md`, `.pi/extensions/lat.ts`, `.pi/extensions/post-edit-hook.ts`, or `.pi/skills/lat-md/SKILL.md`; use built-in lat tools and the `lat` CLI instead.
 
 ## Flakes
 
@@ -76,7 +70,7 @@ The retired root `AGENTS.md` carried repo-local rules that now live here.
 
 ### Project: root devenv file
 
-`devenv.nix` symlinks repo `.pi/mcp.json` on shell entry. It leaves `.gitignore`, `.nvim.lua`, `.typos.toml`, and `.pi/extensions/post-edit-hook.ts` as tracked source files.
+`devenv.nix` defines repo tools, tasks, and hooks without generating repo-local `.pi/mcp.json` on shell entry. It leaves `.gitignore`, `.nvim.lua`, `.typos.toml`, and `.pi/extensions/post-edit-hook.ts` as tracked source files.
 
 ### Key takeaway
 
