@@ -79,7 +79,7 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - Bundled agents come from the pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate); no local `agents/` directory is needed
 - `prompts/` — `merge-worktree.md` and `security-review.md`; symlinked to `~/.pi/agent/prompts/`
 - `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
-- `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` defaults to OpenAI Codex `gpt-5.5` with `xhigh` thinking, enables `gpt-5.5` and `gpt-5.3-codex-spark`, pins bundled `scout` and `reviewer` to Spark, and declares unpinned NPM Pi packages
+- `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` defaults to OpenAI Codex `gpt-5.5` with `xhigh` thinking, enables `gpt-5.5` and `gpt-5.3-codex-spark`, pins bundled `scout` to Spark, pins bundled `reviewer` to Spark with `gpt-5.5` fallback, and declares unpinned NPM Pi packages
 - `mcp.json` — context7, githits, and chrome-devtools MCP config; chrome-devtools passes `--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome` and `--isolated` so Puppeteer uses Nix Chrome and independent temp profiles; ui.sh MCP is removed because ui.sh skills install locally
 - `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` before applying repo-managed overrides
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module

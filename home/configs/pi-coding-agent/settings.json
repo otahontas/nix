@@ -8,7 +8,8 @@
   "subagents": {
     "agentOverrides": {
       "reviewer": {
-        "model": "openai-codex/gpt-5.3-codex-spark"
+        "model": "openai-codex/gpt-5.3-codex-spark",
+        "fallbackModels": ["openai-codex/gpt-5.5"]
       },
       "scout": {
         "model": "openai-codex/gpt-5.3-codex-spark"
