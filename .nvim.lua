@@ -19,5 +19,19 @@ vim.lsp.config("nixd", {
 	},
 })
 
+vim.lsp.config("yamlls", {
+	filetypes = {
+		"yaml",
+		"yaml.docker-compose",
+		"yaml.github-action",
+		"yaml.gitlab",
+		"yaml.helm-values",
+	},
+})
+
 vim.lsp.enable("nixd")
 vim.lsp.enable("bashls")
+vim.lsp.enable("fish_lsp")
+vim.lsp.enable("jsonls")
+vim.lsp.enable("yamlls")
+vim.lsp.enable("taplo")

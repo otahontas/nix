@@ -8,7 +8,7 @@ Top-level directories and key files.
 
 ```
 home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-coding-agent
-  configs/       per-tool directories, each with default.nix (48 configs)
+  configs/       per-tool directories, each with default.nix (49 configs)
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
 devenv.nix       repo-specific dev shell: tools, tasks, hooks, package wiring
@@ -43,6 +43,15 @@ The Pi post-edit hook is tracked source at `.pi/extensions/post-edit-hook.ts`, n
 Treefmt excludes root `AGENTS.md` through global treefmt excludes; typos keeps its own root `AGENTS.md` hook exclude.
 
 Root devenv does not generate repo-local `.pi/mcp.json`, `.pi/agent/AGENTS.md`, `.pi/extensions/lat.ts`, `.pi/extensions/post-edit-hook.ts`, or `.pi/skills/lat-md/SKILL.md`; use built-in lat tools and the `lat` CLI instead.
+
+### Root language tooling
+
+Root language tooling covers repo filetypes that need editor or hook support.
+
+- `devenv.nix` installs LSPs for Fish, JSON, YAML, and TOML, alongside the existing Nix and shell tooling.
+- `.nvim.lua` enables `fish_lsp`, `jsonls`, `yamlls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype.
+- Hooks check Fish syntax with `fish --no-execute`, JSON syntax with `jq empty`, TOML with `taplo lint`, and YAML with relaxed `yamllint`.
+- Treefmt formats TOML with Taplo in addition to existing nixfmt, shfmt, fish_indent, and Prettier.
 
 ## Flakes
 

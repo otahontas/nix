@@ -1,6 +1,13 @@
 { pkgs, ... }:
 
 {
+  packages = with pkgs; [
+    fish-lsp
+    taplo
+    vscode-langservers-extracted
+    yaml-language-server
+  ];
+
   treefmt = {
     enable = true;
     config = {
@@ -20,6 +27,7 @@
         nixfmt.enable = true;
         prettier.enable = true;
         shfmt.enable = true;
+        taplo.enable = true;
       };
     };
   };
@@ -61,6 +69,29 @@
       enable = true;
       entry = "${pkgs.shellcheck}/bin/shellcheck --severity=warning";
     };
+    fish-syntax = {
+      enable = true;
+      entry = "${pkgs.writeShellScript "fish-syntax-check" ''
+        set -euo pipefail
+        for file in "$@"; do
+          ${pkgs.fish}/bin/fish --no-execute "$file"
+        done
+      ''}";
+      files = "\\.fish$";
+      types = [ "file" ];
+    };
+    json-syntax = {
+      enable = true;
+      entry = "${pkgs.jq}/bin/jq empty";
+      files = "\\.json$";
+      types = [ "file" ];
+    };
+    toml-lint = {
+      enable = true;
+      entry = "${pkgs.taplo}/bin/taplo lint";
+      files = "\\.toml$";
+      types = [ "file" ];
+    };
     typos = {
       enable = true;
       excludes = [
@@ -83,5 +114,9 @@
       pass_filenames = false;
     };
     treefmt.enable = true;
+    yamllint = {
+      enable = true;
+      settings.preset = "relaxed";
+    };
   };
 }
