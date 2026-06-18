@@ -46,6 +46,15 @@ Configs worth documenting beyond a table row.
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, worktree scripts
 - **yazi** — file manager with git status, starship prompt, relative motions, and character jump; git fetchers share `group = "git"` for Yazi 26.5.6+
 
+### neovim
+
+Neovim is Home Manager-managed, while repo-specific LSP enablement stays in root `.nvim.lua`.
+
+- Markdown diagram/image rendering loads on Markdown buffers, skips headless sessions, and reports setup failures with notifications instead of breaking startup.
+- LSP reference highlights run on `CursorHold` and clear on cursor movement or buffer leave, avoiding a document-highlight request on every cursor move.
+- The Neovim wrapper PATH includes `tree-sitter` for Treesitter health and a private `grealpath` wrapper for yazi relative-path copy without exposing `grealpath` globally.
+- Copilot LSP telemetry is disabled, and GitHub permalink copy resolves the repository from the current buffer path before running `git` or `gh` commands.
+
 ### pi-coding-agent structure
 
 Directory layout of `home/configs/pi-coding-agent/`.

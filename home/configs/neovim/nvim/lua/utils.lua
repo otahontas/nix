@@ -2,14 +2,14 @@ local M = {}
 
 -- Run a shell command synchronously, notifying on failure
 ---@param cmd string[] command and arguments
----@param opts? { namespace?: string, allow_empty?: boolean }
+---@param opts? { namespace?: string, allow_empty?: boolean, cwd?: string }
 ---@return string|nil stdout (trimmed), nil on failure
 M.run_cmd = function(cmd, opts)
 	opts = opts or {}
 	local namespace = opts.namespace or cmd[1]
 	local cmd_str = table.concat(cmd, " ")
 
-	local result = vim.system(cmd, { text = true }):wait()
+	local result = vim.system(cmd, { text = true, cwd = opts.cwd }):wait()
 	if result.code ~= 0 then
 		local err = (result.stderr and vim.trim(result.stderr)) or "Unknown error"
 		vim.notify(namespace .. ": `" .. cmd_str .. "` failed: " .. err, vim.log.levels.WARN)

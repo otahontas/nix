@@ -72,20 +72,17 @@ autocmd({ "WinLeave", "BufLeave" }, {
 	group = "ActiveCursorline",
 })
 
-autocmd("CursorMoved", {
+autocmd("CursorHold", {
 	callback = function()
-		if vim.fn.mode() ~= "i" then
-			local clients = vim.lsp.get_clients({ bufnr = 0 })
-			local supports_highlight = false
-			for _, client in ipairs(clients) do
-				if client.server_capabilities.documentHighlightProvider then
-					supports_highlight = true
-					break
-				end
-			end
-			if supports_highlight then
-				vim.lsp.buf.clear_references()
+		if vim.fn.mode() == "i" then
+			return
+		end
+
+		local clients = vim.lsp.get_clients({ bufnr = 0 })
+		for _, client in ipairs(clients) do
+			if client.server_capabilities.documentHighlightProvider then
 				vim.lsp.buf.document_highlight()
+				return
 			end
 		end
 	end,
@@ -93,10 +90,10 @@ autocmd("CursorMoved", {
 	group = augroup("LspReferenceHighlight", { clear = true }),
 })
 
-autocmd("CursorMovedI", {
+autocmd({ "CursorMoved", "CursorMovedI", "BufLeave" }, {
 	callback = function()
 		vim.lsp.buf.clear_references()
 	end,
-	desc = "Clear highlights when entering insert mode",
+	desc = "Clear LSP reference highlights",
 	group = "LspReferenceHighlight",
 })

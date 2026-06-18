@@ -34,6 +34,9 @@ let
 
   todoScript = builtins.readFile ./scripts/todo.sh;
   dailyScript = builtins.readFile ./scripts/daily.sh;
+  grealpathForNeovim = pkgs.writeShellScriptBin "grealpath" ''
+    exec ${pkgs.coreutils}/bin/realpath "$@"
+  '';
 in
 {
   xdg.configFile = {
@@ -64,6 +67,8 @@ in
         mermaid-cli
         google-chrome
         copilot-language-server
+        tree-sitter
+        grealpathForNeovim
       ];
       plugins = with pkgs.vimPlugins; [
         # Completion & snippets

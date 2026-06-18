@@ -60,7 +60,7 @@ vim.lsp.config("copilot", {
 	},
 	settings = {
 		telemetry = {
-			telemetryLevel = "all",
+			telemetryLevel = "off",
 		},
 	},
 })
