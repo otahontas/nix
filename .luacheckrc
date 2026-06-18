@@ -1,0 +1,4 @@
+std = "luajit"
+globals = {
+  "vim",
+}

@@ -3,6 +3,8 @@
 {
   packages = with pkgs; [
     fish-lsp
+    lua51Packages.luacheck
+    stylua
     taplo
     vscode-langservers-extracted
     yaml-language-server
@@ -27,12 +29,14 @@
         nixfmt.enable = true;
         prettier.enable = true;
         shfmt.enable = true;
+        stylua.enable = true;
         taplo.enable = true;
       };
     };
   };
 
   languages = {
+    lua.enable = true;
     nix.enable = true;
     shell.enable = true;
   };
@@ -84,6 +88,12 @@
       enable = true;
       entry = "${pkgs.jq}/bin/jq empty";
       files = "\\.json$";
+      types = [ "file" ];
+    };
+    lua-lint = {
+      enable = true;
+      entry = "${pkgs.lua51Packages.luacheck}/bin/luacheck";
+      files = "\\.lua$";
       types = [ "file" ];
     };
     toml-lint = {

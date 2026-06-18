@@ -48,10 +48,10 @@ Root devenv does not generate repo-local `.pi/mcp.json`, `.pi/agent/AGENTS.md`, 
 
 Root language tooling covers repo filetypes that need editor or hook support.
 
-- `devenv.nix` installs LSPs for Fish, JSON, YAML, and TOML, alongside the existing Nix and shell tooling.
-- `.nvim.lua` enables `fish_lsp`, `jsonls`, `yamlls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype.
-- Hooks check Fish syntax with `fish --no-execute`, JSON syntax with `jq empty`, TOML with `taplo lint`, and YAML with relaxed `yamllint`.
-- Treefmt formats TOML with Taplo in addition to existing nixfmt, shfmt, fish_indent, and Prettier.
+- `devenv.nix` installs LSPs for Fish, JSON, Lua, YAML, and TOML, alongside the existing Nix and shell tooling.
+- `.nvim.lua` enables `fish_lsp`, `jsonls`, `lua_ls`, `yamlls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype.
+- Hooks check Fish syntax with `fish --no-execute`, JSON syntax with `jq empty`, Lua with `luacheck`, TOML with `taplo lint`, and YAML with relaxed `yamllint`.
+- Treefmt formats Lua with StyLua and TOML with Taplo in addition to existing nixfmt, shfmt, fish_indent, and Prettier.
 
 ## Flakes
 

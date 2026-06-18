@@ -1,7 +1,7 @@
 require("utils").setup_prose_buffer()
 
 local function toggle_line(line)
-	local new_line = line
+	local new_line
 
 	if line:match("%[ %]") then
 		new_line = line:gsub("%[ %]", "[x]", 1)
