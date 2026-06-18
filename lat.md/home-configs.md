@@ -38,7 +38,7 @@ Configs worth documenting beyond a table row.
 
 - **GPG/SSH** (`gpg/`) — YubiKey-based: gpg-agent with SSH support, GPG signing for git, `pinentry_mac` for GUI prompts, and SSH `IdentityAgent` through `programs.ssh.settings`
 - **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it; enables title, attention, and border bell effects for Pi notifications
-- **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars plus `LAT_LLM_KEY`, installs the `lat.md` CLI globally, adds Pi helper tools, and symlinks extensions/skills/prompts/models to `~/.pi/agent/`
+- **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars plus `LAT_LLM_KEY`, installs the `lat.md` CLI globally, adds Pi helper tools, and symlinks extensions/skills/prompts to `~/.pi/agent/`
 - **iina** — installs the app and uses `duti` only from the activation store path for media file associations
 - **password-store** — pass with GPG integration plus `pass-otp`, `pass-genphrase`, and `pass-update`
 - **input-source** — disables Control+Space input source switch shortcut for terminal/nvim pass-through
@@ -56,12 +56,10 @@ Directory layout of `home/configs/pi-coding-agent/`.
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — repo-owned skills symlinked to `~/.pi/agent/skills/`; package-managed skills and extensions stay in `settings.json`; ui.sh local skills are installed globally to `~/.agents/skills/` with `pi-uidotsh-install` from the devenv shell
 - `extensions/` — single-file `.ts` extensions symlinked to `~/.pi/agent/extensions/`:
-  - `rtk.ts` — intercepts bash tool calls, rewrites commands through `rtk` for token savings
   - `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
   - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, non-standard worktree paths, and `--no-verify` commits
-  - `custom-footer.ts` — starship prompt, token stats, model info, and extension statuses in TUI footer
+  - `starship-widget.ts` — starship prompt as a below-editor widget while Pi's built-in footer stays enabled
   - `search-sessions.ts` — BM25 search over past pi conversations
-  - `non-interactive.ts` — detects headless mode, injects no-chatter prompt
   - `name-session.ts` — names UI sessions from the first real user prompt with the current Pi model
   - `clone-cmd.ts` — `/clone-cmd` clones the current branch to a new session and copies a launch command
   - `notify.ts` — sends session-aware OSC 777 notifications with deterministic bodies and sanitized output
@@ -78,11 +76,21 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - Unpinned NPM packages are updated with `pi update --extensions`
 - Bundled agents come from the pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate); no local `agents/` directory is needed
 - `prompts/` — `merge-worktree.md` and `security-review.md`; symlinked to `~/.pi/agent/prompts/`
-- `scripts/` — `build-session-index.sh` (launchd timer), `work-tickets.sh`, `merge-settings.sh` (activation hook)
-- `models.json`, `settings.json`, `mcp.json` — pi configuration files; `settings.json` defaults to OpenAI Codex `gpt-5.5` with `xhigh` thinking, enables `gpt-5.5` and `gpt-5.3-codex-spark`, pins bundled `scout` to Spark, pins bundled `reviewer` to Spark with `gpt-5.5` fallback, and declares unpinned NPM Pi packages
+- `scripts/` — `build-session-index.sh` (launchd timer); `merge-settings.sh` sits at the config root as the activation hook
+- `settings.json`, `mcp.json` — pi configuration files; `settings.json` defaults to OpenAI Codex `gpt-5.5` with `xhigh` thinking, enables `gpt-5.5` and `gpt-5.3-codex-spark`, pins bundled `scout` to Spark, pins bundled `reviewer` to Spark with `gpt-5.5` fallback, and declares unpinned NPM Pi packages
 - `mcp.json` — context7, githits, and chrome-devtools MCP config; chrome-devtools passes `--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome` and `--isolated` so Puppeteer uses Nix Chrome and independent temp profiles; ui.sh MCP is removed because ui.sh skills install locally
 - `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` before applying repo-managed overrides
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module
+
+### starship widget extension
+
+Starship prompt stays above Pi's built-in footer stats while hiding the duplicate default location line.
+
+- `starship-widget.ts` registers a `belowEditor` widget, placing starship above the footer.
+- The widget renders only the cleaned starship prompt and no fallback row while starship is loading or unavailable.
+- It does not call `setFooter`; [[home/configs/pi-coding-agent/extensions/starship-widget.ts#patchFooterLocationLine]] wraps `FooterComponent.render()` to drop only the first location row.
+- Built-in footer code still renders token, cache-hit, experimental, model, and extension-status rows, so upstream footer updates keep applying.
+- [[home/configs/pi-coding-agent/extensions/starship-widget.ts#fetchStarship]] runs `starship prompt` with stable status, duration, and job values.
 
 ### stop-hook extension
 
