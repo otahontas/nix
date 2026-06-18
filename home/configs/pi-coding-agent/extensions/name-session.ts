@@ -55,6 +55,26 @@ const TASK_VERBS = [
   "write",
 ];
 
+const PRESERVE_CASE_WORDS = new Set([
+  "API",
+  "CLI",
+  "CSS",
+  "HTML",
+  "HTTP",
+  "JSON",
+  "LLM",
+  "MCP",
+  "Nix",
+  "Pi",
+  "SDK",
+  "SSH",
+  "TUI",
+  "UI",
+  "URL",
+]);
+
+const WORD_PATTERN = /[A-Za-z]+(?:[’'][A-Za-z]+)?/g;
+
 function collapseWhitespace(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
@@ -65,6 +85,29 @@ function truncate(value: string, maxLength: number): string {
   }
 
   return `${value.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
+}
+
+function preserveCasing(word: string): boolean {
+  return (
+    PRESERVE_CASE_WORDS.has(word) ||
+    /^[A-Z0-9]+$/.test(word) ||
+    /[a-z][A-Z]/.test(word) ||
+    /[A-Z][a-z]+[A-Z]/.test(word)
+  );
+}
+
+function avoidTitleCase(value: string): string {
+  return value.replace(WORD_PATTERN, (word) => {
+    if (preserveCasing(word)) {
+      return word;
+    }
+
+    if (/^[A-Z][a-z]+(?:[’'][A-Za-z]+)?$/.test(word)) {
+      return word.toLowerCase();
+    }
+
+    return word;
+  });
 }
 
 function looksLikeRealTask(prompt: string): boolean {
@@ -93,6 +136,7 @@ function buildTitlePrompt(prompt: string): string {
   return [
     "Name this Pi coding conversation.",
     "Return only a concise title: 2-6 words, no quotes, no trailing period.",
+    "Use lowercase for ordinary words. Never use title case or capitalize each word.",
     "Return EMPTY if the input is only a greeting, thanks, acknowledgement, or test message.",
     "Focus on the user's concrete task.",
     "",
@@ -114,7 +158,7 @@ function cleanGeneratedTitle(value: string): string | undefined {
     return undefined;
   }
 
-  return truncate(title, TITLE_MAX_LENGTH - "Pi: ".length);
+  return truncate(avoidTitleCase(title), TITLE_MAX_LENGTH - "Pi: ".length);
 }
 
 async function generateTitle(

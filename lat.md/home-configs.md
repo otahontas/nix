@@ -97,9 +97,10 @@ Stop-hook gates automatic self-review with the active Pi model, so it follows th
 
 Name-session assigns display names without depending on native notifications.
 
-Key behavior lives in [[home/configs/pi-coding-agent/extensions/name-session.ts#generateTitle]] and [[home/configs/pi-coding-agent/extensions/name-session.ts#looksLikeRealTask]].
+Key behavior lives in [[home/configs/pi-coding-agent/extensions/name-session.ts#avoidTitleCase]], [[home/configs/pi-coding-agent/extensions/name-session.ts#generateTitle]], and [[home/configs/pi-coding-agent/extensions/name-session.ts#looksLikeRealTask]].
 
 - In UI sessions, the first real user prompt can generate a 2-6 word session title with the current Pi model. Manual and restored names win, greetings and extension-generated prompts are skipped, and the result is guarded against session switches before `pi.setSessionName` runs.
+- Generated titles are normalized after the model response: ordinary title-case words become lowercase, while acronyms, mixed-case words, and listed product names keep their casing.
 - Extension-generated prompts are skipped so `stop-hook.ts` follow-ups do not rename the session.
 - Title generation is best effort and never breaks the agent loop.
 
