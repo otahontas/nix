@@ -4,6 +4,8 @@
   packages = with pkgs; [
     fish-lsp
     lua51Packages.luacheck
+    markdownlint-cli
+    marksman
     stylua
     taplo
     vscode-langservers-extracted
@@ -96,6 +98,7 @@
       files = "\\.lua$";
       types = [ "file" ];
     };
+    markdownlint.enable = true;
     toml-lint = {
       enable = true;
       entry = "${pkgs.taplo}/bin/taplo lint";
