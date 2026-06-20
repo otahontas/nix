@@ -2,7 +2,7 @@
 
 Adapted from Strunk's _The Elements of Style_ (1918). Only rules relevant to code documentation, commit messages, error messages, and technical prose.
 
-## Rule 10. Use the active voice.
+## Rule 10. Use the active voice
 
 The active voice is direct and vigorous.
 
@@ -11,7 +11,7 @@ The active voice is direct and vigorous.
 
 This rule does not mean to discard the passive entirely. Use it when the receiver of the action is more important than the doer.
 
-## Rule 11. Put statements in positive form.
+## Rule 11. Put statements in positive form
 
 Make assertions. Avoid tame, colorless, hesitating language. Use _not_ for denial or antithesis — never as a means of evasion.
 
@@ -20,14 +20,14 @@ Make assertions. Avoid tame, colorless, hesitating language. Use _not_ for denia
 - **Poor:** She did not think that studying Latin was a sensible way to use one's time.
 - **Better:** She thought the study of Latin a waste of time.
 
-## Rule 12. Use definite, specific, concrete language.
+## Rule 12. Use definite, specific, concrete language
 
 Prefer the specific to the general, the definite to the vague, the concrete to the abstract.
 
 - **Poor:** A period of unfavorable weather set in.
 - **Better:** It rained every day for a week.
 
-## Rule 13. Omit needless words.
+## Rule 13. Omit needless words
 
 Vigorous writing is concise. A sentence should contain no unnecessary words, a paragraph no unnecessary sentences. This requires not that the writer make all sentences short, but that every word tell.
 
@@ -57,18 +57,18 @@ Many expressions commonly used in technical writing are needless:
 - **with regard to** → regarding
 - **it is important to note that** → (delete)
 
-## Rule 14. Avoid a succession of loose sentences.
+## Rule 14. Avoid a succession of loose sentences
 
 Avoid a string of sentences all of the same pattern (compound statements connected by _and_, _but_, _so_). Vary sentence structure.
 
-## Rule 15. Express co-ordinate ideas in similar form.
+## Rule 15. Express co-ordinate ideas in similar form
 
 Parallel structure for parallel ideas. Correlative expressions (both/and, not/but, not only/but also, either/or, first/second/third) should be followed by the same grammatical form.
 
 - **Poor:** It was both a long ceremony and very tedious.
 - **Better:** The ceremony was both long and tedious.
 
-## Rule 16. Keep related words together.
+## Rule 16. Keep related words together
 
 The position of words in a sentence shows their relationship. Misplacing words creates ambiguity.
 
@@ -77,11 +77,11 @@ The position of words in a sentence shows their relationship. Misplacing words c
 
 Subjects and verbs should not be separated by long phrases. The intervening words weaken the connection.
 
-## Rule 17. In summaries, keep to one tense.
+## Rule 17. In summaries, keep to one tense
 
 Use one tense for the summary and stick to it.
 
-## Rule 18. Place the emphatic words of a sentence at the end.
+## Rule 18. Place the emphatic words of a sentence at the end
 
 The end of a sentence is its most emphatic position. The beginning is the second most emphatic.
 

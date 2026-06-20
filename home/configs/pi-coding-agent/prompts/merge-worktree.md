@@ -2,6 +2,8 @@
 description: Merge a worktree branch back to main with rebase for linear history
 ---
 
+# Merge worktree prompt
+
 Merge worktree branch `$1` back to main with rebase. Follow these steps in order.
 
 ## 1. Check for dangling files

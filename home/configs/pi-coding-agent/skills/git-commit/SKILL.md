@@ -23,7 +23,7 @@ Always use conventional commits format: `type(optional-scope): description`
 
 ## Examples
 
-```
+```text
 feat: add dark mode toggle
 fix(auth): handle expired tokens correctly
 docs: update API documentation

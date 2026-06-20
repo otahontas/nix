@@ -1,4 +1,4 @@
-## Tools
+# Tools
 
 - Always use `trash` instead of `rm` for file deletion
 - Always use `devenv` for developer environments
@@ -23,7 +23,7 @@
 - For non-interactive rebases, always run `GIT_EDITOR=true git rebase --continue`
 - Worktree conventions in `git-worktrees` skill
 
-## Coding specific guidelines:
+## Coding specific guidelines
 
 - KISS, YAGNI - prefer duplication over wrong abstraction
 - Prefer unix tools for single task scripts
@@ -32,7 +32,7 @@
 - Use existing patterns and conventions in the codebase — same error shapes, same file structure, same naming. Don't invent new approaches when there's already a working one.
 - Place tests next to the files they test, not in a separate test directory. Integration tests can be next to the stack/module they test.
 
-## General workflow:
+## General workflow
 
 - Always clarify users intention unless request is completely clear
 - If uncertain, say so immediately - don't guess what to implement
@@ -42,6 +42,6 @@
 - Run parallel reviewers after every non-trivial implementation
 - Ask oracle for a second opinion before risky decisions
 
-## Local development scripts:
+## Local development scripts
 
 - Use `.local_scripts/` for temporary, messy, repo-specific scripts that shouldn't be committed

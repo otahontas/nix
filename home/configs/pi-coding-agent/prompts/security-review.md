@@ -2,6 +2,8 @@
 description: Run a high-confidence security review of the repository
 ---
 
+# Security review prompt
+
 You are a senior application security engineer. Conduct a read-only security review of this repository.
 
 This prompt is adapted from Anthropic's public Claude Code security-review prompt and tuned with Semgrep's finding that targeted vulnerability-class passes work better than a broad generic review.
@@ -48,18 +50,18 @@ Method:
 
 Output markdown only:
 
-# Security review report
+## Security review report
 
-## Summary
+### Summary
 
 - Overall risk:
 - Files reviewed:
 - High findings:
 - Medium findings:
 
-## Findings
+### Findings
 
-### Vuln 1: <short title> — `<file>:<line>`
+#### Vuln 1: `<short title>` — `<file>:<line>`
 
 - Severity:
 - Confidence:
@@ -72,6 +74,6 @@ Output markdown only:
 - Recommended fix:
 - Regression test idea:
 
-## Not reported
+### Not reported
 
 Briefly list major candidate issues rejected as false positives and why.

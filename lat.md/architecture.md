@@ -6,7 +6,7 @@ Two-flake Nix setup for macOS: home-manager (user) + nix-darwin (system), sharin
 
 Top-level directories and key files.
 
-```
+```text
 home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-coding-agent
   configs/       per-tool directories, each with default.nix (49 configs)
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
@@ -50,7 +50,7 @@ Root language tooling covers repo filetypes that need editor or hook support.
 
 - `devenv.nix` installs LSPs for Fish, JSON, Lua, Markdown, YAML, and TOML, alongside the existing Nix and shell tooling.
 - `.nvim.lua` enables `fish_lsp`, `jsonls`, `lua_ls`, `marksman`, `yamlls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype.
-- Hooks check Fish syntax with `fish --no-execute`, JSON syntax with `jq empty`, Lua with `luacheck`, Markdown with markdownlint using `.markdownlint.json`, TOML with `taplo lint`, and YAML with relaxed `yamllint`.
+- Hooks check Fish syntax with `fish --no-execute`, JSON syntax with `jq empty`, Lua with `luacheck`, Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`, TOML with `taplo lint`, and YAML with relaxed `yamllint`.
 - Treefmt formats Lua with StyLua and TOML with Taplo in addition to existing nixfmt, shfmt, fish_indent, and Prettier; Prettier covers Markdown.
 
 ## Flakes
