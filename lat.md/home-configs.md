@@ -41,7 +41,6 @@ Configs worth documenting beyond a table row.
 - **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars plus `LAT_LLM_KEY`, installs the `lat.md` CLI globally, adds Pi helper tools, and symlinks extensions/skills/prompts to `~/.pi/agent/`
 - **iina** — installs the app and uses `duti` only from the activation store path for media file associations
 - **password-store** — pass with GPG integration plus `pass-otp`, `pass-genphrase`, and `pass-update`
-- **input-source** — disables Control+Space input source switch shortcut for terminal/nvim pass-through
 - **neovim** — blink.cmp with Copilot LSP + blink-copilot source; repo-local LSP enablement lives in root `.nvim.lua`; Ruby/Python providers disabled; custom spell file; ghost text disabled
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, worktree scripts
 - **yazi** — file manager with git status, starship prompt, relative motions, and character jump; git fetchers share `group = "git"` for Yazi 26.5.6+
@@ -197,10 +196,10 @@ All 49 configs under `home/configs/`:
 | glow                 | terminal markdown reader                          |
 | gnugrep              | GNU grep                                          |
 | google-chrome        | browser                                           |
+| google-cloud-sdk     | gcloud CLI (`pkgs.google-cloud-sdk`)              |
 | google-workspace-cli | Google Workspace CLI (`gws`) from upstream flake  |
 | gpg                  | GPG agent, SSH support, YubiKey signing           |
 | iina                 | media player                                      |
-| input-source         | disables Control+Space input source shortcut      |
 | jq                   | JSON processor                                    |
 | kanttiinit           | personal CLI tool                                 |
 | lazygit              | terminal UI for git                               |
