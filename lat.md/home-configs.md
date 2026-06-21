@@ -1,6 +1,6 @@
 # Home configs
 
-One directory per tool under `home/configs/` (49 configs), each with `default.nix`. Auto-imported by `lib.filesystem.listFilesRecursive` — add a directory, it appears.
+One directory per tool under `home/configs/` (49 configs), each with `default.nix`. The home flake imports only `home/configs/*/default.nix`; helper `.nix` files must be called explicitly.
 
 Apply with `devenv tasks run home:apply`. Stage new files before applying; don't commit unless asked.
 
@@ -28,7 +28,7 @@ Each tool owns its fish integration in its own config directory:
 
 ## Shell scripts
 
-Scripts live in `scripts/` subdirectories next to `default.nix`, loaded via `builtins.readFile` + `writeShellScriptBin`. Related scripts grouped into single files using `basename "$0"` dispatch — binary name determines which function runs.
+Scripts live in `scripts/` subdirectories next to `default.nix`, loaded via `builtins.readFile` + `writeShellScriptBin`. Related scripts use `basename "$0"` dispatch; filename-sensitive scripts use arrays/null delimiters.
 
 Configs with scripts: `fd`, `git`, `neovim`, `pi-coding-agent`, `qpdf`, `sleep`, `utils`, `yubikey-manager`.
 
@@ -41,7 +41,7 @@ Configs worth documenting beyond a table row.
 - **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`, wraps it to load API key env vars plus `LAT_LLM_KEY`, installs the `lat.md` CLI globally, adds Pi helper tools, and symlinks extensions/skills/prompts to `~/.pi/agent/`
 - **iina** — installs the app and uses `duti` only from the activation store path for media file associations
 - **password-store** — pass with GPG integration plus `pass-otp`, `pass-genphrase`, and `pass-update`
-- **neovim** — blink.cmp with Copilot LSP + blink-copilot source; repo-local LSP enablement lives in root `.nvim.lua`; Ruby/Python providers disabled; custom spell file; ghost text disabled
+- **neovim** — blink.cmp with Copilot LSP + blink-copilot source; repo-local LSP enablement lives in root `.nvim.lua`; Ruby/Python providers disabled; ghost text disabled
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, worktree scripts
 - **yazi** — file manager with git status, starship prompt, relative motions, and character jump; git fetchers share `group = "git"` for Yazi 26.5.6+
 
@@ -59,15 +59,15 @@ Neovim is Home Manager-managed, while repo-specific LSP enablement stays in root
 Directory layout of `home/configs/pi-coding-agent/`.
 
 - `default.nix` — main config, installs `pi.nix`'s Pi package through the Home Manager module, wraps it to load pass-backed web/MCP API key env vars and `LAT_LLM_KEY` before startup, installs the `lat.md` CLI globally, adds wrapper PATH tools, then symlinks local single-file extensions, skills, and prompts
-- `lat-md.nix` — builds the pinned `lat.md` CLI from the upstream GitHub tag with `pnpm-lock.yaml`, then publishes it through `_module.args.piLatMd` for global PATH and the Pi wrapper
-- `plannotator.nix` — publishes the pinned Plannotator CLI package through `_module.args.piPlannotator` for the Pi wrapper
+- `lat-md.nix` — package file called by `default.nix`; builds the pinned `lat.md` CLI from the upstream GitHub tag with `pnpm-lock.yaml`
+- `plannotator.nix` — package file called by `default.nix`; builds the pinned Plannotator CLI package for the Pi wrapper
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (see [[architecture#AGENTS.md pipeline]])
 - `skills/` — repo-owned skills symlinked to `~/.pi/agent/skills/`; package-managed skills and extensions stay in `settings.json`; ui.sh local skills are installed globally to `~/.agents/skills/` with `pi-uidotsh-install` from the devenv shell
 - `extensions/` — single-file `.ts` extensions symlinked to `~/.pi/agent/extensions/`:
   - `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
   - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, non-standard worktree paths, and `--no-verify` commits
   - `starship-widget.ts` — starship prompt as a below-editor widget while Pi's built-in footer stays enabled
-  - `search-sessions.ts` — BM25 search over past pi conversations
+  - `search-sessions.ts` — BM25 search over past pi conversations; `read_session` only reads `.jsonl` files under the Pi sessions directory
   - `name-session.ts` — names UI sessions from the first real user prompt with the current Pi model
   - `clone-cmd.ts` — `/clone-cmd` clones the current branch to a new session and copies a launch command
   - `notify.ts` — sends session-aware OSC 777 notifications with deterministic bodies and sanitized output
@@ -84,9 +84,9 @@ Directory layout of `home/configs/pi-coding-agent/`.
   - Unpinned NPM packages are updated with `pi update --extensions`
 - Bundled agents come from the pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate); no local `agents/` directory is needed
 - `prompts/` — `merge-worktree.md` and `security-review.md`; symlinked to `~/.pi/agent/prompts/`
-- `scripts/` — `build-session-index.sh` (launchd timer); `merge-settings.sh` sits at the config root as the activation hook
+- `scripts/` — `build-session-index.sh` wrapped by a launchd program with explicit Nix runtime tools; `merge-settings.sh` sits at the config root as the activation hook
 - `settings.json`, `mcp.json` — pi configuration files; `settings.json` defaults to OpenAI Codex `gpt-5.5` with `xhigh` thinking, enables `gpt-5.5` and `gpt-5.3-codex-spark`, pins bundled `scout` to Spark, pins bundled `reviewer` to Spark with `gpt-5.5` fallback, and declares unpinned NPM Pi packages
-- `mcp.json` — context7, githits, and chrome-devtools MCP config; chrome-devtools passes `--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome` and `--isolated` so Puppeteer uses Nix Chrome and independent temp profiles; ui.sh MCP is removed because ui.sh skills install locally
+- `mcp.json` — context7, githits, and chrome-devtools MCP template; `default.nix` replaces `@chromeExecutable@` with the Nix Chrome package path and keeps `--isolated` for independent temp profiles
 - `scripts/merge-settings.sh` — merges repo settings during activation and deletes stale `subagents.agentOverrides` before applying repo-managed overrides
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module
 
@@ -208,13 +208,13 @@ All 49 configs under `home/configs/`:
 | meetingbar           | calendar menu bar app                             |
 | mermaid-cli          | diagram generation                                |
 | mise                 | tool version manager with Bash/Fish hooks         |
-| neovim               | editor, LSPs, spell file, todo/daily scripts      |
+| neovim               | editor, LSPs, todo/daily scripts                  |
 | netnewswire          | RSS reader                                        |
 | ollama               | LLM runner (prebuilt macOS binary)                |
 | orion                | browser                                           |
 | password-store       | password manager with GPG                         |
 | pi-coding-agent      | pi CLI, extensions, skills, lat-md                |
-| qpdf                 | PDF tools + `combine-pdfs-in-folder` script       |
+| qpdf                 | PDF tools + safe `combine-pdfs-in-folder` script  |
 | ripgrep              | search tool                                       |
 | sleep                | `disable-sleep` / `enable-sleep` scripts          |
 | ssh                  | SSH config (GPG agent provides keys)              |

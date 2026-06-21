@@ -23,7 +23,6 @@
         ".pi/skills/lat-md/SKILL.md"
         "AGENTS.md"
         "home/configs/git/allowed_signers"
-        "home/configs/neovim/nvim/spell/en.utf-8.add"
         "system/keyboard/*.keylayout"
       ];
       programs = {

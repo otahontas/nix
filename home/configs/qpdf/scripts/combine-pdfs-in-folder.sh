@@ -14,9 +14,9 @@ if [ ! -d "$folder_path" ]; then
   exit 1
 fi
 
-pdf_files=$(fd -e pdf -t f -d 1 . "$folder_path" | sort)
+mapfile -d '' -t pdf_files < <(fd -0 -e pdf -t f -d 1 . "$folder_path" | sort -z)
 
-if [ -z "$pdf_files" ]; then
+if [ "${#pdf_files[@]}" -eq 0 ]; then
   echo "Error: No PDF files found in $folder_path" >&2
   exit 1
 fi
@@ -25,10 +25,9 @@ folder_name=$(basename "$folder_path")
 parent_dir=$(dirname "$folder_path")
 output_file="$parent_dir/$folder_name.pdf"
 
-pdf_count=$(echo "$pdf_files" | wc -l | tr -d ' ')
+pdf_count=${#pdf_files[@]}
 echo "Combining $pdf_count PDFs from $folder_name..."
 
-# shellcheck disable=SC2086
-qpdf --empty --pages $pdf_files -- "$output_file"
+qpdf --empty --pages "${pdf_files[@]}" -- "$output_file"
 
 echo "✓ Combined PDF created: $output_file"

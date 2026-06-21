@@ -11,8 +11,8 @@ macOS defaults and daemon settings.
 - **Finder/Dock/trackpad** — show pathbar, autohide dock, tap-to-click, three-finger drag
 - **Keyboard** — fast repeat, no press-and-hold, custom US International no-dead-keys layout in `system/keyboard/`
 - **Screencapture** — PNG to home dir, no shadow, no thumbnail
-- **Nix daemon** — auto gc (weekly), substituters (nix-community, devenv), experimental features, linux-builder
+- **Nix daemon** — auto gc (weekly), substituters (cache.nixos.org, nix-community), experimental features, linux-builder
 - **TouchID** for sudo via PAM
 - **Firewall** with stealth mode
 - **Fish** as default shell
-- **Sudo** — passwordless `mas install` for the user
+- **Sudo** — passwordless `/run/current-system/sw/bin/mas install *` for the user

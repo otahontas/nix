@@ -5,9 +5,9 @@
 
 import { Type } from "typebox";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { readFile } from "node:fs/promises";
+import { readFile, realpath } from "node:fs/promises";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join, relative } from "node:path";
 
 // ── BM25 engine ──────────────────────────────────────────────────────────────
 
@@ -108,6 +108,7 @@ function bm25Score(
 // ── Index cache ──────────────────────────────────────────────────────────────
 
 const INDEX_PATH = join(homedir(), ".cache", "pi-session-index.json");
+const SESSIONS_DIR = join(homedir(), ".pi", "agent", "sessions");
 let cachedIndex: Index | null = null;
 let cachedMeta: IndexMeta | null = null;
 
@@ -124,6 +125,22 @@ async function loadIndex(): Promise<{ index: Index; meta: IndexMeta }> {
       "Session index not found. Run build-session-index manually or wait for the launchd timer. " +
         "or wait for the launchd timer to build it.",
     );
+  }
+}
+
+async function resolveSessionPath(path: string): Promise<string | null> {
+  if (!path.endsWith(".jsonl")) return null;
+
+  try {
+    const [sessionsDir, sessionPath] = await Promise.all([
+      realpath(SESSIONS_DIR),
+      realpath(path),
+    ]);
+    const rel = relative(sessionsDir, sessionPath);
+    if (rel.startsWith("..") || isAbsolute(rel)) return null;
+    return sessionPath;
+  } catch {
+    return null;
   }
 }
 
@@ -262,15 +279,27 @@ export default function (pi: ExtensionAPI) {
       const maxMessages = params.max_messages ?? 20;
       const truncateAt = Math.min(2000, Math.floor(10000 / maxMessages));
 
+      const sessionPath = await resolveSessionPath(params.path);
+      if (!sessionPath) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Refusing to read non-session file: ${params.path}`,
+            },
+          ],
+        };
+      }
+
       let raw: string;
       try {
-        raw = await readFile(params.path, "utf-8");
+        raw = await readFile(sessionPath, "utf-8");
       } catch {
         return {
           content: [
             {
               type: "text",
-              text: `Cannot read session file: ${params.path}`,
+              text: `Cannot read session file: ${sessionPath}`,
             },
           ],
         };
@@ -321,7 +350,7 @@ export default function (pi: ExtensionAPI) {
         })
         .join("\n\n---\n\n");
 
-      const header = `Session: ${params.path}\nMessages: ${limited.length}/${messages.length}\n`;
+      const header = `Session: ${sessionPath}\nMessages: ${limited.length}/${messages.length}\n`;
 
       return {
         content: [{ type: "text", text: header + "\n" + formatted }],

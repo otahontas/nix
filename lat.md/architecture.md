@@ -12,7 +12,7 @@ home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-co
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
 devenv.nix       repo-specific dev shell: tools, tasks, hooks, package wiring
-.pi/extensions/ post-edit Pi hook source
+.pi/            repo-local Pi extension, MCP, and skill source
 devenv.yaml      declares root devenv inputs
 lat.md/          this documentation
 ```
@@ -38,11 +38,9 @@ Treefmt config lives under the built-in `treefmt` key in `devenv.nix`; there are
 
 `.nvim.lua` owns root Neovim LSP setup, including the nixd Home Manager options that previously lived in `.nvim/lsp/nixd.lua`.
 
-The Pi post-edit hook is tracked source at `.pi/extensions/post-edit-hook.ts`, not a generated devenv install.
+Root Pi files are tracked source: `.pi/extensions/lat.ts`, `.pi/extensions/post-edit-hook.ts`, `.pi/mcp.json`, and `.pi/skills/lat-md/SKILL.md`. Root devenv does not generate them on shell entry.
 
 Treefmt excludes root `AGENTS.md` through global treefmt excludes; typos keeps its own root `AGENTS.md` hook exclude.
-
-Root devenv does not generate repo-local `.pi/mcp.json`, `.pi/agent/AGENTS.md`, `.pi/extensions/lat.ts`, `.pi/extensions/post-edit-hook.ts`, or `.pi/skills/lat-md/SKILL.md`; use built-in lat tools and the `lat` CLI instead.
 
 ### Root language tooling
 
@@ -57,7 +55,7 @@ Root language tooling covers repo filetypes that need editor or hook support.
 
 Both flakes pin `nixpkgs-unstable` independently. `home/` pulls extra inputs:
 
-- **catppuccin / pi-catppuccin** — global theme (macchiato/blue) across terminal, editor, pi TUI
+- **catppuccin / pi-catppuccin** — global theme (latte/blue) across terminal, editor, pi TUI
 - **kanttiinit-cli** — personal CLI tool
 - **pi-nix** — external flake at `github:lukasl-dev/pi.nix`; supplies the Pi package and Home Manager module
 - **brew-nix** — package overlay used by `mas` for Mac App Store installs
@@ -79,7 +77,7 @@ The retired root `AGENTS.md` carried repo-local rules that now live here.
 
 ### Project: root devenv file
 
-`devenv.nix` defines repo tools, tasks, and hooks without generating repo-local `.pi/mcp.json` on shell entry. It leaves `.gitignore`, `.nvim.lua`, `.typos.toml`, and `.pi/extensions/post-edit-hook.ts` as tracked source files.
+`devenv.nix` defines repo tools, tasks, and hooks without generating repo-local Pi files on shell entry. `.gitignore`, `.nvim.lua`, `.typos.toml`, and root `.pi/` files stay tracked source.
 
 ### Key takeaway
 
@@ -92,7 +90,7 @@ This applies broadly in this repo: if `readlink` shows a nix store path, find th
 LAT tooling gets `LAT_LLM_KEY` from the global Pi wrapper, keeping the value outside git and avoiding per-repo secret setup.
 
 - The Pi wrapper in `home/configs/pi-coding-agent/default.nix` reads pass entry `api/lat-md` directly into `LAT_LLM_KEY`.
-- Root `devenv.nix` no longer installs the `lat.md` CLI; Home Manager installs it from `home/configs/pi-coding-agent/lat-md.nix` and exposes it in `home/configs/pi-coding-agent/default.nix`.
+- Root `devenv.nix` no longer installs the `lat.md` CLI; `home/configs/pi-coding-agent/default.nix` calls `lat-md.nix` and exposes the result globally.
 
 ## Tasks
 

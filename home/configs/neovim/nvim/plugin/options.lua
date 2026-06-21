@@ -103,8 +103,6 @@ vim.iter({
 	softtabstop = 2,
 	-- Enable spell checking
 	spell = true,
-	-- Use custom spellfile in config directory
-	spellfile = vim.fn.stdpath("config") .. "/spell/en.utf-8.add",
 	-- Recognize camelCase words for spell checking
 	spelloptions = "camel",
 	-- Open horizontal splits below current window

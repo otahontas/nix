@@ -86,9 +86,10 @@
           (
             { lib, ... }:
             let
-              homeConfigFiles = lib.filter (path: lib.hasSuffix ".nix" path) (
-                lib.filesystem.listFilesRecursive ./configs
+              configDirs = lib.attrNames (
+                lib.filterAttrs (_: type: type == "directory") (builtins.readDir ./configs)
               );
+              homeConfigFiles = map (name: ./configs + "/${name}/default.nix") configDirs;
             in
             {
               home = {

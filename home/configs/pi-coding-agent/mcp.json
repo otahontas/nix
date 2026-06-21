@@ -16,7 +16,7 @@
       "args": [
         "-y",
         "chrome-devtools-mcp@latest",
-        "--executable-path=/Users/otahontas/.nix-profile/bin/google-chrome",
+        "--executable-path=@chromeExecutable@",
         "--isolated"
       ]
     }

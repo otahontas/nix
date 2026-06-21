@@ -4,13 +4,30 @@
   config,
   system,
   pi-nix,
-  piLatMd,
-  piPlannotator,
   ...
 }:
 
 let
   piPackage = pi-nix.packages.${system}.coding-agent;
+  piLatMd = pkgs.callPackage ./lat-md.nix { };
+  piPlannotator = pkgs.callPackage ./plannotator.nix { };
+  mcpConfig = pkgs.writeText "pi-mcp.json" (
+    builtins.replaceStrings
+      [ "@chromeExecutable@" ]
+      [ "${pkgs.google-chrome}/bin/google-chrome-stable" ]
+      (builtins.readFile ./mcp.json)
+  );
+  sessionIndexer = pkgs.writeShellApplication {
+    name = "pi-session-indexer";
+    runtimeInputs = with pkgs; [
+      bash
+      coreutils
+      findutils
+      jq
+      ripgrep
+    ];
+    text = builtins.readFile ./scripts/build-session-index.sh;
+  };
 
   piWrapper = pkgs.writeShellScriptBin "pi" ''
     # Load API keys from pass before pi starts.
@@ -79,7 +96,7 @@ in
 
     file = {
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
-      ".pi/agent/mcp.json".source = ./mcp.json;
+      ".pi/agent/mcp.json".source = mcpConfig;
     }
     // extensionSymlinks
     // skillSymlinks
@@ -98,8 +115,7 @@ in
     enable = true;
     config = {
       ProgramArguments = [
-        "${pkgs.bash}/bin/bash"
-        "${./scripts/build-session-index.sh}"
+        "${sessionIndexer}/bin/pi-session-indexer"
       ];
       StartInterval = 7200;
       RunAtLoad = true;
