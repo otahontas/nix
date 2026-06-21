@@ -28,7 +28,7 @@ export default function (pi: ExtensionAPI) {
   pi.registerCommand("clone-cmd", {
     description: "Clone current Pi branch and copy a launch command",
     handler: async (_args: string, ctx: ExtensionCommandContext) => {
-      // @lat: [[home-configs#Home configs#Notable configs#clone-cmd extension]]
+      // @lat: [[pi-coding-agent#Pi coding agent#Local extensions#clone-cmd extension]]
       try {
         await ctx.waitForIdle();
 
