@@ -42,7 +42,7 @@ Configs worth documenting beyond a table row.
 - **iina** — installs the app and uses `duti` only from the activation store path for media file associations
 - **password-store** — pass with GPG integration plus `pass-otp`, `pass-genphrase`, and `pass-update`
 - **neovim** — blink.cmp with Copilot LSP + blink-copilot source; repo-local LSP enablement lives in root `.nvim.lua`; Ruby/Python providers disabled; ghost text disabled
-- **git** — GPG-signed commits, allowed_signers, gh CLI helpers, worktree scripts
+- **git** — GPG-signed commits, allowed_signers, gh CLI helpers, global ignores, worktree scripts
 - **yazi** — file manager with git status, starship prompt, relative motions, and character jump; git fetchers share `group = "git"` for Yazi 26.5.6+
 
 ### neovim
@@ -75,7 +75,7 @@ All 49 configs under `home/configs/`:
 | fish                 | default shell, config, plugins                    |
 | fzf                  | fuzzy finder                                      |
 | ghostty              | terminal emulator (darwin-bin variant)            |
-| git                  | git, gh CLI, signing, worktree scripts            |
+| git                  | git, gh CLI, signing, global ignores, scripts     |
 | glow                 | terminal markdown reader                          |
 | gnugrep              | GNU grep                                          |
 | google-chrome        | browser                                           |

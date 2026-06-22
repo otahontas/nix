@@ -132,6 +132,7 @@ in
       ignores = [
         ".DS_Store"
         ".localized"
+        "devenv.local.nix"
         "**/.worktrees/**"
         "**/.local_scripts/**"
         "**/plans/**"
