@@ -1,6 +1,6 @@
 # Home configs
 
-One directory per tool under `home/configs/` (49 configs), each with `default.nix`. The home flake imports only `home/configs/*/default.nix`; helper `.nix` files must be called explicitly.
+One directory per tool under `home/configs/` (52 configs), each with `default.nix`. The home flake imports only `home/configs/*/default.nix`; helper `.nix` files must be called explicitly.
 
 Apply with `devenv tasks run home:apply`. Stage new files before applying; don't commit unless asked.
 
@@ -40,6 +40,7 @@ Configs worth documenting beyond a table row.
 - **ghostty** — uses `ghostty-bin` (Linux-only `ghostty` lacks darwin support); symlinks config from XDG to Application Support where macOS Ghostty looks for it; enables title, attention, and border bell effects for Pi notifications
 - **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`; see [[pi-coding-agent]] for wrapper, package, extension, skill, and prompt details
 - **iina** — installs the app and uses `duti` only from the activation store path for media file associations
+- **discord** — installs the signed brew-nix cask and keeps Discord's mutable settings compatible with GUI launch updates
 - **password-store** — pass with GPG integration plus `pass-otp`, `pass-genphrase`, and `pass-update`
 - **neovim** — blink.cmp with Copilot LSP + blink-copilot source; repo-local LSP enablement lives in root `.nvim.lua`; Ruby/Python providers disabled; ghost text disabled
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, global ignores, worktree scripts
@@ -57,11 +58,12 @@ Neovim is Home Manager-managed, while repo-specific LSP enablement stays in root
 
 ## Config index
 
-All 49 configs under `home/configs/`:
+All 52 configs under `home/configs/`:
 
 | Config               | What it manages                                   |
 | -------------------- | ------------------------------------------------- |
 | aliases              | shell aliases                                     |
+| appcleaner           | GUI app uninstaller                               |
 | atuin                | shell history                                     |
 | bash                 | bash config with sourced worktree functions       |
 | bat                  | cat replacement, catppuccin theme                 |
@@ -70,6 +72,7 @@ All 49 configs under `home/configs/`:
 | csvlens              | CSV terminal viewer                               |
 | delta                | git diff pager                                    |
 | devenv               | devenv package, fish auto-activation, completions |
+| discord              | chat app                                          |
 | eza                  | ls replacement                                    |
 | fd                   | find replacement + `find-and-prune` script        |
 | ffmpeg               | multimedia processing                             |
@@ -88,6 +91,7 @@ All 49 configs under `home/configs/`:
 | kanttiinit           | personal CLI tool                                 |
 | lazygit              | terminal UI for git                               |
 | less                 | pager config                                      |
+| libreoffice          | office suite                                      |
 | mas                  | Mac App Store installs via activation script      |
 | meetingbar           | calendar menu bar app                             |
 | mermaid-cli          | diagram generation                                |
