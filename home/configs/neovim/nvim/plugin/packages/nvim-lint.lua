@@ -12,6 +12,7 @@ lint.linters.markdownlint_file = vim.tbl_extend("force", lint.linters.markdownli
 })
 
 lint.linters_by_ft = {
+	fish = { "fish" },
 	markdown = { "markdownlint_file" },
 }
 

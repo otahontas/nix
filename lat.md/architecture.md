@@ -49,6 +49,8 @@ Root language tooling covers repo filetypes that need editor or hook support.
 - `devenv.nix` installs LSPs for Fish, JSON, Lua, YAML, and TOML, plus markdownlint for editor diagnostics and hooks.
 - `.nvim.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `lua_ls`, `yamlls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype.
 - Hooks check shell scripts with ShellCheck's default severity and source following to match bashls more closely, Fish syntax with `fish --no-execute`, JSON syntax with `jq empty`, Lua with `luacheck`, Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`, TOML with `taplo lint`, and YAML with relaxed `yamllint`.
+- Neovim uses fish-lsp plus nvim-lint's Fish linter so saved Fish buffers include the same `fish --no-execute` parser check as hooks.
+- Fish hooks stay on `fish --no-execute`: fish-lsp lacks a stable batch diagnostics CLI. Revisit when upstream `fish-lsp headless --diagnostics` lands so hooks can use fish-lsp diagnostics without a custom LSP wrapper.
 - Neovim uses nvim-lint's markdownlint linter on saved Markdown files with file-path output parsing, keeping editor linting aligned with hook ignore behavior.
 - Treefmt formats Lua with StyLua and TOML with Taplo in addition to existing nixfmt, shfmt, fish_indent, and Prettier; Prettier covers Markdown.
 
