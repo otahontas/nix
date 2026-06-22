@@ -50,6 +50,7 @@ Configs worth documenting beyond a table row.
 Neovim is Home Manager-managed, while repo-specific LSP enablement stays in root `.nvim.lua`.
 
 - Markdown diagram/image rendering loads on Markdown buffers, skips headless sessions, and reports setup failures with notifications instead of breaking startup.
+- nvim-lint runs markdownlint on saved Markdown file paths instead of using a Markdown LSP, so project ignore files apply like hooks.
 - LSP reference highlights run on `CursorHold` and clear on cursor movement or buffer leave, avoiding a document-highlight request on every cursor move.
 - The Neovim wrapper PATH includes `tree-sitter` for Treesitter health and a private `grealpath` wrapper for yazi relative-path copy without exposing `grealpath` globally.
 - Copilot LSP telemetry is disabled, and GitHub permalink copy resolves the repository from the current buffer path before running `git` or `gh` commands.

@@ -5,7 +5,6 @@
     fish-lsp
     lua51Packages.luacheck
     markdownlint-cli
-    marksman
     stylua
     taplo
     vscode-langservers-extracted
@@ -72,7 +71,12 @@
     detect-private-keys.enable = true;
     shellcheck = {
       enable = true;
-      entry = "${pkgs.shellcheck}/bin/shellcheck --severity=warning";
+      entry = "${pkgs.writeShellScript "shellcheck-source-following" ''
+        set -euo pipefail
+        for file in "$@"; do
+          ${pkgs.shellcheck}/bin/shellcheck --external-sources --source-path="$(${pkgs.coreutils}/bin/dirname "$file")" "$file"
+        done
+      ''}";
     };
     fish-syntax = {
       enable = true;
@@ -103,13 +107,6 @@
       entry = "${pkgs.taplo}/bin/taplo lint";
       files = "\\.toml$";
       types = [ "file" ];
-    };
-    typos = {
-      enable = true;
-      excludes = [
-        "\\.tickets/"
-        "^AGENTS\\.md$"
-      ];
     };
     commitlint = {
       enable = true;

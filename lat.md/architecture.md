@@ -34,21 +34,22 @@ Root shell keeps repo-specific devenv behavior in `devenv.nix`, while tracked do
 
 Treefmt config lives under the built-in `treefmt` key in `devenv.nix`; there are no manual wrappers or `repoDevenv.treefmt` overrides.
 
-`.gitignore`, `.nvim.lua`, and `.typos.toml` are tracked normal files; edit them directly.
+`.gitignore` and `.nvim.lua` are tracked normal files; edit them directly.
 
 `.nvim.lua` owns root Neovim LSP setup, including the nixd Home Manager options that previously lived in `.nvim/lsp/nixd.lua`.
 
 Root Pi files are tracked source: `.pi/extensions/lat.ts`, `.pi/extensions/post-edit-hook.ts`, and `.pi/skills/lat-md/SKILL.md`. Home Manager-owned Pi config lives under `home/configs/pi-coding-agent/`.
 
-Treefmt excludes root `AGENTS.md` through global treefmt excludes; typos keeps its own root `AGENTS.md` hook exclude.
+Treefmt excludes root `AGENTS.md` through global treefmt excludes; no typos hook or config remains in the repo.
 
 ### Root language tooling
 
 Root language tooling covers repo filetypes that need editor or hook support.
 
-- `devenv.nix` installs LSPs for Fish, JSON, Lua, Markdown, YAML, and TOML, alongside the existing Nix and shell tooling.
-- `.nvim.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `lua_ls`, `marksman`, `yamlls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype.
-- Hooks check Fish syntax with `fish --no-execute`, JSON syntax with `jq empty`, Lua with `luacheck`, Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`, TOML with `taplo lint`, and YAML with relaxed `yamllint`.
+- `devenv.nix` installs LSPs for Fish, JSON, Lua, YAML, and TOML, plus markdownlint for editor diagnostics and hooks.
+- `.nvim.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `lua_ls`, `yamlls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype.
+- Hooks check shell scripts with ShellCheck's default severity and source following to match bashls more closely, Fish syntax with `fish --no-execute`, JSON syntax with `jq empty`, Lua with `luacheck`, Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`, TOML with `taplo lint`, and YAML with relaxed `yamllint`.
+- Neovim uses nvim-lint's markdownlint linter on saved Markdown files with file-path output parsing, keeping editor linting aligned with hook ignore behavior.
 - Treefmt formats Lua with StyLua and TOML with Taplo in addition to existing nixfmt, shfmt, fish_indent, and Prettier; Prettier covers Markdown.
 
 ## Flakes
@@ -79,7 +80,7 @@ Root `AGENTS.md` carries repo-local lat.md workflow and post-task checks.
 
 ### Project: root devenv file
 
-`devenv.nix` defines repo tools, tasks, and hooks without generating repo-local Pi files on shell entry. `AGENTS.md`, `.gitignore`, `.nvim.lua`, `.typos.toml`, and root `.pi/` files stay tracked source.
+`devenv.nix` defines repo tools, tasks, and hooks without generating repo-local Pi files on shell entry. `AGENTS.md`, `.gitignore`, `.nvim.lua`, and root `.pi/` files stay tracked source.
 
 ### Key takeaway
 

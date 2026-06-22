@@ -85,6 +85,7 @@ in
         yazi-nvim
 
         # LSP & language support
+        nvim-lint
         nvim-lspconfig
         nvim-treesitter.withAllGrammars
         nvim-treesitter-textobjects
