@@ -46,9 +46,10 @@ Treefmt excludes root `AGENTS.md` through global treefmt excludes; no typos hook
 
 Root language tooling covers repo filetypes that need editor or hook support.
 
-- `devenv.nix` installs LSPs for Fish, JSON, Lua, YAML, and TOML, plus markdownlint for editor diagnostics and hooks.
+- `devenv.nix` installs LSPs for Fish, JSON, Lua, YAML, and TOML, plus markdownlint for editor diagnostics and hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
 - `.nvim.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `lua_ls`, `yamlls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype. It also owns repo-local nvim-lint setup.
 - Hooks check shell scripts with ShellCheck's default severity and source following to match bashls more closely, Fish syntax with `fish --no-execute`, JSON syntax with `jq empty`, Lua with `luacheck`, Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`, TOML with `taplo lint`, and YAML with relaxed `yamllint`.
+- JSON keeps `jsonls` for editor syntax and schema diagnostics while hooks stay on fast `jq empty` syntax checks. Add `jsonschema-cli` only when repo files need explicit schema linting.
 - Neovim uses fish-lsp plus repo-local nvim-lint's Fish linter so saved Fish buffers include the same `fish --no-execute` parser check as hooks.
 - Fish hooks stay on `fish --no-execute`: fish-lsp lacks a stable batch diagnostics CLI. Revisit when upstream `fish-lsp headless --diagnostics` lands so hooks can use fish-lsp diagnostics without a custom LSP wrapper.
 - Repo-local nvim-lint runs markdownlint on saved Markdown file paths, keeping editor linting aligned with hook ignore behavior.

@@ -29,6 +29,10 @@ vim.lsp.config("yamlls", {
 	},
 })
 
+vim.lsp.config("jsonls", {
+	cmd = { "vscode-json-languageserver", "--stdio" },
+})
+
 local lint = require("lint")
 
 lint.linters.markdownlint_file = vim.tbl_extend("force", lint.linters.markdownlint, {

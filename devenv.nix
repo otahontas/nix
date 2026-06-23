@@ -7,7 +7,7 @@
     markdownlint-cli
     stylua
     taplo
-    vscode-langservers-extracted
+    vscode-json-languageserver
     yaml-language-server
   ];
 
