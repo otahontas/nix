@@ -4,12 +4,20 @@ description: Merge a worktree branch back to main with rebase for linear history
 
 # Merge worktree prompt
 
-Merge worktree branch `$1` back to main with rebase. Follow these steps in order.
+Merge worktree branch `$1` back to main with rebase. Branch and worktree names must be dash-only and contain no `/`. Follow these steps in order.
+
+Set shared variables first.
+
+```bash
+repo_root=$(git rev-parse --show-toplevel)
+branch="$1"
+worktree_path="$repo_root/.worktrees/$branch"
+```
 
 ## 1. Check for dangling files
 
 ```bash
-cd "$repo_root/.worktrees/$1"
+cd "$worktree_path"
 git status --short
 ```
 
@@ -24,7 +32,7 @@ git status --short
 cd "$repo_root"
 git checkout main
 git pull --rebase origin main
-cd "$repo_root/.worktrees/$1"
+cd "$worktree_path"
 git rebase main
 ```
 
@@ -40,7 +48,7 @@ After rebase, verify: `git log --oneline main..HEAD`
 ```bash
 cd "$repo_root"
 git checkout main
-git merge --ff-only "$1"
+git merge --ff-only "$branch"
 git push origin main
 ```
 
@@ -48,11 +56,11 @@ If `--ff-only` fails, the rebase didn't work — go back to step 2.
 
 ## 4. Clean up
 
-Only remove branch `$1` and its worktree. Never touch other branches or worktrees.
+Only remove branch `$branch` and its worktree. Never touch other branches or worktrees.
 
 ```bash
 cd "$repo_root"
-git worktree remove "$repo_root/.worktrees/$1" --force
-git branch -D "$1"
+git worktree remove "$worktree_path" --force
+git branch -D "$branch"
 git worktree prune
 ```

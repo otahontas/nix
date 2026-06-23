@@ -36,7 +36,7 @@ The Pi wrapper loads secrets from pass, extends `PATH`, and lets package-managed
 Single-file TypeScript extensions live in `extensions/` and are symlinked to `~/.pi/agent/extensions/`.
 
 - `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
-- `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, non-standard worktree paths, and `--no-verify` commits
+- `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, slash-containing branch names, non-standard worktree paths, and `--no-verify` commits
 - `starship-widget.ts` — starship prompt as a below-editor widget while Pi's built-in footer stays enabled
 - `search-sessions.ts` — BM25 search over past Pi conversations; `read_session` only reads `.jsonl` files under the Pi sessions directory
 - `name-session.ts` — names UI sessions from the first real user prompt with the current Pi model
@@ -66,8 +66,8 @@ Stop-hook gates automatic self-review with the active Pi model, so it follows th
 
 Guardrails block unsafe or non-standard shell actions before tool calls run.
 
-- `guardrails.ts` blocks non-conventional commit messages, `npx`/`bunx`, `rm`/`rmdir`, non-standard worktree paths, and `git commit --no-verify`.
-- Guard messages point agents to repo conventions such as `trash`, package scripts, and `.worktrees/<branch>`.
+- `guardrails.ts` blocks non-conventional commit messages, `npx`/`bunx`, `rm`/`rmdir`, slash-containing branch names, non-standard worktree paths, and `git commit --no-verify`.
+- Guard messages point agents to repo conventions such as `trash`, package scripts, dash-only branch names, and `.worktrees/<branch>` paths.
 
 ### search-sessions extension
 

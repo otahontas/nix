@@ -46,6 +46,12 @@ Configs worth documenting beyond a table row.
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, global ignores, worktree scripts
 - **yazi** — file manager with git status, starship prompt, relative motions, and character jump; git fetchers share `group = "git"` for Yazi 26.5.6+
 
+### git worktree helpers
+
+Worktree helpers assume branch, worktree, and path names are dash-only.
+
+Bash and Fish helpers keep branch names and `.worktrees/<branch>` paths identical. Slash-containing branch names are out of policy and blocked by Pi guardrails instead of normalized.
+
 ### neovim
 
 Neovim is Home Manager-managed, while repo-specific LSP and lint setup stays in root `.nvim.lua`.

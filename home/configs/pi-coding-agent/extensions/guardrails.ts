@@ -125,10 +125,50 @@ const blockRmCommand: Guard = (event) => {
   }
 };
 
+const slashBranchToken = String.raw`(?:"[A-Za-z0-9][^"\s;&|]*/[^"\s;&|]*"|'[A-Za-z0-9][^'\s;&|]*/[^'\s;&|]*'|[A-Za-z0-9][^\s"';&|]*/[^\s"';&|]*)`;
+const slashBranchPatterns = [
+  new RegExp(String.raw`\bgit\b[^\n;|&]*\bbranch\s+(?!-)${slashBranchToken}`),
+  new RegExp(
+    String.raw`\bgit\b[^\n;|&]*\bcheckout\s+-(?:b|B)\s+${slashBranchToken}`,
+  ),
+  new RegExp(
+    String.raw`\bgit\b[^\n;|&]*\bswitch\s+-(?:c|C)\s+${slashBranchToken}`,
+  ),
+  new RegExp(
+    String.raw`\bgit\b[^\n;|&]*\bworktree\s+add\b[^\n;|&]*(?:^|\s)${slashBranchToken}(?=\s|$)`,
+  ),
+  new RegExp(
+    String.raw`\bgit\b[^\n;|&]*\bfetch\b[^\n;|&]*:${slashBranchToken}`,
+  ),
+];
+
+/**
+ * Block slash-containing branch names
+ *
+ * Enforces dash-only branch and worktree names.
+ */
+const blockSlashBranchNames: Guard = (event) => {
+  if (event.toolName !== "bash") return;
+
+  const cmd = event.input.command;
+  if (!slashBranchPatterns.some((pattern) => pattern.test(cmd))) return;
+
+  return {
+    block: true,
+    reason:
+      "🌳 **Slash-containing branch name blocked**\n\n" +
+      "Use dash-only branch, worktree, and path names. Omit prefixes such as `feature`, `fix`, `chore`, or `epic` unless the user asks for one.\n\n" +
+      "**Examples:**\n" +
+      "- ✅ `thing-name`\n" +
+      "- ✅ `feature-thing-name` when explicitly requested\n" +
+      "- ❌ `feature/thing-name`",
+  };
+};
+
 /**
  * Block non-standard git worktree paths
  *
- * Enforces creating worktrees under <repo>/.worktrees/<branch>
+ * Enforces creating worktrees under <repo>/.worktrees/<dash-only-branch>
  */
 const blockNonStandardWorktreePath: Guard = (event) => {
   if (event.toolName !== "bash") return;
@@ -149,7 +189,7 @@ const blockNonStandardWorktreePath: Guard = (event) => {
       reason:
         "🌳 **Non-standard worktree path blocked**\n\n" +
         "Use the shared worktree layout for this environment:\n" +
-        "- `<repo>/.worktrees/<branch>`\n\n" +
+        "- `<repo>/.worktrees/<dash-only-branch>`\n\n" +
         "**What to do instead:**\n" +
         "1. `repo_root=$(git rev-parse --show-toplevel)`\n" +
         '2. `mkdir -p "$repo_root/.worktrees"`\n' +
@@ -190,6 +230,7 @@ const guards: Guard[] = [
   blockNonConventionalCommits,
   blockNpxBunx,
   blockRmCommand,
+  blockSlashBranchNames,
   blockNonStandardWorktreePath,
   blockNoVerifyCommit,
 ];
