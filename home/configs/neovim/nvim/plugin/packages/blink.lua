@@ -1,4 +1,5 @@
-require("blink.cmp").setup({
+---@type any
+local config = {
 	enabled = function()
 		return vim.bo.filetype ~= "pass"
 	end,
@@ -30,4 +31,6 @@ require("blink.cmp").setup({
 			},
 		},
 	},
-})
+}
+
+require("blink.cmp").setup(config)

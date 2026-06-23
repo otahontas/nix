@@ -163,6 +163,7 @@ function TodoLine.parse(line)
 end
 
 function TodoLine:get_meta_value(key)
+	---@type string[]?
 	local bucket = self.meta[key]
 	if not bucket or not bucket[1] then
 		return nil
@@ -226,8 +227,11 @@ local function adjust_meta_date(meta_key, delta)
 		return
 	end
 
-	local current_value = todo:get_meta_value(meta_key)
-	local base_date = current_value or os.date("%Y-%m-%d")
+	local base_date = todo:get_meta_value(meta_key)
+	if not base_date then
+		base_date = os.date("%Y-%m-%d") --[[@as string]]
+	end
+
 	local year, month, day = base_date:match("(%d+)%-(%d+)%-(%d+)")
 	if not (year and month and day) then
 		return

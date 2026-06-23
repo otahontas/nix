@@ -2,8 +2,9 @@
 
 {
   packages = with pkgs; [
+    emmylua-check
+    emmylua-ls
     fish-lsp
-    lua51Packages.luacheck
     markdownlint-cli
     stylua
     taplo
@@ -69,6 +70,7 @@
     check-merge-conflicts.enable = true;
     deadnix.enable = true;
     detect-private-keys.enable = true;
+    # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Bash diagnostics]]
     shellcheck = {
       enable = true;
       entry = "${pkgs.writeShellScript "shellcheck-source-following" ''
@@ -78,6 +80,7 @@
         done
       ''}";
     };
+    # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Fish diagnostics]]
     fish-syntax = {
       enable = true;
       entry = "${pkgs.writeShellScript "fish-syntax-check" ''
@@ -89,19 +92,23 @@
       files = "\\.fish$";
       types = [ "file" ];
     };
+    # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#JSON diagnostics]]
     json-syntax = {
       enable = true;
       entry = "${pkgs.jq}/bin/jq empty";
       files = "\\.json$";
       types = [ "file" ];
     };
+    # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Lua diagnostics]]
     lua-lint = {
       enable = true;
-      entry = "${pkgs.lua51Packages.luacheck}/bin/luacheck";
+      entry = "${pkgs.emmylua-check}/bin/emmylua_check --config .emmyrc.json --warnings-as-errors";
       files = "\\.lua$";
       types = [ "file" ];
     };
+    # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Markdown diagnostics]]
     markdownlint.enable = true;
+    # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#TOML diagnostics]]
     toml-lint = {
       enable = true;
       entry = "${pkgs.taplo}/bin/taplo lint";

@@ -1,4 +1,9 @@
-local source = debug.getinfo(1, "S").source:sub(2)
+local info = debug.getinfo(1, "S")
+if not info then
+	error("failed to determine repo config path")
+end
+
+local source = info.source:sub(2)
 local repoRoot = vim.env.DEVENV_ROOT
 
 if not repoRoot or repoRoot == "" then
@@ -29,12 +34,14 @@ vim.lsp.config("yamlls", {
 	},
 })
 
+-- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#JSON diagnostics]]
 vim.lsp.config("jsonls", {
 	cmd = { "vscode-json-languageserver", "--stdio" },
 })
 
 local lint = require("lint")
 
+-- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Markdown diagnostics]]
 lint.linters.markdownlint_file = vim.tbl_extend("force", lint.linters.markdownlint, {
 	stdin = false,
 	append_fname = true,
@@ -46,6 +53,7 @@ lint.linters.markdownlint_file = vim.tbl_extend("force", lint.linters.markdownli
 	}),
 })
 
+-- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Fish diagnostics]]
 lint.linters_by_ft = vim.tbl_extend("force", lint.linters_by_ft, {
 	fish = { "fish" },
 	markdown = { "markdownlint_file" },
@@ -59,9 +67,12 @@ vim.api.nvim_create_autocmd({ "BufWritePost" }, {
 })
 
 vim.lsp.enable("nixd")
+-- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Bash diagnostics]]
 vim.lsp.enable("bashls")
 vim.lsp.enable("fish_lsp")
 vim.lsp.enable("jsonls")
-vim.lsp.enable("lua_ls")
+-- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Lua diagnostics]]
+vim.lsp.enable("emmylua_ls")
 vim.lsp.enable("yamlls")
+-- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#TOML diagnostics]]
 vim.lsp.enable("taplo")

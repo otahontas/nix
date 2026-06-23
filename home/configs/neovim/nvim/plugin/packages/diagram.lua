@@ -12,7 +12,8 @@ local function setup_diagram()
 	end
 
 	local image_ok, image_err = pcall(function()
-		require("image").setup({
+		---@type any
+		local image_config = {
 			backend = "kitty",
 			processor = "magick_cli",
 			integrations = {
@@ -32,7 +33,9 @@ local function setup_diagram()
 					enabled = false,
 				},
 			},
-		})
+		}
+
+		require("image").setup(image_config)
 	end)
 
 	if not image_ok then
