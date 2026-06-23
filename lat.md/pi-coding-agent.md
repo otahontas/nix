@@ -27,7 +27,7 @@ The Pi wrapper loads secrets from pass, extends `PATH`, and lets package-managed
 - Wrapper-only tools include the pinned `lat.md` CLI, pinned Plannotator CLI, Poppler tools, and `rtk`.
 - `settings.json` defaults to OpenAI Codex `gpt-5.5` with `xhigh` thinking and enables `gpt-5.5` plus `gpt-5.3-codex-spark`.
 - Bundled `scout` uses Spark; bundled `reviewer` uses Spark with `gpt-5.5` fallback.
-- NPM Pi packages include `pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, `pi-caveman`, `@plannotator/pi-extension`, `pi-agent-goal`, and `pi-rtk-optimizer`.
+- NPM Pi packages include `pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, `pi-caveman`, `@plannotator/pi-extension`, `pi-agent-goal`, `pi-rtk-optimizer`, `@quintinshaw/pi-dynamic-workflows`, and `pi-simplify`.
 - Bundled agents come from `pi-subagents` (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate); no local `agents/` directory is needed.
 - Unpinned NPM packages update with `pi update --extensions`.
 
@@ -119,6 +119,20 @@ Caveman response style comes from the package-managed `pi-caveman` extension ins
 - Pi loads `npm:pi-caveman` from `settings.json`; the package stays unpinned so `pi update --extensions` can update it.
 - The package provides `/caveman` for session-level toggles and `/caveman config` for the default level and footer status setting.
 - The extension defaults new sessions to `full` caveman mode when `~/.pi/agent/caveman.json` is absent or sets `defaultLevel` to `full`.
+
+### pi-dynamic-workflows package
+
+Dynamic workflows come from `@quintinshaw/pi-dynamic-workflows`, enabling script-driven subagent fan-out from Pi.
+
+- Pi loads `npm:@quintinshaw/pi-dynamic-workflows` from `settings.json`; the package stays unpinned for `pi update --extensions`.
+- The package provides the `workflow` tool and commands such as `/workflows`, `/deep-research`, and `/adversarial-review`.
+
+### pi-simplify package
+
+Simplify reviews changed code for clarity, consistency, and maintainability through a package-managed command.
+
+- Pi loads `npm:pi-simplify` from `settings.json`; the package stays unpinned for `pi update --extensions`.
+- The package provides `/simplify`, including staged, file-specific, and reference-branch review modes.
 
 ## Skills and prompts
 

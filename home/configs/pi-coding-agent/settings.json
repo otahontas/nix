@@ -29,6 +29,8 @@
     "npm:pi-caveman",
     "npm:@plannotator/pi-extension",
     "npm:pi-agent-goal",
-    "npm:pi-rtk-optimizer"
+    "npm:pi-rtk-optimizer",
+    "npm:@quintinshaw/pi-dynamic-workflows",
+    "npm:pi-simplify"
   ]
 }
