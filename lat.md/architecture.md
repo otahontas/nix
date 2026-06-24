@@ -50,12 +50,19 @@ Root language tooling covers repo filetypes that need editor or hook support.
 - `.nvim.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, `ts_ls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype. It also owns repo-local nvim-lint and schema setup.
 - Hooks check Nix with deadnix, Statix, and treefmt/nixfmt; shell scripts with ShellCheck's default severity and source following to match bashls more closely; Fish syntax with `fish --no-execute`; JSON syntax with `jq empty`; Lua with EmmyLua; TypeScript with `tsc --noEmit`; Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`; TOML with `taplo lint`; YAML with relaxed `yamllint`; and JSON/YAML/TOML schemas with config-file-validator.
 - JSON keeps `jsonls` for editor syntax and schema diagnostics while hooks keep fast `jq empty` syntax checks and add config-file-validator for SchemaStore-backed schema checks.
+- Lock files are generated state: never add lint hooks, formatters, schema checks, filetype overrides, nvim-lint mappings, or LSP setup for them.
 - EmmyLua reads `.emmyrc.json` for LuaJIT, Neovim globals, ignored generated dirs, and Home Manager Neovim runtime libraries so plugin `require()` calls resolve in editor and hooks.
 - `.emmyrc.json` ignores `mini.nvim`'s `mini/base16.lua` because EmmyLua 0.23.2 hangs when indexing that file.
 - Neovim uses fish-lsp plus repo-local nvim-lint's Fish linter so saved Fish buffers include the same `fish --no-execute` parser check as hooks.
 - Fish hooks stay on `fish --no-execute`: fish-lsp lacks a stable batch diagnostics CLI. Revisit when upstream `fish-lsp headless --diagnostics` lands so hooks can use fish-lsp diagnostics without a custom LSP wrapper.
 - Repo-local nvim-lint runs markdownlint on saved Markdown file paths, keeping editor linting aligned with hook ignore behavior.
 - Treefmt formats Lua with StyLua and TOML with Taplo in addition to existing nixfmt, shfmt, fish_indent, and Prettier; Prettier covers Markdown.
+
+#### Lock file diagnostics
+
+Lock files are generated dependency state and intentionally have no editor or hook diagnostics.
+
+Do not add lint hooks, formatters, schema validation, filetype overrides, nvim-lint mappings, or LSP setup for lock files such as `devenv.lock`, `flake.lock`, `*.lock`, or `*.lockb`. Review generated lockfile changes through their owning update commands instead.
 
 #### Nix diagnostics
 
@@ -137,6 +144,18 @@ Alternatives considered:
 - Use check-jsonschema or jsonschema-cli directly: reliable for explicit schemas, but they need a custom SchemaStore matcher.
 - Use yaml-schema-lint: close to yamlls, but YAML-only.
 - Use Lintel: promising and fast, but too new and backed by its own moving catalog.
+
+#### Keyboard layout diagnostics
+
+Keyboard layout diagnostics intentionally skip generic XML linting for Apple `.keylayout` files.
+
+The custom keyboard layout contains Apple-valid control character references and CR-only line endings. Generic XML tools such as `xmllint` and `plutil` reject the file for reasons unrelated to the macOS keyboard layout contract.
+
+Alternatives considered:
+
+- Use `xmllint`: rejected because XML 1.0 validation rejects Apple control character references such as `&#x0010;`.
+- Use `plutil`: rejected because keylayout files are not property lists and use a `<keyboard>` root.
+- Add custom keylayout linting: not worth maintaining for a generated, rarely edited layout file.
 
 #### Lua diagnostics
 
