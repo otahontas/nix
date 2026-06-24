@@ -48,7 +48,7 @@ Root language tooling covers repo filetypes that need editor or hook support.
 
 - `devenv.nix` installs LSPs for Fish, JSON, Lua, YAML, and TOML, plus markdownlint for editor/hook linting and config-file-validator for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
 - `.nvim.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype. It also owns repo-local nvim-lint and schema setup.
-- Hooks check shell scripts with ShellCheck's default severity and source following to match bashls more closely, Fish syntax with `fish --no-execute`, JSON syntax with `jq empty`, Lua with EmmyLua, Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`, TOML with `taplo lint`, YAML with relaxed `yamllint`, and JSON/YAML/TOML schemas with config-file-validator.
+- Hooks check Nix with deadnix, Statix, and treefmt/nixfmt; shell scripts with ShellCheck's default severity and source following to match bashls more closely; Fish syntax with `fish --no-execute`; JSON syntax with `jq empty`; Lua with EmmyLua; Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`; TOML with `taplo lint`; YAML with relaxed `yamllint`; and JSON/YAML/TOML schemas with config-file-validator.
 - JSON keeps `jsonls` for editor syntax and schema diagnostics while hooks keep fast `jq empty` syntax checks and add config-file-validator for SchemaStore-backed schema checks.
 - EmmyLua reads `.emmyrc.json` for LuaJIT, Neovim globals, ignored generated dirs, and Home Manager Neovim runtime libraries so plugin `require()` calls resolve in editor and hooks.
 - `.emmyrc.json` ignores `mini.nvim`'s `mini/base16.lua` because EmmyLua 0.23.2 hangs when indexing that file.
@@ -56,6 +56,20 @@ Root language tooling covers repo filetypes that need editor or hook support.
 - Fish hooks stay on `fish --no-execute`: fish-lsp lacks a stable batch diagnostics CLI. Revisit when upstream `fish-lsp headless --diagnostics` lands so hooks can use fish-lsp diagnostics without a custom LSP wrapper.
 - Repo-local nvim-lint runs markdownlint on saved Markdown file paths, keeping editor linting aligned with hook ignore behavior.
 - Treefmt formats Lua with StyLua and TOML with Taplo in addition to existing nixfmt, shfmt, fish_indent, and Prettier; Prettier covers Markdown.
+
+#### Nix diagnostics
+
+Nix diagnostics use nixd in Neovim plus deadnix, Statix, and treefmt hooks because no single CLI matches the editor's semantic analysis.
+
+`nixd` reports syntax errors, undefined variables, and unused bindings that overlap deadnix. Statix catches style lints such as empty `let in` and manual `inherit` patterns that nixd does not report, so repo-local nvim-lint runs Statix on saved Nix buffers.
+
+Hooks keep deadnix with `--fail`, run Statix repo-wide with `.devenv` ignored, and use treefmt with nixfmt for formatting. Editor Statix is per-buffer; manually opened generated files may still show diagnostics.
+
+Alternatives considered:
+
+- Use only nixd: strong editor diagnostics, but misses Statix style lints that hooks enforce.
+- Add deadnix to nvim-lint: redundant for tested unused let and lambda diagnostics because nixd reports them.
+- Run nvim-lint's `nix` parser linter: useful for syntax, but nixd already reports parser diagnostics.
 
 #### Markdown diagnostics
 

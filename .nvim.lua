@@ -12,6 +12,7 @@ end
 
 local homeFlake = repoRoot .. "/home"
 
+-- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Nix diagnostics]]
 vim.lsp.config("nixd", {
 	settings = {
 		nixd = {
@@ -94,6 +95,8 @@ lint.linters.markdownlint_file = vim.tbl_extend("force", lint.linters.markdownli
 lint.linters_by_ft = vim.tbl_extend("force", lint.linters_by_ft, {
 	fish = { "fish" },
 	markdown = { "markdownlint_file" },
+	-- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Nix diagnostics]]
+	nix = { "statix" },
 })
 
 vim.api.nvim_create_autocmd({ "BufWritePost" }, {
@@ -103,6 +106,7 @@ vim.api.nvim_create_autocmd({ "BufWritePost" }, {
 	end,
 })
 
+-- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Nix diagnostics]]
 vim.lsp.enable("nixd")
 -- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Bash diagnostics]]
 vim.lsp.enable("bashls")

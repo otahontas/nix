@@ -103,6 +103,7 @@ in
 
   git-hooks.hooks = {
     check-merge-conflicts.enable = true;
+    # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Nix diagnostics]]
     deadnix.enable = true;
     detect-private-keys.enable = true;
     # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Bash diagnostics]]
@@ -176,6 +177,7 @@ in
       enable = true;
       entry = "${pkgs.gitleaks}/bin/gitleaks protect --staged --verbose";
     };
+    # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Nix diagnostics]]
     statix = {
       enable = true;
       entry = "${pkgs.statix}/bin/statix check --format errfmt --ignore .devenv,.devenv.* .";
