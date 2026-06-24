@@ -87,6 +87,7 @@ in
         # LSP & language support
         nvim-lint
         nvim-lspconfig
+        SchemaStore-nvim
         nvim-treesitter.withAllGrammars
         nvim-treesitter-textobjects
 

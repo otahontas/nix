@@ -24,6 +24,28 @@ vim.lsp.config("nixd", {
 	},
 })
 
+local has_schemastore, schemastore = pcall(require, "schemastore")
+
+local devenvYamlSchema = {
+	description = "devenv project configuration",
+	fileMatch = { "devenv.yaml", "**/devenv.yaml" },
+	name = "devenv.yaml",
+	url = "https://devenv.sh/devenv.schema.json",
+}
+
+local yamlSchemas = {
+	[devenvYamlSchema.url] = devenvYamlSchema.fileMatch,
+}
+local jsonSchemas = nil
+
+if has_schemastore then
+	yamlSchemas = schemastore.yaml.schemas({
+		extra = { devenvYamlSchema },
+	})
+	jsonSchemas = schemastore.json.schemas()
+end
+
+-- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Config schema diagnostics]]
 vim.lsp.config("yamlls", {
 	filetypes = {
 		"yaml",
@@ -32,11 +54,26 @@ vim.lsp.config("yamlls", {
 		"yaml.gitlab",
 		"yaml.helm-values",
 	},
+	settings = {
+		yaml = {
+			schemaStore = has_schemastore and {
+				enable = false,
+				url = "",
+			} or nil,
+			schemas = yamlSchemas,
+		},
+	},
 })
 
 -- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#JSON diagnostics]]
 vim.lsp.config("jsonls", {
 	cmd = { "vscode-json-languageserver", "--stdio" },
+	settings = {
+		json = {
+			schemas = jsonSchemas,
+			validate = { enable = true },
+		},
+	},
 })
 
 local lint = require("lint")

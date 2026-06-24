@@ -1,16 +1,51 @@
 { pkgs, ... }:
 
+let
+  # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Config schema diagnostics]]
+  config-file-validator = pkgs.buildGoModule rec {
+    pname = "config-file-validator";
+    version = "2.2.2";
+
+    src = pkgs.fetchFromGitHub {
+      owner = "Boeing";
+      repo = "config-file-validator";
+      rev = "v${version}";
+      hash = "sha256-NX/GjicrpM4iCztAPPiiLrDCIImC8gWG5cgmkEPiyAg=";
+    };
+
+    vendorHash = "sha256-q8tpLBtmg061BnQnv6DE56+eYPmFNfYV+vBbPQRCwwE=";
+    subPackages = [ "cmd/validator" ];
+    ldflags = [ "-X github.com/Boeing/config-file-validator/v2.version=v${version}" ];
+    nativeCheckInputs = [ pkgs.git ];
+
+    postPatch = ''
+      substituteInPlace cmd/validator/testdata/gitignore.txtar \
+        --replace-fail "! stdout 'build'" "! stdout 'build.output.json'"
+    '';
+
+    meta = {
+      description = "Cross-platform CLI tool to validate configuration files";
+      homepage = "https://github.com/Boeing/config-file-validator";
+      license = pkgs.lib.licenses.asl20;
+      mainProgram = "validator";
+    };
+  };
+in
 {
-  packages = with pkgs; [
-    emmylua-check
-    emmylua-ls
-    fish-lsp
-    markdownlint-cli
-    stylua
-    taplo
-    vscode-json-languageserver
-    yaml-language-server
-  ];
+  packages =
+    (with pkgs; [
+      emmylua-check
+      emmylua-ls
+      fish-lsp
+      markdownlint-cli
+      stylua
+      taplo
+      vscode-json-languageserver
+      yaml-language-server
+    ])
+    ++ [
+      config-file-validator
+    ];
 
   treefmt = {
     enable = true;
@@ -97,6 +132,23 @@
       enable = true;
       entry = "${pkgs.jq}/bin/jq empty";
       files = "\\.json$";
+      types = [ "file" ];
+    };
+    # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Config schema diagnostics]]
+    config-schema = {
+      enable = true;
+      entry = "${pkgs.writeShellScript "config-schema-check" ''
+        set -euo pipefail
+        ${config-file-validator}/bin/validator \
+          -quiet \
+          -no-config \
+          -schemastore \
+          -schema-map="devenv.yaml:https://devenv.sh/devenv.schema.json" \
+          -schema-map="**/devenv.yaml:https://devenv.sh/devenv.schema.json" \
+          -file-types=json,yaml,toml \
+          "$@"
+      ''}";
+      files = "\\.(json|ya?ml|toml)$";
       types = [ "file" ];
     };
     # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Lua diagnostics]]

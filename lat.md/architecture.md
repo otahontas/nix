@@ -46,10 +46,10 @@ Treefmt excludes root `AGENTS.md` through global treefmt excludes; no typos hook
 
 Root language tooling covers repo filetypes that need editor or hook support.
 
-- `devenv.nix` installs LSPs for Fish, JSON, Lua, YAML, and TOML, plus markdownlint for editor diagnostics and hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
-- `.nvim.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype. It also owns repo-local nvim-lint setup.
-- Hooks check shell scripts with ShellCheck's default severity and source following to match bashls more closely, Fish syntax with `fish --no-execute`, JSON syntax with `jq empty`, Lua with EmmyLua, Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`, TOML with `taplo lint`, and YAML with relaxed `yamllint`.
-- JSON keeps `jsonls` for editor syntax and schema diagnostics while hooks stay on fast `jq empty` syntax checks. Add `jsonschema-cli` only when repo files need explicit schema linting.
+- `devenv.nix` installs LSPs for Fish, JSON, Lua, YAML, and TOML, plus markdownlint for editor/hook linting and config-file-validator for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
+- `.nvim.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype. It also owns repo-local nvim-lint and schema setup.
+- Hooks check shell scripts with ShellCheck's default severity and source following to match bashls more closely, Fish syntax with `fish --no-execute`, JSON syntax with `jq empty`, Lua with EmmyLua, Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`, TOML with `taplo lint`, YAML with relaxed `yamllint`, and JSON/YAML/TOML schemas with config-file-validator.
+- JSON keeps `jsonls` for editor syntax and schema diagnostics while hooks keep fast `jq empty` syntax checks and add config-file-validator for SchemaStore-backed schema checks.
 - EmmyLua reads `.emmyrc.json` for LuaJIT, Neovim globals, ignored generated dirs, and Home Manager Neovim runtime libraries so plugin `require()` calls resolve in editor and hooks.
 - `.emmyrc.json` ignores `mini.nvim`'s `mini/base16.lua` because EmmyLua 0.23.2 hangs when indexing that file.
 - Neovim uses fish-lsp plus repo-local nvim-lint's Fish linter so saved Fish buffers include the same `fish --no-execute` parser check as hooks.
@@ -96,16 +96,33 @@ Alternatives considered:
 
 #### JSON diagnostics
 
-JSON diagnostics use jsonls in Neovim and `jq empty` in hooks because repo JSON currently needs syntax checks, not schema enforcement.
+JSON diagnostics use jsonls in Neovim, `jq empty` for fast hook syntax checks, and config-file-validator for SchemaStore-backed schema checks.
 
-`jsonls` uses standalone `vscode-json-languageserver` because the extracted bundle failed at startup under Node. Hooks stay on `jq empty` because it is fast and catches invalid JSON. Add schema hooks only when repo JSON files need them.
+`jsonls` uses standalone `vscode-json-languageserver` because the extracted bundle failed at startup under Node. Hooks keep `jq empty` because it is fast and catches invalid JSON before the broader schema hook runs.
 
 Alternatives considered:
 
 - Use `vscode-langservers-extracted`: rejected because its JSON server wrapper failed at startup.
 - Run a Node wrapper around `vscode-json-languageservice`: closest engine match, but too much code for current syntax-only hook needs.
-- Use `check-jsonschema`: useful for explicit schemas, but slower and not automatic for `$schema` files here.
-- Use `jsonschema-cli`: preferred future schema hook when explicit schema validation matters.
+- Use `check-jsonschema`: useful for explicit schemas, but slower and not automatic for SchemaStore filename matches.
+- Use `jsonschema-cli`: fast and packaged in nixpkgs, but still needs custom SchemaStore fileMatch resolution.
+
+#### Config schema diagnostics
+
+Config schema diagnostics use config-file-validator in hooks and SchemaStore.nvim in Neovim so known JSON/YAML/TOML files get schema checks without forcing schemas on unknown files.
+
+The hook runs config-file-validator with SchemaStore enabled, no config discovery, and `devenv.yaml` mapped to `https://devenv.sh/devenv.schema.json`. Files with no matching schema pass syntax-only.
+
+`devenv.nix` packages config-file-validator with `buildGoModule` from Boeing's v2.2.2 tag. The package keeps upstream tests enabled and patches one path-sensitive test assertion that matched Nix's `/build` path.
+
+Neovim gets SchemaStore.nvim from Home Manager. `.nvim.lua` feeds SchemaStore schemas into `jsonls` and `yamlls`, then adds the same `devenv.yaml` schema as a YAML extra for root and nested paths.
+
+Alternatives considered:
+
+- Use v8r: rejected for hooks because unknown schema files are hard failures unless broad errors are ignored.
+- Use check-jsonschema or jsonschema-cli directly: reliable for explicit schemas, but they need a custom SchemaStore matcher.
+- Use yaml-schema-lint: close to yamlls, but YAML-only.
+- Use Lintel: promising and fast, but too new and backed by its own moving catalog.
 
 #### Lua diagnostics
 
@@ -131,9 +148,9 @@ Alternatives considered:
 
 #### TOML diagnostics
 
-TOML diagnostics use Taplo in Neovim and hooks because Taplo has both an LSP and a stable lint CLI.
+TOML diagnostics use Taplo for editor and hook linting, with config-file-validator as a supplemental schema layer.
 
-`taplo` formats through treefmt, serves editor diagnostics through `taplo`, and checks hooks with `taplo lint`. This keeps TOML on one engine instead of pairing a parser hook with a different editor LSP.
+`taplo` formats through treefmt, serves editor diagnostics through `taplo`, and checks hooks with `taplo lint`. Config-file-validator runs after that for SchemaStore-backed TOML schemas when a file has a match.
 
 ## Flakes
 
