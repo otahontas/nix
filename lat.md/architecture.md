@@ -46,9 +46,9 @@ Treefmt excludes root `AGENTS.md` through global treefmt excludes; no typos hook
 
 Root language tooling covers repo filetypes that need editor or hook support.
 
-- `devenv.nix` installs LSPs for Fish, JSON, Lua, YAML, and TOML, plus markdownlint for editor/hook linting and config-file-validator for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
-- `.nvim.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype. It also owns repo-local nvim-lint and schema setup.
-- Hooks check Nix with deadnix, Statix, and treefmt/nixfmt; shell scripts with ShellCheck's default severity and source following to match bashls more closely; Fish syntax with `fish --no-execute`; JSON syntax with `jq empty`; Lua with EmmyLua; Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`; TOML with `taplo lint`; YAML with relaxed `yamllint`; and JSON/YAML/TOML schemas with config-file-validator.
+- `devenv.nix` installs LSPs for Fish, JSON, Lua, TypeScript, YAML, and TOML, plus markdownlint for editor/hook linting and config-file-validator for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
+- `.nvim.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, `ts_ls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype. It also owns repo-local nvim-lint and schema setup.
+- Hooks check Nix with deadnix, Statix, and treefmt/nixfmt; shell scripts with ShellCheck's default severity and source following to match bashls more closely; Fish syntax with `fish --no-execute`; JSON syntax with `jq empty`; Lua with EmmyLua; TypeScript with `tsc --noEmit`; Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`; TOML with `taplo lint`; YAML with relaxed `yamllint`; and JSON/YAML/TOML schemas with config-file-validator.
 - JSON keeps `jsonls` for editor syntax and schema diagnostics while hooks keep fast `jq empty` syntax checks and add config-file-validator for SchemaStore-backed schema checks.
 - EmmyLua reads `.emmyrc.json` for LuaJIT, Neovim globals, ignored generated dirs, and Home Manager Neovim runtime libraries so plugin `require()` calls resolve in editor and hooks.
 - `.emmyrc.json` ignores `mini.nvim`'s `mini/base16.lua` because EmmyLua 0.23.2 hangs when indexing that file.
@@ -160,6 +160,24 @@ Alternatives considered:
 - Generate hook config from a script: flexible, but too much moving code when `.emmyrc.json` can express the runtime paths.
 - Generate any-stubs for required plugins: fast and quiet, but hides plugin API/type diagnostics.
 
+#### TypeScript diagnostics
+
+TypeScript diagnostics typecheck local Pi extension files against Pi's real package types.
+
+`tsconfig.json` includes root `.pi/extensions/**/*.ts` and Home Manager-owned `home/configs/pi-coding-agent/extensions/**/*.ts`. The compiler uses `NodeNext`, strict mode, no emit, and Node types from Pi's package closure.
+
+`devenv.nix` adds TypeScript and `typescript-language-server`, then exposes Pi's package `node_modules` as `.devenv/pi-node-modules`. The task and hook refresh that symlink before running `tsc` so no Nix store path is committed.
+
+`devenv.yaml` pins `pi-nix` to the same revision as `home/flake.lock`, keeping typechecks aligned with the Pi package this repo configures.
+
+The hook runs the full Pi extension project with `pass_filenames = false` because `tsc -p` owns file selection. Neovim enables `ts_ls`, so saved extension files and hooks read the same project config.
+
+Alternatives considered:
+
+- Use checked-in ambient declarations: rejected because local stubs could hide Pi API drift.
+- Hardcode the Pi package store path in `tsconfig.json`: rejected because store paths change across updates.
+- Add ESLint or Biome first: deferred because API type drift is the current risk, not style.
+
 #### TOML diagnostics
 
 TOML diagnostics use Taplo for editor and hook linting, with config-file-validator as a supplemental schema layer.
@@ -216,4 +234,5 @@ Defined in `devenv.nix`, run with `devenv tasks run <task>`:
 - `home:apply` — home-manager switch
 - `system:apply` — darwin-rebuild switch (requires sudo)
 - `nix:format` — treefmt formatters
+- `pi-extensions:typecheck` — TypeScript typecheck for local Pi extensions
 - `nix:update` — update home/system lockfiles + devenv, apply home-manager, then run `pi update --extensions`

@@ -115,5 +115,7 @@ vim.lsp.enable("jsonls")
 -- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Lua diagnostics]]
 vim.lsp.enable("emmylua_ls")
 vim.lsp.enable("yamlls")
+-- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#TypeScript diagnostics]]
+vim.lsp.enable("ts_ls")
 -- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#TOML diagnostics]]
 vim.lsp.enable("taplo")

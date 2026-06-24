@@ -5,7 +5,7 @@
  * Injects issues into the tool result so the LLM can fix them before committing.
  */
 
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const FILE_MUTATING_TOOLS = new Set(["edit", "write"]);
 
@@ -14,7 +14,8 @@ export default function (pi: ExtensionAPI) {
     if (!FILE_MUTATING_TOOLS.has(event.toolName.toLowerCase())) return;
     if (event.isError) return;
 
-    const filePath = (event.input as any)?.path;
+    const input = event.input as { path?: unknown };
+    const filePath = typeof input.path === "string" ? input.path : undefined;
     if (!filePath) return;
 
     const devenvRoot = process.env.DEVENV_ROOT ?? ctx.cwd;
@@ -47,7 +48,7 @@ export default function (pi: ExtensionAPI) {
 
       const msg = failures || output.slice(0, 500);
 
-      ctx.ui.notify(`prek issues: ${msg.slice(0, 300)}`, "warn");
+      ctx.ui.notify(`prek issues: ${msg.slice(0, 300)}`, "warning");
 
       // Inject into tool result so the LLM sees the issues and can fix them
       return {

@@ -6,6 +6,12 @@ inputs:
         follows: nixpkgs
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
+  # Keep in sync with home/flake.lock for Pi extension typechecks.
+  pi-nix:
+    url: github:lukasl-dev/pi.nix/29c6a9e994dc9d2e2e0802915b7ba975f687f78b
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
   treefmt-nix:
     url: github:numtide/treefmt-nix
     inputs:

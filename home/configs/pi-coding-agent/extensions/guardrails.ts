@@ -16,6 +16,13 @@ type Guard = (
   ctx: ExtensionContext,
 ) => { block: true; reason: string } | undefined;
 
+function getBashCommand(event: ToolCallEvent): string | undefined {
+  if (event.toolName !== "bash") return undefined;
+
+  const input = event.input as { command?: unknown };
+  return typeof input.command === "string" ? input.command : undefined;
+}
+
 // =============================================================================
 // Guards
 // =============================================================================
@@ -27,9 +34,9 @@ type Guard = (
  * Valid types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
  */
 const blockNonConventionalCommits: Guard = (event) => {
-  if (event.toolName !== "bash") return;
+  const cmd = getBashCommand(event);
+  if (!cmd) return;
 
-  const cmd = event.input.command;
   const gitCommitPattern = /git\s+commit.*-m\s+(['"])(.+?)\1/;
   const match = cmd.match(gitCommitPattern);
 
@@ -67,9 +74,9 @@ const blockNonConventionalCommits: Guard = (event) => {
  * Prefer package.json scripts or node_modules/.bin/
  */
 const blockNpxBunx: Guard = (event) => {
-  if (event.toolName !== "bash") return;
+  const cmd = getBashCommand(event);
+  if (!cmd) return;
 
-  const cmd = event.input.command;
   const npxBunxPattern = /\b(npx|bunx)\s+/;
 
   if (npxBunxPattern.test(cmd)) {
@@ -95,9 +102,8 @@ const blockNpxBunx: Guard = (event) => {
  * Prevents destructive file deletion. Use `trash` instead.
  */
 const blockRmCommand: Guard = (event) => {
-  if (event.toolName !== "bash") return;
-
-  const cmd = event.input.command;
+  const cmd = getBashCommand(event);
+  if (!cmd) return;
 
   // Match rm or rmdir command:
   // - At start of line or after whitespace/semicolon/pipe/&&/||
@@ -148,9 +154,9 @@ const slashBranchPatterns = [
  * Enforces dash-only branch and worktree names.
  */
 const blockSlashBranchNames: Guard = (event) => {
-  if (event.toolName !== "bash") return;
+  const cmd = getBashCommand(event);
+  if (!cmd) return;
 
-  const cmd = event.input.command;
   if (!slashBranchPatterns.some((pattern) => pattern.test(cmd))) return;
 
   return {
@@ -171,9 +177,9 @@ const blockSlashBranchNames: Guard = (event) => {
  * Enforces creating worktrees under <repo>/.worktrees/<dash-only-branch>
  */
 const blockNonStandardWorktreePath: Guard = (event) => {
-  if (event.toolName !== "bash") return;
+  const cmd = getBashCommand(event);
+  if (!cmd) return;
 
-  const cmd = event.input.command;
   const isWorktreeAdd = /\bgit\b[^\n;|&]*\bworktree\s+add\b/.test(cmd);
 
   if (!isWorktreeAdd) return;
@@ -205,9 +211,9 @@ const blockNonStandardWorktreePath: Guard = (event) => {
  * Prevents bypassing git hooks (linting, formatting, etc.).
  */
 const blockNoVerifyCommit: Guard = (event) => {
-  if (event.toolName !== "bash") return;
+  const cmd = getBashCommand(event);
+  if (!cmd) return;
 
-  const cmd = event.input.command;
   const gitCommitNoVerify = /\bgit\s+commit[^\n;|&]*\b(--no-verify|-n)\b/.test(
     cmd,
   );

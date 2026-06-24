@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@earendil-works/*": [".devenv/pi-node-modules/@earendil-works/*"],
+      "typebox": [".devenv/pi-node-modules/typebox"],
+      "typebox/*": [".devenv/pi-node-modules/typebox/*"]
+    },
+    "typeRoots": [".devenv/pi-node-modules/@types"],
+    "types": ["node"]
+  },
+  "include": [
+    ".pi/extensions/**/*.ts",
+    "home/configs/pi-coding-agent/extensions/**/*.ts"
+  ]
+}

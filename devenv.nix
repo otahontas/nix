@@ -1,6 +1,21 @@
-{ pkgs, ... }:
+{ inputs, pkgs, ... }:
 
 let
+  piPackage = inputs.pi-nix.packages.${pkgs.stdenv.hostPlatform.system}.coding-agent;
+  piNodeModules = "${piPackage}/lib/node_modules";
+  preparePiExtensionNodeModules = ''
+    ${pkgs.coreutils}/bin/mkdir -p .devenv
+    if [ -e .devenv/pi-node-modules ] && [ ! -L .devenv/pi-node-modules ]; then
+      echo ".devenv/pi-node-modules exists but is not a symlink" >&2
+      exit 1
+    fi
+    ${pkgs.coreutils}/bin/ln -sfn "${piNodeModules}" .devenv/pi-node-modules
+  '';
+  piExtensionsTypecheck = pkgs.writeShellScript "pi-extensions-typecheck" ''
+    set -euo pipefail
+    ${preparePiExtensionNodeModules}
+    exec ${pkgs.typescript}/bin/tsc -p tsconfig.json --noEmit --pretty false
+  '';
   # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Config schema diagnostics]]
   config-file-validator = pkgs.buildGoModule rec {
     pname = "config-file-validator";
@@ -40,6 +55,8 @@ in
       markdownlint-cli
       stylua
       taplo
+      typescript
+      typescript-language-server
       vscode-json-languageserver
       yaml-language-server
     ])
@@ -77,6 +94,8 @@ in
     shell.enable = true;
   };
 
+  enterShell = preparePiExtensionNodeModules;
+
   tasks = {
     "home:apply" = {
       description = "Apply home-manager configuration from ./home flake";
@@ -98,6 +117,10 @@ in
         devenv update
         devenv tasks run home:apply && pi update --extensions
       '';
+    };
+    "pi-extensions:typecheck" = {
+      description = "Typecheck local Pi TypeScript extensions";
+      exec = "${piExtensionsTypecheck}";
     };
   };
 
@@ -157,6 +180,14 @@ in
       enable = true;
       entry = "${pkgs.emmylua-check}/bin/emmylua_check --config .emmyrc.json --warnings-as-errors";
       files = "\\.lua$";
+      types = [ "file" ];
+    };
+    # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#TypeScript diagnostics]]
+    pi-extensions-typecheck = {
+      enable = true;
+      entry = "${piExtensionsTypecheck}";
+      files = "^(\\.pi/extensions/.*\\.ts|home/configs/pi-coding-agent/extensions/.*\\.ts|tsconfig\\.json|devenv\\.(nix|yaml))$";
+      pass_filenames = false;
       types = [ "file" ];
     };
     # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Markdown diagnostics]]

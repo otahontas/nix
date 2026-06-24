@@ -1,8 +1,11 @@
-import { Type } from "@sinclair/typebox";
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { getMarkdownTheme, keyHint } from "@mariozechner/pi-coding-agent";
-import type { Theme } from "@mariozechner/pi-tui";
-import { Box, Markdown, Text } from "@mariozechner/pi-tui";
+import { Type } from "typebox";
+import {
+  getMarkdownTheme,
+  keyHint,
+  type ExtensionAPI,
+  type Theme,
+} from "@earendil-works/pi-coding-agent";
+import { Box, Markdown, Text } from "@earendil-works/pi-tui";
 
 const PREVIEW_LINES = 4;
 
@@ -22,7 +25,7 @@ function collapsibleResult(
 
   const preview = lines.slice(0, PREVIEW_LINES).join("\n");
   const remaining = lines.length - PREVIEW_LINES;
-  const hint = keyHint("expandTools", "to expand");
+  const hint = keyHint("app.tools.expand", "to expand");
   return new Text(
     preview + "\n" +
     theme.fg("dim", `… ${remaining} more lines (${hint})`),
@@ -50,6 +53,14 @@ function tryRun(args: string[]): string {
   }
 }
 
+function customMessageText(content: string | unknown[]): string {
+  if (typeof content === "string") return content;
+
+  return content
+    .map((part) => typeof part === "string" ? part : JSON.stringify(part))
+    .join("\n");
+}
+
 export default function (pi: ExtensionAPI) {
   // ── Tools ──────────────────────────────────────────────────────────
 
@@ -74,6 +85,7 @@ export default function (pi: ExtensionAPI) {
       const output = tryRun(args);
       return {
         content: [{ type: "text", text: output || "No results found." }],
+        details: {},
       };
     },
     renderCall(args, theme) {
@@ -104,6 +116,7 @@ export default function (pi: ExtensionAPI) {
         content: [
           { type: "text", text: output || "Section not found." },
         ],
+        details: {},
       };
     },
     renderCall(args, theme) {
@@ -131,6 +144,7 @@ export default function (pi: ExtensionAPI) {
         content: [
           { type: "text", text: output || "No sections matching query." },
         ],
+        details: {},
       };
     },
     renderCall(args, theme) {
@@ -152,11 +166,12 @@ export default function (pi: ExtensionAPI) {
     async execute() {
       try {
         const output = run(["check"]);
-        return { content: [{ type: "text", text: output }] };
+        return { content: [{ type: "text", text: output }], details: {} };
       } catch (err: unknown) {
         const e = err as { stdout?: string; stderr?: string };
         return {
           content: [{ type: "text", text: e.stdout || e.stderr || "Check failed" }],
+          details: {},
           isError: true,
         };
       }
@@ -182,6 +197,7 @@ export default function (pi: ExtensionAPI) {
       const output = tryRun(["expand", JSON.stringify(params.text)]);
       return {
         content: [{ type: "text", text: output || params.text }],
+        details: {},
       };
     },
     renderCall(args, theme) {
@@ -208,6 +224,7 @@ export default function (pi: ExtensionAPI) {
       const output = tryRun(["refs", JSON.stringify(params.query)]);
       return {
         content: [{ type: "text", text: output || "No references found." }],
+        details: {},
       };
     },
     renderCall(args, theme) {
@@ -222,12 +239,13 @@ export default function (pi: ExtensionAPI) {
   // ── Message renderers ────────────────────────────────────────────
 
   pi.registerMessageRenderer("lat-reminder", (message, { expanded }, theme) => {
+    const content = customMessageText(message.content);
     const box = new Box(1, 1, (t) => theme.bg("customMessageBg", t));
     if (expanded) {
       box.addChild(new Text(theme.fg("accent", "lat.md"), 0, 0));
-      box.addChild(new Markdown(message.content, 0, 0, getMarkdownTheme()));
+      box.addChild(new Markdown(content, 0, 0, getMarkdownTheme()));
     } else {
-      const hint = keyHint("expandTools", "to expand");
+      const hint = keyHint("app.tools.expand", "to expand");
       box.addChild(new Text(
         theme.fg("accent", "lat.md") + " " +
         theme.fg("dim", `Search lat.md before starting work. Keep lat.md/ in sync. (${hint})`),
@@ -238,13 +256,14 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.registerMessageRenderer("lat-check", (message, { expanded }, theme) => {
+    const content = customMessageText(message.content);
     const box = new Box(1, 1, (t) => theme.bg("customMessageBg", t));
     if (expanded) {
       box.addChild(new Text(theme.fg("warning", "lat check"), 0, 0));
-      box.addChild(new Markdown(message.content, 0, 0, getMarkdownTheme()));
+      box.addChild(new Markdown(content, 0, 0, getMarkdownTheme()));
     } else {
-      const hint = keyHint("expandTools", "to expand");
-      const firstLine = message.content.split("\n")[0];
+      const hint = keyHint("app.tools.expand", "to expand");
+      const firstLine = content.split("\n")[0];
       box.addChild(new Text(
         theme.fg("warning", "lat check") + " " +
         theme.fg("dim", `${firstLine} (${hint})`),

@@ -204,7 +204,8 @@ export default function (pi: ExtensionAPI) {
       return;
     }
 
-    const command = event.input.command;
+    const input = event.input as { command?: unknown };
+    const command = input.command;
     if (typeof command === "string" && command.trim()) {
       failedBashCommand = command;
     }

@@ -35,6 +35,8 @@ The Pi wrapper loads secrets from pass, extends `PATH`, and lets package-managed
 
 Single-file TypeScript extensions live in `extensions/` and are symlinked to `~/.pi/agent/extensions/`.
 
+Root `tsconfig.json` typechecks these files plus root `.pi/extensions/**/*.ts` against Pi's real package types. Run `devenv tasks run pi-extensions:typecheck` after changing local extension APIs or imports.
+
 - `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
 - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, slash-containing branch names, non-standard worktree paths, and `--no-verify` commits
 - `starship-widget.ts` — starship prompt as a below-editor widget while Pi's built-in footer stays enabled
@@ -149,8 +151,9 @@ Local additions stay under `home/configs/pi-coding-agent/`; package-managed addi
 **Simple extensions** (single `.ts` files, no npm deps):
 
 1. Create `extensions/name.ts`.
-2. `git add` the file.
-3. Run `devenv tasks run home:apply`.
+2. Run `devenv tasks run pi-extensions:typecheck`.
+3. `git add` the file.
+4. Run `devenv tasks run home:apply`.
 
 **Simple skills** (repo-owned skill directories):
 
