@@ -36,7 +36,7 @@ Treefmt config lives under the built-in `treefmt` key in `devenv.nix`; there are
 
 `.gitignore` and `.nvim.lua` are tracked normal files; edit them directly.
 
-`.nvim.lua` owns root Neovim LSP setup, including the nixd Home Manager options that previously lived in `.nvim/lsp/nixd.lua`.
+`.nvim.lua` adds the repo `.nvim/` runtimepath and loads repo-local modules from `.nvim/lua/local_lint.lua` and `.nvim/lua/local_lsp.lua`; LSP overrides live under `.nvim/lsp/`.
 
 Root Pi files are tracked source: `.pi/extensions/lat.ts`, `.pi/extensions/post-edit-hook.ts`, and `.pi/skills/lat-md/SKILL.md`. Home Manager-owned Pi config lives under `home/configs/pi-coding-agent/`.
 
@@ -47,11 +47,11 @@ Treefmt excludes root `AGENTS.md` through global treefmt excludes; no typos hook
 Root language tooling covers repo filetypes that need editor or hook support.
 
 - `devenv.nix` installs LSPs for Fish, JSON, Lua, TypeScript, YAML, and TOML, plus markdownlint for editor/hook linting and config-file-validator for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
-- `.nvim.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, `ts_ls`, and `taplo`; YAML includes the custom `yaml.github-action` filetype. It also owns repo-local nvim-lint and schema setup.
+- `.nvim.lua` adds `.nvim/` to `runtimepath` and loads repo-local modules; `.nvim/lua/local_lsp.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, `ts_ls`, and `taplo`; custom LSP config files live in `.nvim/lsp/`, and `.nvim/lua/local_lint.lua` defines repo-only nvim-lint behavior.
 - Hooks check Nix with deadnix, Statix, and treefmt/nixfmt; shell scripts with ShellCheck's default severity and source following to match bashls more closely; Fish syntax with `fish --no-execute`; JSON syntax with `jq empty`; Lua with EmmyLua; TypeScript with `tsc --noEmit`; Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`; TOML with `taplo lint`; YAML with relaxed `yamllint`; and JSON/YAML/TOML schemas with config-file-validator.
 - JSON keeps `jsonls` for editor syntax and schema diagnostics while hooks keep fast `jq empty` syntax checks and add config-file-validator for SchemaStore-backed schema checks.
 - Lock files are generated state: never add lint hooks, formatters, schema checks, filetype overrides, nvim-lint mappings, or LSP setup for them.
-- EmmyLua reads `.emmyrc.json` for LuaJIT, Neovim globals, ignored generated dirs, and Home Manager Neovim runtime libraries so plugin `require()` calls resolve in editor and hooks.
+- EmmyLua reads `.emmyrc.json` for LuaJIT, Neovim globals, ignored generated dirs, repo `.nvim/lua`, and Home Manager Neovim runtime libraries so plugin `require()` calls resolve in editor and hooks.
 - `.emmyrc.json` ignores `mini.nvim`'s `mini/base16.lua` because EmmyLua 0.23.2 hangs when indexing that file.
 - Neovim uses fish-lsp plus repo-local nvim-lint's Fish linter so saved Fish buffers include the same `fish --no-execute` parser check as hooks.
 - Fish hooks stay on `fish --no-execute`: fish-lsp lacks a stable batch diagnostics CLI. Revisit when upstream `fish-lsp headless --diagnostics` lands so hooks can use fish-lsp diagnostics without a custom LSP wrapper.
@@ -82,13 +82,13 @@ Alternatives considered:
 
 Markdown diagnostics use markdownlint in hooks and repo-local nvim-lint so saved buffers respect the same config and ignore files.
 
-`.nvim.lua` defines `markdownlint_file` with file-path input rather than stdin. This lets markdownlint apply `.markdownlintignore`, matching hook behavior. The linter mapping stays repo-local in `.nvim.lua`; Home Manager only installs nvim-lint.
+Home Manager's `nvim-lint.lua` defines the global save autocmd. `.nvim/lua/local_lint.lua` defines `markdownlint_file` with file-path input and maps Markdown to it so `.markdownlintignore` matches hook behavior.
 
 Alternatives considered:
 
 - Keep Marksman: useful as a Markdown LSP, but not needed for current lint goals and not the hook engine.
 - Use nvim-lint's default markdownlint stdin mode: simple, but `.markdownlintignore` did not apply like hooks.
-- Configure nvim-lint globally: convenient, but repo-specific lint mappings belong in `.nvim.lua`.
+- Configure repo linter mappings globally: convenient, but repo-specific linter selection belongs in the repo runtime.
 - Keep the typos hook: broader spelling checks, but too noisy for this repo's language-tooling alignment.
 
 #### Bash diagnostics
@@ -136,7 +136,7 @@ The hook runs config-file-validator with SchemaStore enabled, no config discover
 
 `devenv.nix` packages config-file-validator with `buildGoModule` from Boeing's v2.2.2 tag. The package keeps upstream tests enabled and patches one path-sensitive test assertion that matched Nix's `/build` path.
 
-Neovim gets SchemaStore.nvim from Home Manager. `.nvim.lua` feeds SchemaStore schemas into `jsonls` and `yamlls`, then adds the same `devenv.yaml` schema as a YAML extra for root and nested paths.
+Neovim gets SchemaStore.nvim from Home Manager. `.nvim/lsp/jsonls.lua` and `.nvim/lsp/yamlls.lua` feed SchemaStore schemas into JSON and YAML language servers, then YAML adds the same `devenv.yaml` schema for root and nested paths.
 
 Alternatives considered:
 
@@ -163,7 +163,8 @@ Lua diagnostics use EmmyLua in Neovim and hooks so editor and commit checks shar
 
 `.emmyrc.json` is the source of truth for Lua analysis. It sets LuaJIT, declares `vim` as a global, ignores generated directories, and loads these runtime libraries:
 
-- `${workspaceFolder}/home/configs/neovim/nvim/lua` for tracked local modules.
+- `${workspaceFolder}/home/configs/neovim/nvim/lua` for tracked Home Manager modules.
+- `${workspaceFolder}/.nvim/lua` for repo-local Neovim modules.
 - `{env:HOME}/.config/nvim/lua` for Home Manager-generated modules such as `treesitter_filetypes`.
 - `{env:HOME}/.local/share/nvim/site/pack/hm/start` for Home Manager-installed plugin modules.
 
@@ -231,7 +232,7 @@ Root `AGENTS.md` carries repo-local lat.md workflow and post-task checks.
 
 ### Project: root devenv file
 
-`devenv.nix` defines repo tools, tasks, and hooks without generating repo-local Pi files on shell entry. `AGENTS.md`, `.gitignore`, `.nvim.lua`, and root `.pi/` files stay tracked source.
+`devenv.nix` defines repo tools, tasks, and hooks without generating repo-local Pi files on shell entry. `AGENTS.md`, `.gitignore`, `.nvim.lua`, `.nvim/`, and root `.pi/` files stay tracked source.
 
 ### Key takeaway
 

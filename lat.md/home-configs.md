@@ -42,7 +42,7 @@ Configs worth documenting beyond a table row.
 - **iina** — installs the app and uses `duti` only from the activation store path for media file associations
 - **discord** — installs the signed brew-nix cask and keeps Discord's mutable settings compatible with GUI launch updates
 - **password-store** — pass with GPG integration plus `pass-otp`, `pass-genphrase`, and `pass-update`
-- **neovim** — blink.cmp with Copilot LSP + blink-copilot source; repo-local LSP enablement lives in root `.nvim.lua`; Ruby/Python providers disabled; ghost text disabled
+- **neovim** — blink.cmp with Copilot LSP + blink-copilot source; root `.nvim.lua` adds the repo runtime, `.nvim/lua/local_lsp.lua` enables repo LSPs, and `.nvim/lsp/` holds custom configs; Ruby/Python providers disabled; ghost text disabled
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, global ignores, worktree scripts
 - **yazi** — file manager with git status, starship prompt, relative motions, and character jump; git fetchers share `group = "git"` for Yazi 26.5.6+
 
@@ -54,11 +54,11 @@ Bash and Fish helpers keep branch names and `.worktrees/<branch>` paths identica
 
 ### neovim
 
-Neovim is Home Manager-managed, while repo-specific LSP and lint setup stays in root `.nvim.lua`.
+Neovim is Home Manager-managed, while root `.nvim.lua` adds `.nvim/` for repo-local Lua modules and LSP overrides.
 
 - Markdown diagram/image rendering loads on Markdown buffers, skips headless sessions, and reports setup failures with notifications instead of breaking startup.
-- nvim-lint is installed for repo-local `.nvim.lua` linter mappings; global Neovim config does not set repo-specific linters.
-- SchemaStore.nvim is installed so repo-local `.nvim.lua` can feed SchemaStore catalogs and repo-specific schema extras into JSON/YAML language servers.
+- nvim-lint is installed with a global save autocmd; repo-local `.nvim/lua/local_lint.lua` defines file-path Markdown linting and chooses which linters apply.
+- SchemaStore.nvim is installed so repo-local `.nvim/lsp/` configs can feed SchemaStore catalogs and repo-specific schema extras into JSON/YAML language servers.
 - LSP reference highlights run on `CursorHold` and clear on cursor movement or buffer leave, avoiding a document-highlight request on every cursor move.
 - The Neovim wrapper PATH includes `tree-sitter` for Treesitter health and a private `grealpath` wrapper for yazi relative-path copy without exposing `grealpath` globally.
 - Copilot LSP telemetry is disabled, and GitHub permalink copy resolves the repository from the current buffer path before running `git` or `gh` commands.
