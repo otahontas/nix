@@ -1,4 +1,4 @@
-.devenv*
+.devenv/
 .pre-commit-config.yaml
 lat.md/.cache
 result

@@ -11,7 +11,8 @@ home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-co
   configs/       per-tool directories, each with default.nix (49 configs)
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
-devenv.nix       repo-specific dev shell: tools, tasks, hooks, package wiring
+devenv.nix       root devenv entrypoint importing tracked modules
+.devenv-modules/ repo-specific dev shell modules: tools, tasks, hooks, package wiring
 .pi/            repo-local lat tool extension and skill source
 devenv.yaml      declares root devenv inputs
 lat.md/          this documentation
@@ -25,28 +26,30 @@ This repo uses devenv for reproducible development environments.
 - Use `devenv tasks run <task>` to run defined tasks.
 - Use `devenv up` for process services.
 - Always use devenv to install tools and services or to define tasks.
-- This devenv setup keeps repo-specific tools, tasks, and hooks in `devenv.nix`.
+- This devenv setup keeps repo-specific tools, tasks, and hooks in `devenv.nix` plus tracked `.devenv-modules/` files.
 - Home Manager installs the global `lat.md` CLI from `home/configs/pi-coding-agent/lat-md.nix`, not from root `devenv.nix`.
 
 ## Root devenv setup
 
-Root shell keeps repo-specific devenv behavior in `devenv.nix`, while tracked dotfiles stay editable normal files.
+Root shell keeps repo-specific devenv behavior in `devenv.nix` and tracked `.devenv-modules/`, while tracked dotfiles stay editable normal files.
 
-Treefmt config lives under the built-in `treefmt` key in `devenv.nix`; there are no manual wrappers or `repoDevenv.treefmt` overrides.
+Treefmt config lives under the built-in `treefmt` key in `.devenv-modules/treefmt.nix`; there are no manual wrappers or `repoDevenv.treefmt` overrides.
 
-`.gitignore` and `.nvim.lua` are tracked normal files; edit them directly.
+`.gitignore` ignores only the generated `.devenv/` directory; `.devenv-modules/` and `.nvim.lua` are tracked normal files and are edited directly.
 
 `.nvim.lua` adds the repo `.nvim/` runtimepath and loads repo-local modules from `.nvim/lua/local_lint.lua` and `.nvim/lua/local_lsp.lua`; LSP overrides live under `.nvim/lsp/`.
 
 Root Pi files are tracked source: `.pi/extensions/lat.ts`, `.pi/extensions/post-edit-hook.ts`, and `.pi/skills/lat-md/SKILL.md`. Home Manager-owned Pi config lives under `home/configs/pi-coding-agent/`.
 
-Treefmt excludes root `AGENTS.md` through global treefmt excludes; no typos hook or config remains in the repo.
+`devenv.nix` imports `.devenv-modules/default.nix`, which fans out to shared helpers, packages, treefmt, languages, tasks, and hooks.
+
+Treefmt excludes generated `.devenv/` and root `AGENTS.md`; tracked `.devenv-modules/` stays formatted, and no typos hook or config remains in the repo.
 
 ### Root language tooling
 
 Root language tooling covers repo filetypes that need editor or hook support.
 
-- `devenv.nix` installs LSPs for Fish, JSON, Lua, TypeScript, YAML, and TOML, plus markdownlint for editor/hook linting and config-file-validator for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
+- `devenv.nix` imports `.devenv-modules/`; `packages.nix` installs LSPs for Fish, JSON, Lua, TypeScript, YAML, and TOML, plus markdownlint for editor/hook linting, while `common.nix` packages config-file-validator for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
 - `.nvim.lua` adds `.nvim/` to `runtimepath` and loads repo-local modules; `.nvim/lua/local_lsp.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, `ts_ls`, and `taplo`; custom LSP config files live in `.nvim/lsp/`, and `.nvim/lua/local_lint.lua` defines repo-only nvim-lint behavior.
 - Hooks check Nix with deadnix, Statix, and treefmt/nixfmt; shell scripts with ShellCheck's default severity and source following to match bashls more closely; Fish syntax with `fish --no-execute`; JSON syntax with `jq empty`; Lua with EmmyLua; TypeScript with `tsc --noEmit`; Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`; TOML with `taplo lint`; YAML with relaxed `yamllint`; and JSON/YAML/TOML schemas with config-file-validator.
 - JSON keeps `jsonls` for editor syntax and schema diagnostics while hooks keep fast `jq empty` syntax checks and add config-file-validator for SchemaStore-backed schema checks.
@@ -134,7 +137,7 @@ Config schema diagnostics use config-file-validator in hooks and SchemaStore.nvi
 
 The hook runs config-file-validator with SchemaStore enabled, no config discovery, and `devenv.yaml` mapped to `https://devenv.sh/devenv.schema.json`. Files with no matching schema pass syntax-only.
 
-`devenv.nix` packages config-file-validator with `buildGoModule` from Boeing's v2.2.2 tag. The package keeps upstream tests enabled and patches one path-sensitive test assertion that matched Nix's `/build` path.
+`.devenv-modules/common.nix` packages config-file-validator with `buildGoModule` from Boeing's v2.2.2 tag. The package keeps upstream tests enabled and patches one path-sensitive test assertion that matched Nix's `/build` path.
 
 Neovim gets SchemaStore.nvim from Home Manager. `.nvim/lsp/jsonls.lua` and `.nvim/lsp/yamlls.lua` feed SchemaStore schemas into JSON and YAML language servers, then YAML adds the same `devenv.yaml` schema for root and nested paths.
 
@@ -186,7 +189,7 @@ TypeScript diagnostics typecheck local Pi extension files against Pi's real pack
 
 `tsconfig.json` includes root `.pi/extensions/**/*.ts` and Home Manager-owned `home/configs/pi-coding-agent/extensions/**/*.ts`. The compiler uses `NodeNext`, strict mode, no emit, and Node types from Pi's package closure.
 
-`devenv.nix` adds TypeScript and `typescript-language-server`, then exposes Pi's package `node_modules` as `.devenv/pi-node-modules`. The task and hook refresh that symlink before running `tsc` so no Nix store path is committed.
+`.devenv-modules/packages.nix` adds TypeScript and `typescript-language-server`, while `.devenv-modules/common.nix` exposes Pi's package `node_modules` as `.devenv/pi-node-modules`. The task and hook refresh that symlink before running `tsc` so no Nix store path is committed.
 
 `devenv.yaml` pins `pi-nix` to the same revision as `home/flake.lock`, keeping typechecks aligned with the Pi package this repo configures.
 
@@ -232,7 +235,7 @@ Root `AGENTS.md` carries repo-local lat.md workflow and post-task checks.
 
 ### Project: root devenv file
 
-`devenv.nix` defines repo tools, tasks, and hooks without generating repo-local Pi files on shell entry. `AGENTS.md`, `.gitignore`, `.nvim.lua`, `.nvim/`, and root `.pi/` files stay tracked source.
+`devenv.nix` imports tracked `.devenv-modules/` files that define repo tools, tasks, and hooks without generating repo-local Pi files on shell entry. `AGENTS.md`, `.gitignore`, `.nvim.lua`, `.nvim/`, and root `.pi/` files stay tracked source.
 
 ### Key takeaway
 
@@ -249,7 +252,7 @@ LAT tooling gets `LAT_LLM_KEY` from the global Pi wrapper, keeping the value out
 
 ## Tasks
 
-Defined in `devenv.nix`, run with `devenv tasks run <task>`:
+Defined in `.devenv-modules/tasks.nix`, imported by `devenv.nix`; run with `devenv tasks run <task>`:
 
 - `home:apply` — home-manager switch
 - `system:apply` — darwin-rebuild switch (requires sudo)
