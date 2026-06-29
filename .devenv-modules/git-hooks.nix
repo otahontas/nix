@@ -1,11 +1,23 @@
-{
-  configFileValidator,
-  preparePiExtensionNodeModules,
-  pkgs,
-  ...
-}:
+{ inputs, pkgs, ... }:
 
+let
+  configFileValidator =
+    inputs.otahontas-nixpkgs.packages.${pkgs.stdenv.hostPlatform.system}.config-file-validator;
+  piNodeModules = "${
+    inputs.pi-nix.packages.${pkgs.stdenv.hostPlatform.system}.coding-agent
+  }/lib/node_modules";
+  preparePiExtensionNodeModules = ''
+    ${pkgs.coreutils}/bin/mkdir -p .devenv
+    if [ -e .devenv/pi-node-modules ] && [ ! -L .devenv/pi-node-modules ]; then
+      echo ".devenv/pi-node-modules exists but is not a symlink" >&2
+      exit 1
+    fi
+    ${pkgs.coreutils}/bin/ln -sfn "${piNodeModules}" .devenv/pi-node-modules
+  '';
+in
 {
+  enterShell = preparePiExtensionNodeModules;
+
   git-hooks.hooks = {
     check-merge-conflicts.enable = true;
     # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Nix diagnostics]]
@@ -43,17 +55,15 @@
     # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Config schema diagnostics]]
     config-schema = {
       enable = true;
-      entry = "${pkgs.writeShellScript "config-schema-check" ''
-        set -euo pipefail
-        ${configFileValidator}/bin/validator \
-          -quiet \
-          -no-config \
-          -schemastore \
-          -schema-map="devenv.yaml:https://devenv.sh/devenv.schema.json" \
-          -schema-map="**/devenv.yaml:https://devenv.sh/devenv.schema.json" \
-          -file-types=json,yaml,toml \
-          "$@"
-      ''}";
+      entry = "${configFileValidator}/bin/validator";
+      args = [
+        "-quiet"
+        "-no-config"
+        "-schemastore"
+        "-schema-map=devenv.yaml:https://devenv.sh/devenv.schema.json"
+        "-schema-map=**/devenv.yaml:https://devenv.sh/devenv.schema.json"
+        "-file-types=json,yaml,toml"
+      ];
       files = "\\.(json|ya?ml|toml)$";
       types = [ "file" ];
     };

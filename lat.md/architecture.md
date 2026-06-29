@@ -49,7 +49,7 @@ Treefmt excludes generated `.devenv/` and root `AGENTS.md`; tracked `.devenv-mod
 
 Root language tooling covers repo filetypes that need editor or hook support.
 
-- `devenv.nix` imports `.devenv-modules/`; `packages.nix` installs LSPs for Fish, JSON, Lua, TypeScript, YAML, and TOML, plus markdownlint for editor/hook linting, while `common.nix` exposes config-file-validator from the `otahontas-nixpkgs` input for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
+- `devenv.nix` imports `.devenv-modules/`; `packages.nix` installs LSPs for Fish, JSON, Lua, TypeScript, YAML, and TOML, plus markdownlint for editor/hook linting, while `git-hooks.nix` takes config-file-validator from the `otahontas-nixpkgs` input for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
 - `.nvim.lua` adds `.nvim/` to `runtimepath` and loads repo-local modules; `.nvim/lua/local_lsp.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, `ts_ls`, and `taplo`; custom LSP config files live in `.nvim/lsp/`, and `.nvim/lua/local_lint.lua` defines repo-only nvim-lint behavior.
 - Hooks check Nix with deadnix, Statix, and treefmt/nixfmt; shell scripts with ShellCheck's default severity and source following to match bashls more closely; Fish syntax with `fish --no-execute`; JSON syntax with `jq empty`; Lua with EmmyLua; TypeScript with `tsc --noEmit`; Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`; TOML with `taplo lint`; YAML with relaxed `yamllint`; and JSON/YAML/TOML schemas with config-file-validator.
 - Manual hook runs use `prek`, never `pre-commit`. `.pre-commit-config.yaml` is generated hook config, not the CLI to invoke.
@@ -136,9 +136,9 @@ Alternatives considered:
 
 Config schema diagnostics use config-file-validator in hooks and SchemaStore.nvim in Neovim so known JSON/YAML/TOML files get schema checks without forcing schemas on unknown files.
 
-The hook runs config-file-validator with SchemaStore enabled, no config discovery, and `devenv.yaml` mapped to `https://devenv.sh/devenv.schema.json`. Files with no matching schema pass syntax-only.
+`git-hooks.nix` calls the packaged validator through hook `entry` and `args`, with SchemaStore enabled, config discovery disabled, and `devenv.yaml` mapped to `https://devenv.sh/devenv.schema.json`. Files with no matching schema pass syntax-only.
 
-`.devenv-modules/common.nix` takes config-file-validator from the `otahontas-nixpkgs` devenv input (`github:otahontas/nixpkgs`) instead of carrying a local `buildGoModule` package.
+`config-file-validator` comes from the `otahontas-nixpkgs` devenv input (`github:otahontas/nixpkgs`) instead of a local `buildGoModule` package.
 
 Neovim gets SchemaStore.nvim from Home Manager. `.nvim/lsp/jsonls.lua` and `.nvim/lsp/yamlls.lua` feed SchemaStore schemas into JSON and YAML language servers, then YAML adds the same `devenv.yaml` schema for root and nested paths.
 
@@ -192,7 +192,7 @@ TypeScript diagnostics typecheck local Pi extension files against Pi's real pack
 
 `tsconfig.json` includes root `.pi/extensions/**/*.ts` and Home Manager-owned `home/configs/pi-coding-agent/extensions/**/*.ts`. The compiler uses `NodeNext`, strict mode, no emit, and Node types from Pi's package closure.
 
-`.devenv-modules/packages.nix` adds TypeScript and `typescript-language-server`, while `.devenv-modules/common.nix` exposes Pi's package `node_modules` as `.devenv/pi-node-modules`. Entering the shell and the TypeScript hook refresh that symlink before `tsc` runs, so no Nix store path is committed.
+`.devenv-modules/packages.nix` adds TypeScript and `typescript-language-server`. `.devenv-modules/git-hooks.nix` keeps Pi's package `node_modules` available as `.devenv/pi-node-modules` for shell/editor use and refreshes that symlink before the TypeScript hook runs, so no Nix store path is committed.
 
 `home/flake.lock` owns the Pi package revision. `devenv.yaml` imports the `home` flake as a path input and makes root `pi-nix` follow `home/pi-nix`, so typechecks follow the same Pi package Home Manager installs.
 
