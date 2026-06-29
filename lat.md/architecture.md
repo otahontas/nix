@@ -209,7 +209,7 @@ TOML diagnostics use Taplo for editor and hook linting, with config-file-validat
 
 ## Flakes
 
-Both flakes pin `nixpkgs-unstable` independently. `home/` pulls extra inputs:
+Home, system, and root devenv use `github:NixOS/nixpkgs/nixpkgs-unstable` as their primary `nixpkgs` source. `home/` pulls extra inputs:
 
 - **catppuccin / pi-catppuccin** — global theme (latte/blue) across terminal, editor, pi TUI
 - **kanttiinit-cli** — personal CLI tool
