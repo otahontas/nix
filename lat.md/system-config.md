@@ -17,6 +17,20 @@ macOS defaults and daemon settings.
 - **Fish** as default shell
 - **Sudo** — passwordless `/run/current-system/sw/bin/mas install *` for the user
 
+## Manual applications
+
+Manual system-wide apps and audio plug-ins stay outside nix-darwin when vendor installers manage drivers, plug-ins, content libraries, privileged helpers, or licenses better than Nix.
+
+Current manual exceptions:
+
+- **RME Fireface USB Settings / Totalmix** — install through the RME USB driver package so the kernel extension, MIDI driver plugin, LaunchAgent, and macOS approval flow stay vendor-managed.
+- **OrbStack** — may stay manual even though `nixpkgs#orbstack` exists; install from the vendor or Homebrew when system integration matters more than Nix ownership.
+- **Serum 2** — install manually because the vendor installer manages audio plug-ins, shared assets, and license state under system audio locations.
+- **Pianoteq and its plug-ins** — install manually because the Modartt installer manages the standalone app, plug-in formats, instruments, and license activation.
+- **Arturia Software Center and Arturia-installed plug-ins** — install manually because Arturia manages product downloads, plug-ins, shared assets, and license state through its own installer.
+- **Native Access and Native Instruments plug-ins** — install manually because Native Access manages product downloads, plug-ins, content libraries, shared assets, and license state.
+- **Nord Sound Manager** — install manually because Nord manages keyboard sound libraries and device sync through its own app.
+
 ## Keyboard layout file
 
 The custom keylayout file is Apple keyboard-layout data, not a normal XML config target.

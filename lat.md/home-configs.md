@@ -12,6 +12,7 @@ Conventions for writing home-manager configs.
 - **Catppuccin** — global theme uses `catppuccin.enable = true` plus `autoEnable = true` to keep automatic port enrollment explicit
 - **Session variables** for paths and environment config
 - **GUI apps** — prefer home-manager when nixpkgs has darwin `.app` bundle; `targets.darwin.copyApps.enable = true` for Spotlight
+- **Manual apps** — keep system-wide vendor installers in [[system-config#Manual applications]] instead of forcing them into Home Manager
 - **LaunchAgents** via `launchd.agents` for auto-start
 - **Out-of-store symlinks** via `config.lib.file.mkOutOfStoreSymlink` (see `symlinks/`)
 - **Mac App Store** apps via a `mas` activation script that calls the store path directly; `mas` stays out of the user PATH (pending native nix-darwin module)
