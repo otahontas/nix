@@ -1,6 +1,6 @@
 {
   configFileValidator,
-  piExtensionsTypecheck,
+  preparePiExtensionNodeModules,
   pkgs,
   ...
 }:
@@ -65,10 +65,14 @@
       types = [ "file" ];
     };
     # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#TypeScript diagnostics]]
-    pi-extensions-typecheck = {
+    typescript-typecheck = {
       enable = true;
-      entry = "${piExtensionsTypecheck}";
-      files = "^(\\.pi/extensions/.*\\.ts|\\.devenv-modules/.*\\.nix|home/configs/pi-coding-agent/extensions/.*\\.ts|tsconfig\\.json|devenv\\.(nix|yaml))$";
+      entry = "${pkgs.writeShellScript "typescript-typecheck" ''
+        set -euo pipefail
+        ${preparePiExtensionNodeModules}
+        exec ${pkgs.typescript}/bin/tsc -p tsconfig.json --noEmit --pretty false
+      ''}";
+      files = "\\.ts$";
       pass_filenames = false;
       types = [ "file" ];
     };

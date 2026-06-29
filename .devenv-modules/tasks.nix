@@ -1,4 +1,4 @@
-{ piExtensionsTypecheck, ... }:
+_:
 
 {
   tasks = {
@@ -22,10 +22,6 @@
         devenv update
         devenv tasks run home:apply && pi update --extensions
       '';
-    };
-    "pi-extensions:typecheck" = {
-      description = "Typecheck local Pi TypeScript extensions";
-      exec = "${piExtensionsTypecheck}";
     };
   };
 }

@@ -11,18 +11,13 @@ let
     fi
     ${pkgs.coreutils}/bin/ln -sfn "${piNodeModules}" .devenv/pi-node-modules
   '';
-  piExtensionsTypecheck = pkgs.writeShellScript "pi-extensions-typecheck" ''
-    set -euo pipefail
-    ${preparePiExtensionNodeModules}
-    exec ${pkgs.typescript}/bin/tsc -p tsconfig.json --noEmit --pretty false
-  '';
   # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Config schema diagnostics]]
   configFileValidator =
     inputs.otahontas-nixpkgs.packages.${pkgs.stdenv.hostPlatform.system}.config-file-validator;
 in
 {
   _module.args = {
-    inherit configFileValidator piExtensionsTypecheck;
+    inherit configFileValidator preparePiExtensionNodeModules;
   };
 
   enterShell = preparePiExtensionNodeModules;

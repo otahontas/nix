@@ -52,6 +52,7 @@ Root language tooling covers repo filetypes that need editor or hook support.
 - `devenv.nix` imports `.devenv-modules/`; `packages.nix` installs LSPs for Fish, JSON, Lua, TypeScript, YAML, and TOML, plus markdownlint for editor/hook linting, while `common.nix` exposes config-file-validator from the `otahontas-nixpkgs` input for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
 - `.nvim.lua` adds `.nvim/` to `runtimepath` and loads repo-local modules; `.nvim/lua/local_lsp.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, `ts_ls`, and `taplo`; custom LSP config files live in `.nvim/lsp/`, and `.nvim/lua/local_lint.lua` defines repo-only nvim-lint behavior.
 - Hooks check Nix with deadnix, Statix, and treefmt/nixfmt; shell scripts with ShellCheck's default severity and source following to match bashls more closely; Fish syntax with `fish --no-execute`; JSON syntax with `jq empty`; Lua with EmmyLua; TypeScript with `tsc --noEmit`; Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`; TOML with `taplo lint`; YAML with relaxed `yamllint`; and JSON/YAML/TOML schemas with config-file-validator.
+- Manual hook runs use `prek`, never `pre-commit`. `.pre-commit-config.yaml` is generated hook config, not the CLI to invoke.
 - JSON keeps `jsonls` for editor syntax and schema diagnostics while hooks keep fast `jq empty` syntax checks and add config-file-validator for SchemaStore-backed schema checks.
 - Lock files are generated state: never add lint hooks, formatters, schema checks, filetype overrides, nvim-lint mappings, or LSP setup for them.
 - EmmyLua reads `.emmyrc.json` for LuaJIT, Neovim globals, ignored generated dirs, repo `.nvim/lua`, and Home Manager Neovim runtime libraries so plugin `require()` calls resolve in editor and hooks.
@@ -178,7 +179,7 @@ The hook calls `emmylua_check --config .emmyrc.json --warnings-as-errors` direct
 Alternatives considered:
 
 - Keep LuaLS in Neovim and Luacheck in hooks: fast, but split engines miss different problems and keep diagnostics mismatched.
-- Use LuaLS CLI as hook: same editor engine, but workspace-oriented and poor for filename-based pre-commit hooks.
+- Use LuaLS CLI as hook: same editor engine, but workspace-oriented and poor for filename-based Git hooks.
 - Use Selene: fast and useful, but not editor parity and not plugin-runtime semantic checking.
 - Generate hook config from a script: flexible, but too much moving code when `.emmyrc.json` can express the runtime paths.
 - Generate any-stubs for required plugins: fast and quiet, but hides plugin API/type diagnostics.
@@ -189,16 +190,17 @@ TypeScript diagnostics typecheck local Pi extension files against Pi's real pack
 
 `tsconfig.json` includes root `.pi/extensions/**/*.ts` and Home Manager-owned `home/configs/pi-coding-agent/extensions/**/*.ts`. The compiler uses `NodeNext`, strict mode, no emit, and Node types from Pi's package closure.
 
-`.devenv-modules/packages.nix` adds TypeScript and `typescript-language-server`, while `.devenv-modules/common.nix` exposes Pi's package `node_modules` as `.devenv/pi-node-modules`. The task and hook refresh that symlink before running `tsc` so no Nix store path is committed.
+`.devenv-modules/packages.nix` adds TypeScript and `typescript-language-server`, while `.devenv-modules/common.nix` exposes Pi's package `node_modules` as `.devenv/pi-node-modules`. Entering the shell and the TypeScript hook refresh that symlink before `tsc` runs, so no Nix store path is committed.
 
 `devenv.yaml` pins `pi-nix` to the same revision as `home/flake.lock`, keeping typechecks aligned with the Pi package this repo configures.
 
-The hook runs the full Pi extension project with `pass_filenames = false` because `tsc -p` owns file selection. Neovim enables `ts_ls`, so saved extension files and hooks read the same project config.
+The TypeScript hook triggers only during the Git pre-commit stage on TypeScript files and runs the full Pi extension project with `pass_filenames = false` because `tsc -p` owns file selection. Neovim enables `ts_ls`, so saved extension files and hooks read the same project config.
 
 Alternatives considered:
 
 - Use checked-in ambient declarations: rejected because local stubs could hide Pi API drift.
 - Hardcode the Pi package store path in `tsconfig.json`: rejected because store paths change across updates.
+- Add a devenv typecheck task: rejected because the Git hook is the required gate.
 - Add ESLint or Biome first: deferred because API type drift is the current risk, not style.
 
 #### TOML diagnostics
@@ -259,5 +261,4 @@ Defined in `.devenv-modules/tasks.nix`, imported by `devenv.nix`; run with `deve
 - `home:apply` — home-manager switch
 - `system:apply` — darwin-rebuild switch (requires sudo)
 - `nix:format` — treefmt formatters
-- `pi-extensions:typecheck` — TypeScript typecheck for local Pi extensions
 - `nix:update` — update home/system lockfiles + devenv, apply home-manager, then run `pi update --extensions`
