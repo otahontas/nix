@@ -174,6 +174,8 @@ Lua diagnostics use EmmyLua in Neovim and hooks so editor and commit checks shar
 
 The hook calls `emmylua_check --config .emmyrc.json --warnings-as-errors` directly. Direct config keeps the hook simple and avoids generated config scripts.
 
+Lua code prefers explicit nil/type checks or small helpers over local casts. `any` annotations stay only where plugin runtime types reject valid configs.
+
 `mini.nvim`'s `mini/base16.lua` is excluded because EmmyLua 0.23.2 hangs when indexing that file. Remove the ignore once EmmyLua handles that module.
 
 Alternatives considered:
@@ -192,7 +194,7 @@ TypeScript diagnostics typecheck local Pi extension files against Pi's real pack
 
 `.devenv-modules/packages.nix` adds TypeScript and `typescript-language-server`, while `.devenv-modules/common.nix` exposes Pi's package `node_modules` as `.devenv/pi-node-modules`. Entering the shell and the TypeScript hook refresh that symlink before `tsc` runs, so no Nix store path is committed.
 
-`devenv.yaml` pins `pi-nix` to the same revision as `home/flake.lock`, keeping typechecks aligned with the Pi package this repo configures.
+`home/flake.lock` owns the Pi package revision. `devenv.yaml` imports the `home` flake as a path input and makes root `pi-nix` follow `home/pi-nix`, so typechecks follow the same Pi package Home Manager installs.
 
 The TypeScript hook triggers only during the Git pre-commit stage on TypeScript files and runs the full Pi extension project with `pass_filenames = false` because `tsc -p` owns file selection. Neovim enables `ts_ls`, so saved extension files and hooks read the same project config.
 
@@ -220,7 +222,7 @@ Home, system, and root devenv use `github:NixOS/nixpkgs/nixpkgs-unstable` as the
 - **brew-nix** — package overlay used by `mas` for Mac App Store installs
 - **brew-api** — non-flake Homebrew API source followed by `brew-nix`
 
-Root `devenv.yaml` also pulls `github:otahontas/nixpkgs` as `otahontas-nixpkgs` so hooks can install packaged personal tools without local derivations.
+Root `devenv.yaml` also pulls `github:otahontas/nixpkgs` as `otahontas-nixpkgs` so hooks can install packaged personal tools without local derivations. It imports `./home` only so root `pi-nix` can follow `home/pi-nix` for Pi extension typechecks.
 
 ## AGENTS.md pipeline
 
@@ -262,3 +264,5 @@ Defined in `.devenv-modules/tasks.nix`, imported by `devenv.nix`; run with `deve
 - `system:apply` — darwin-rebuild switch (requires sudo)
 - `nix:format` — treefmt formatters
 - `nix:update` — update home/system lockfiles + devenv, apply home-manager, then run `pi update --extensions`
+
+For a Pi-only package update, run `nix flake update pi-nix --flake ./home`, then `devenv update home`. Root `pi-nix` follows `home/pi-nix`, so `home/flake.lock` is the source of truth and `devenv.lock` records the followed revision.

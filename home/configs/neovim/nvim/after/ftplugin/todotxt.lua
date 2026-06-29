@@ -1,9 +1,17 @@
 local utils = require("utils")
 utils.setup_prose_buffer()
 
+local function ymd_date(timestamp)
+	local date = os.date("%Y-%m-%d", timestamp)
+	if type(date) ~= "string" then
+		error("os.date returned non-string date")
+	end
+	return date
+end
+
 -- Toggle done/undone with <leader>xx (like markdown checkbox toggle)
 local function toggle_done_line(line)
-	local today = os.date("%Y-%m-%d")
+	local today = ymd_date()
 	local leading = line:match("^(%s*)") or ""
 	local rest = line:match("^%s*(.*)") or ""
 	-- Already done: remove "x YYYY-MM-DD " prefix (after leading whitespace)
@@ -58,10 +66,9 @@ local PATTERNS = {
 }
 
 -- Cache today's date
-local today = os.date("%Y-%m-%d")
+local today = ymd_date()
 
 -- Highlight overdue and active threshold dates
----@type table<string, integer>
 local match_ids = {}
 
 local function highlight_dates()
@@ -71,7 +78,7 @@ local function highlight_dates()
 		match_ids[key] = nil
 	end
 
-	today = os.date("%Y-%m-%d")
+	today = ymd_date()
 	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 	local positions = { due = {}, threshold = {} }
 
@@ -89,7 +96,10 @@ local function highlight_dates()
 	local hl = { due = "ErrorMsg", threshold = "DiagnosticInfo" }
 	for key, pos in pairs(positions) do
 		if #pos > 0 then
-			match_ids[key] = vim.fn.matchaddpos(hl[key], pos, 10) --[[@as integer]]
+			local id = vim.fn.matchaddpos(hl[key], pos, 10)
+			if type(id) == "number" then
+				match_ids[key] = math.floor(id)
+			end
 		end
 	end
 end
@@ -100,11 +110,13 @@ local TOKEN = {
 	priority = "^%([A-Z]%)$",
 	context = "^@%S+$",
 	project = "^%+%S+$",
-	key_value = "^[^%s:]+:[^%s]+$",
 }
 
-local function is_key_value(token)
-	return token:match(TOKEN.key_value) and not token:match("://")
+local function get_meta_key(token)
+	if token:match("://") then
+		return nil
+	end
+	return token:match("^([^%s:]+):[^%s]+$")
 end
 
 local TodoLine = {}
@@ -144,15 +156,19 @@ function TodoLine.parse(line)
 	end
 
 	for i = idx, #tokens do
-		local t = tokens[i] --[[@as string]]
+		local t = tokens[i]
+		if not t then
+			break
+		end
+
+		local key = get_meta_key(t)
 		if not obj.priority and t:match(TOKEN.priority) then
 			obj.priority = t
 		elseif t:match(TOKEN.context) then
 			table.insert(obj.contexts, t)
 		elseif t:match(TOKEN.project) then
 			table.insert(obj.projects, t)
-		elseif is_key_value(t) then
-			local key = t:match("^([^:]+):") --[[@as string]]
+		elseif key then
 			table.insert(obj.meta[key] or obj.meta.other, t)
 		else
 			table.insert(obj.description, t)
@@ -229,7 +245,7 @@ local function adjust_meta_date(meta_key, delta)
 
 	local base_date = todo:get_meta_value(meta_key)
 	if not base_date then
-		base_date = os.date("%Y-%m-%d") --[[@as string]]
+		base_date = ymd_date()
 	end
 
 	local year, month, day = base_date:match("(%d+)%-(%d+)%-(%d+)")
@@ -237,13 +253,30 @@ local function adjust_meta_date(meta_key, delta)
 		return
 	end
 
+	local year_num = tonumber(year)
+	local month_num = tonumber(month)
+	local day_num = tonumber(day)
+	if not year_num then
+		return
+	end
+	if not month_num then
+		return
+	end
+	if not day_num then
+		return
+	end
+
 	local timestamp = os.time({
-		year = tonumber(year) --[[@as integer]],
-		month = tonumber(month) --[[@as integer]],
-		day = tonumber(day) --[[@as integer]],
+		year = math.floor(year_num),
+		month = math.floor(month_num),
+		day = math.floor(day_num),
 	})
+	if not timestamp then
+		return
+	end
+
 	local adjusted = timestamp + delta * 24 * 60 * 60
-	local new_date = os.date("%Y-%m-%d", adjusted)
+	local new_date = ymd_date(adjusted)
 
 	todo:set_meta_value(meta_key, new_date)
 	vim.api.nvim_buf_set_lines(0, row - 1, row, false, { todo:render() })
@@ -262,7 +295,7 @@ local function set_meta_date_today(meta_key)
 		return
 	end
 
-	todo:set_meta_value(meta_key, os.date("%Y-%m-%d"))
+	todo:set_meta_value(meta_key, ymd_date())
 	vim.api.nvim_buf_set_lines(0, row - 1, row, false, { todo:render() })
 	highlight_dates()
 end
