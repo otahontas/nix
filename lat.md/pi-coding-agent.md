@@ -35,7 +35,7 @@ The Pi wrapper loads secrets from pass, extends `PATH`, and lets package-managed
 
 Single-file TypeScript extensions live in `extensions/` and are symlinked to `~/.pi/agent/extensions/`.
 
-Root `tsconfig.json` typechecks these files plus root `.pi/extensions/**/*.ts` against Pi's real package types. `prek` runs this typecheck only for staged TypeScript file changes.
+Root `tsconfig.json` typechecks these files plus root `.pi/extensions/**/*.ts` against Pi's real package types. `prek` runs this typecheck only for staged TypeScript file changes. Root devenv follows `home/pi-nix`, whose revision lives in `home/flake.lock`.
 
 - `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
 - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, slash-containing branch names, non-standard worktree paths, and `--no-verify` commits
