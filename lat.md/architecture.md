@@ -49,7 +49,7 @@ Treefmt excludes generated `.devenv/` and root `AGENTS.md`; tracked `.devenv-mod
 
 Root language tooling covers repo filetypes that need editor or hook support.
 
-- `devenv.nix` imports `.devenv-modules/`; `packages.nix` installs LSPs for Fish, JSON, Lua, TypeScript, YAML, and TOML, plus markdownlint for editor/hook linting, while `common.nix` packages config-file-validator for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
+- `devenv.nix` imports `.devenv-modules/`; `packages.nix` installs LSPs for Fish, JSON, Lua, TypeScript, YAML, and TOML, plus markdownlint for editor/hook linting, while `common.nix` exposes config-file-validator from the `otahontas-nixpkgs` input for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
 - `.nvim.lua` adds `.nvim/` to `runtimepath` and loads repo-local modules; `.nvim/lua/local_lsp.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, `ts_ls`, and `taplo`; custom LSP config files live in `.nvim/lsp/`, and `.nvim/lua/local_lint.lua` defines repo-only nvim-lint behavior.
 - Hooks check Nix with deadnix, Statix, and treefmt/nixfmt; shell scripts with ShellCheck's default severity and source following to match bashls more closely; Fish syntax with `fish --no-execute`; JSON syntax with `jq empty`; Lua with EmmyLua; TypeScript with `tsc --noEmit`; Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`; TOML with `taplo lint`; YAML with relaxed `yamllint`; and JSON/YAML/TOML schemas with config-file-validator.
 - JSON keeps `jsonls` for editor syntax and schema diagnostics while hooks keep fast `jq empty` syntax checks and add config-file-validator for SchemaStore-backed schema checks.
@@ -137,7 +137,7 @@ Config schema diagnostics use config-file-validator in hooks and SchemaStore.nvi
 
 The hook runs config-file-validator with SchemaStore enabled, no config discovery, and `devenv.yaml` mapped to `https://devenv.sh/devenv.schema.json`. Files with no matching schema pass syntax-only.
 
-`.devenv-modules/common.nix` packages config-file-validator with `buildGoModule` from Boeing's v2.2.2 tag. The package keeps upstream tests enabled and patches one path-sensitive test assertion that matched Nix's `/build` path.
+`.devenv-modules/common.nix` takes config-file-validator from the `otahontas-nixpkgs` devenv input (`github:otahontas/nixpkgs`) instead of carrying a local `buildGoModule` package.
 
 Neovim gets SchemaStore.nvim from Home Manager. `.nvim/lsp/jsonls.lua` and `.nvim/lsp/yamlls.lua` feed SchemaStore schemas into JSON and YAML language servers, then YAML adds the same `devenv.yaml` schema for root and nested paths.
 
@@ -217,6 +217,8 @@ Both flakes pin `nixpkgs-unstable` independently. `home/` pulls extra inputs:
 - **google-workspace-cli** — upstream Google Workspace CLI flake that supplies `gws`
 - **brew-nix** — package overlay used by `mas` for Mac App Store installs
 - **brew-api** — non-flake Homebrew API source followed by `brew-nix`
+
+Root `devenv.yaml` also pulls `github:otahontas/nixpkgs` as `otahontas-nixpkgs` so hooks can install packaged personal tools without local derivations.
 
 ## AGENTS.md pipeline
 

@@ -162,6 +162,40 @@
         "type": "github"
       }
     },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1782636521,
+        "narHash": "sha256-OG8laCOGtkxlB1JH3XqOnXxnkGJme4mQdXo5hkhCQIY=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "e1c1b84752fb0897897380a3cae9dc7fcab91ca3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "otahontas-nixpkgs": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1782739191,
+        "narHash": "sha256-NFurp7S1JrYJ1hh0vOxaTGnQ2HW9wMG3CioxCYs6hkQ=",
+        "owner": "otahontas",
+        "repo": "nixpkgs",
+        "rev": "57d1b54293aeede8fe568ebf1c80b887bc091036",
+        "type": "github"
+      },
+      "original": {
+        "owner": "otahontas",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "pi-nix": {
       "inputs": {
         "bun2nix": "bun2nix",
@@ -190,6 +224,7 @@
         "devenv": "devenv",
         "git-hooks": "git-hooks",
         "nixpkgs": "nixpkgs",
+        "otahontas-nixpkgs": "otahontas-nixpkgs",
         "pi-nix": "pi-nix",
         "treefmt-nix": "treefmt-nix_2"
       }

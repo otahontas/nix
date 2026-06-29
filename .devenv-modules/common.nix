@@ -17,34 +17,8 @@ let
     exec ${pkgs.typescript}/bin/tsc -p tsconfig.json --noEmit --pretty false
   '';
   # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Config schema diagnostics]]
-  configFileValidator = pkgs.buildGoModule rec {
-    pname = "config-file-validator";
-    version = "2.2.2";
-
-    src = pkgs.fetchFromGitHub {
-      owner = "Boeing";
-      repo = "config-file-validator";
-      rev = "v${version}";
-      hash = "sha256-NX/GjicrpM4iCztAPPiiLrDCIImC8gWG5cgmkEPiyAg=";
-    };
-
-    vendorHash = "sha256-q8tpLBtmg061BnQnv6DE56+eYPmFNfYV+vBbPQRCwwE=";
-    subPackages = [ "cmd/validator" ];
-    ldflags = [ "-X github.com/Boeing/config-file-validator/v2.version=v${version}" ];
-    nativeCheckInputs = [ pkgs.git ];
-
-    postPatch = ''
-      substituteInPlace cmd/validator/testdata/gitignore.txtar \
-        --replace-fail "! stdout 'build'" "! stdout 'build.output.json'"
-    '';
-
-    meta = {
-      description = "Cross-platform CLI tool to validate configuration files";
-      homepage = "https://github.com/Boeing/config-file-validator";
-      license = pkgs.lib.licenses.asl20;
-      mainProgram = "validator";
-    };
-  };
+  configFileValidator =
+    inputs.otahontas-nixpkgs.packages.${pkgs.stdenv.hostPlatform.system}.config-file-validator;
 in
 {
   _module.args = {
