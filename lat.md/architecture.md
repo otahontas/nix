@@ -215,6 +215,7 @@ TOML diagnostics use Taplo for editor and hook linting, with config-file-validat
 
 Home, system, and root devenv use `github:NixOS/nixpkgs/nixpkgs-unstable` as their primary `nixpkgs` source. `home/` pulls extra inputs:
 
+- **nixpkgs-mise-fixed** — temporary Home Manager input pinned to NixOS/nixpkgs#534965's merge commit so `mise` avoids the Darwin setuid test failure; remove once primary nixpkgs includes that fix
 - **catppuccin / pi-catppuccin** — global theme (latte/blue) across terminal, editor, pi TUI
 - **kanttiinit-cli** — personal CLI tool
 - **pi-nix** — external flake at `github:lukasl-dev/pi.nix`; supplies the Pi package and Home Manager module

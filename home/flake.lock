@@ -3,11 +3,11 @@
     "brew-api": {
       "flake": false,
       "locked": {
-        "lastModified": 1782192062,
-        "narHash": "sha256-2dHAEMLBFwpKwVwXof4FU4lvWF/FFF7TVFY/Dcoh/3A=",
+        "lastModified": 1782803858,
+        "narHash": "sha256-XhBxDzHhGJ5Q7OpvCAuZw6XdyT0Wtx+5VAFOqJdfjhw=",
         "owner": "BatteredBunny",
         "repo": "brew-api",
-        "rev": "5b188cb2117abc4dfeb8a920eb908195af147ca7",
+        "rev": "39e4a1f82ee717b0507d0fc43b0efaf5c52f4dfe",
         "type": "github"
       },
       "original": {
@@ -75,11 +75,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1782117778,
-        "narHash": "sha256-x6vIJpJziw3Hs0JKKDP+AeRPWwqyMDOmK6I26tqbYj4=",
+        "lastModified": 1782648384,
+        "narHash": "sha256-OlHdAqdXasZk1U+Zf9n+ivqHL9kj/UD0DFO4yYTNBYc=",
         "owner": "catppuccin",
         "repo": "nix",
-        "rev": "e98afe2dfd950bda4e6a8ef32bb563ec2f04505a",
+        "rev": "f2c7dd14ecce785c206a39466cbe227ff62e3803",
         "type": "github"
       },
       "original": {
@@ -156,11 +156,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1782166451,
-        "narHash": "sha256-SA7LyrayyZBvtzZnesnSLV7haciFuVLeZaX2hd5v4j4=",
+        "lastModified": 1782749631,
+        "narHash": "sha256-slFTUgDy0KTPA4LBAmC/9SngDq8GCPdX+ZR0yQHHN1E=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "471a1d2f840eb7fcbdfd541d99c13a64096f46db",
+        "rev": "5d72a29fc36ac21adae6ae35568fe5ee6700850f",
         "type": "github"
       },
       "original": {
@@ -176,11 +176,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780648797,
-        "narHash": "sha256-uztD7tYR+LD2AlHJQ1LjKXMisNqcun+0aXDPawqoNs4=",
+        "lastModified": 1782463225,
+        "narHash": "sha256-Bwy/St3Pdnz5ZnJkxosC/LRVXWaScFWjjEUtvayq6rU=",
         "owner": "otahontas",
         "repo": "kanttiinit-cli",
-        "rev": "27163f2a001b875e74ae75fd0581af81585fc608",
+        "rev": "4bf4d1c6e3d065f7c268841ed39c6de697554356",
         "type": "github"
       },
       "original": {
@@ -212,17 +212,33 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1781607440,
-        "narHash": "sha256-rxO+uc/KFbSJp+pgyXRuAX6QlG9hJdnt0BXpEQRXY+U=",
+        "lastModified": 1782731455,
+        "narHash": "sha256-weCjCyph1saaHwUdjTk6AAFn/w2riVwOimn/qZMFxKY=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "3e41b24abd260e8f71dbe2f5737d24122f972158",
+        "rev": "9c4c05a947a91dc14625265fab505fb695e93218",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
         "ref": "nixpkgs-unstable",
         "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-mise-fixed": {
+      "locked": {
+        "lastModified": 1782768440,
+        "narHash": "sha256-ETjRnnvcOllA+0TeX3uwcZABfniXkKYfnGcnltkT/y4=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "36b689324a65f495c6e01a44905457f7ca74e676",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "36b689324a65f495c6e01a44905457f7ca74e676",
         "type": "github"
       }
     },
@@ -233,11 +249,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1774252203,
-        "narHash": "sha256-LRiBOEl6WHKnG5DcufEfJ4G2/u4Boa7Hpy5VHjy79Qo=",
+        "lastModified": 1782296443,
+        "narHash": "sha256-vGLVjYeLeySjNFD6yfpog9Z8YEe5amg8ZngEPBRGs00=",
         "owner": "otahontas",
         "repo": "pi-coding-agent-catppuccin",
-        "rev": "0a415dacee3e1ba2971d8576a9d49201ca401a30",
+        "rev": "9a716a630c911a4d29d9520a8d5f87e3b8867f93",
         "type": "github"
       },
       "original": {
@@ -255,11 +271,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1782136524,
-        "narHash": "sha256-ZmNbXFrmpYWTJOlMFZdDmWV0UbRzFz9pNRZi8HDV/nI=",
+        "lastModified": 1782724139,
+        "narHash": "sha256-Dn7GnkFBiQ5h4S0wthikh68QK4LfipDhE7ODIUAyVcE=",
         "owner": "lukasl-dev",
         "repo": "pi.nix",
-        "rev": "29c6a9e994dc9d2e2e0802915b7ba975f687f78b",
+        "rev": "8e64e43042900a764adbe22943fc2f798c71ef0b",
         "type": "github"
       },
       "original": {
@@ -277,6 +293,7 @@
         "home-manager": "home-manager",
         "kanttiinit-cli": "kanttiinit-cli",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-mise-fixed": "nixpkgs-mise-fixed",
         "pi-catppuccin": "pi-catppuccin",
         "pi-nix": "pi-nix"
       }
