@@ -25,13 +25,6 @@ let
     ];
   };
 
-  puppeteerConfig = pkgs.writeText "puppeteer-config.json" (
-    builtins.toJSON {
-      executablePath = "${pkgs.google-chrome}/bin/google-chrome-stable";
-      args = [ "--no-sandbox" ];
-    }
-  );
-
   todoScript = builtins.readFile ./scripts/todo.sh;
   dailyScript = builtins.readFile ./scripts/daily.sh;
   grealpathForNeovim = pkgs.writeShellScriptBin "grealpath" ''
@@ -47,7 +40,6 @@ in
     "nvim/lua".source = treesitterLuaDir;
     "nvim/plugin".source = ./nvim/plugin;
     "nvim/after".source = ./nvim/after;
-    "nvim/puppeteer-config.json".source = puppeteerConfig;
   };
 
   programs = {
@@ -63,9 +55,6 @@ in
       autowrapRuntimeDeps = true;
       initLua = builtins.readFile ./nvim/init.lua;
       extraPackages = with pkgs; [
-        imagemagick
-        mermaid-cli
-        google-chrome
         tree-sitter
         grealpathForNeovim
       ];
@@ -95,8 +84,6 @@ in
 
         # Markdown
         markview-nvim
-        image-nvim
-        diagram-nvim
 
         # Note: catppuccin is auto-installed, so not included here
       ];

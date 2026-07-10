@@ -58,7 +58,6 @@ Bash and Fish helpers keep branch names and `.worktrees/<branch>` paths identica
 
 Neovim is Home Manager-managed, while root `.nvim.lua` adds `.nvim/` for repo-local Lua modules and LSP overrides.
 
-- Markdown diagram/image rendering loads on Markdown buffers, skips headless sessions, and reports setup failures with notifications instead of breaking startup.
 - nvim-lint is installed with a global save autocmd; repo-local `.nvim/lua/local_lint.lua` defines file-path Markdown linting and chooses which linters apply.
 - SchemaStore.nvim is installed so repo-local `.nvim/lsp/` configs can feed SchemaStore catalogs and repo-specific schema extras into JSON/YAML language servers.
 - LSP reference highlights run on `CursorHold` and clear on cursor movement or buffer leave, avoiding a document-highlight request on every cursor move.
