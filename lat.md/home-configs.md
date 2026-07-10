@@ -42,6 +42,7 @@ Configs worth documenting beyond a table row.
 - **pi-coding-agent** — installs Pi from `github:lukasl-dev/pi.nix`; see [[pi-coding-agent]] for wrapper, package, extension, skill, and prompt details
 - **iina** — installs the app and uses `duti` only from the activation store path for media file associations
 - **discord** — installs the signed brew-nix cask and keeps Discord's mutable settings compatible with GUI launch updates
+- **fzf** — disables plugin `Ctrl-R` binding so history manager binding (`atuin`) remains owner when both are enabled
 - **password-store** — pass with GPG integration plus `pass-otp`, `pass-genphrase`, and `pass-update`
 - **neovim** — blink.cmp without copilot source; `copilot.lua` plugin for inline Copilot suggestions, with panel disabled and telemetry set to off; root `.nvim.lua` adds the repo runtime, `.nvim/lua/local_lsp.lua` enables repo LSPs, and `.nvim/lsp/` holds custom configs; Ruby/Python providers disabled; ghost text disabled
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, global ignores, worktree scripts
