@@ -8,13 +8,14 @@ Directory layout under `home/configs/pi-coding-agent/`.
 
 - `default.nix` — installs Pi through `pi.nix`, wraps it with pass-backed API keys, exposes wrapper-only helper tools, symlinks local extensions/skills/prompts, and writes Pi config files
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md`; see [[architecture#AGENTS.md pipeline]]
+- `sources/githits-mcp/SKILL.md` — official GitHits guided MCP skill, symlinked to `~/.agents/skills/githits-mcp/SKILL.md`
 - `extensions/` — local single-file TypeScript extensions symlinked to `~/.pi/agent/extensions/`
 - `skills/` — repo-owned skills symlinked to `~/.pi/agent/skills/`
 - `prompts/` — `merge-worktree.md` and `security-review.md`, symlinked to `~/.pi/agent/prompts/`
 - `scripts/build-session-index.sh` — launchd-backed session-history indexer with explicit Nix runtime tools
 - `merge-settings.sh` — activation hook that merges repo settings and deletes stale `subagents.agentOverrides` before applying repo-managed overrides
 - `settings.json` — default provider/model settings, subagent model overrides, terminal settings, shell command prefix, and unpinned Pi packages
-- `mcp.json` — context7, githits, and chrome-devtools MCP template; `default.nix` replaces `@chromeExecutable@` with the Nix Chrome package path
+- `mcp.json` — remote Context7, local GitHits CLI, and local chrome-devtools MCP template; `default.nix` replaces `@chromeExecutable@` with the Nix Chrome package path
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module
 - `home/flake.nix` input `otahontas-nixpkgs` (`github:otahontas/nixpkgs`) supplies `lat-md` and `plannotator`
 
@@ -22,7 +23,8 @@ Directory layout under `home/configs/pi-coding-agent/`.
 
 The Pi wrapper loads secrets from pass, extends `PATH`, and lets package-managed extensions supply reusable features.
 
-- `default.nix` reads pass entries for Gemini web search, context7, githits, and `LAT_LLM_KEY` before Pi starts.
+- `default.nix` reads pass entries for Gemini web search, Context7, GitHits, and `LAT_LLM_KEY` before Pi starts. It exports the GitHits secret as `GITHITS_API_TOKEN`.
+- `mcp.json` uses GitHits' official Pi server entry: `GitHits` name, `githits@latest` over stdio, and eager lifecycle. The process inherits `GITHITS_API_TOKEN` from the Pi wrapper.
 - Wrapper-only tools include `lat.md` and `plannotator` from `otahontas-nixpkgs`, plus Poppler tools and `rtk`.
 - `settings.json` defaults to `openai-codex/gpt-5.6-sol` with `xhigh` thinking and enables `openai-codex/gpt-5.6-sol`, `openai-codex/gpt-5.6-terra`, and `openai-codex/gpt-5.6-luna`.
 - Bundled `scout` and `reviewer` use `openai-codex/gpt-5.6-sol`, with reviewer fallback aligned to `openai-codex/gpt-5.6-sol`.
@@ -140,6 +142,7 @@ Simplify reviews changed code for clarity, consistency, and maintainability thro
 Repo-owned skills and prompt templates are symlinked to Pi's config directory by Home Manager.
 
 - Local skills live under `skills/`; package-managed skills and commands stay in `settings.json`.
+- GitHits' official guided skill uses the shared `~/.agents/skills/githits-mcp/` path from its Pi setup.
 - Prompt templates live under `prompts/` and are symlinked to `~/.pi/agent/prompts/`.
 - External skills installed outside this repo are user-level state, not Home Manager state here.
 

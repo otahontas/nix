@@ -6,10 +6,10 @@
         "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
       }
     },
-    "githits": {
-      "url": "https://mcp.githits.com/",
-      "auth": "bearer",
-      "bearerTokenEnv": "GITHITS_API_KEY"
+    "GitHits": {
+      "command": "npx",
+      "args": ["-y", "githits@latest", "mcp", "start"],
+      "lifecycle": "eager"
     },
     "chrome-devtools": {
       "command": "npx",

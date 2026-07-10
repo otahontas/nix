@@ -40,9 +40,9 @@ let
 
       GEMINI_API_KEY="$(read_secret api/gemini-pi-coding-agent-web-search)"
       CONTEXT7_API_KEY="$(read_secret api/context7)"
-      GITHITS_API_KEY="$(read_secret api/githits)"
+      GITHITS_API_TOKEN="$(read_secret api/githits)"
       LAT_LLM_KEY="$(read_secret api/lat-md)"
-      export GEMINI_API_KEY CONTEXT7_API_KEY GITHITS_API_KEY LAT_LLM_KEY
+      export GEMINI_API_KEY CONTEXT7_API_KEY GITHITS_API_TOKEN LAT_LLM_KEY
       unset -f read_secret
       unset pass_cmd
     fi
@@ -96,6 +96,7 @@ in
     packages = [ piLatMd ];
 
     file = {
+      ".agents/skills/githits-mcp/SKILL.md".source = ./sources/githits-mcp/SKILL.md;
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
       ".pi/agent/mcp.json".source = mcpConfig;
     }
