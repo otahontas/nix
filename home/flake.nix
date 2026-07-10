@@ -37,6 +37,10 @@
       url = "github:BatteredBunny/brew-api";
       flake = false;
     };
+    otahontas-nixpkgs = {
+      url = "github:otahontas/nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs =
     {
@@ -48,6 +52,7 @@
       kanttiinit-cli,
       pi-nix,
       google-workspace-cli,
+      otahontas-nixpkgs,
       brew-nix,
       ...
     }:
@@ -83,6 +88,7 @@
           inherit
             kanttiinit-cli
             google-workspace-cli
+            otahontas-nixpkgs
             system
             pi-nix
             ;

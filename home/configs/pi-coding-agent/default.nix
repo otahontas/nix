@@ -4,13 +4,14 @@
   config,
   system,
   pi-nix,
+  otahontas-nixpkgs,
   ...
 }:
 
 let
   piPackage = pi-nix.packages.${system}.coding-agent;
-  piLatMd = pkgs.callPackage ./lat-md.nix { };
-  piPlannotator = pkgs.callPackage ./plannotator.nix { };
+  piLatMd = otahontas-nixpkgs.packages.${system}.lat-md;
+  piPlannotator = otahontas-nixpkgs.packages.${system}.plannotator;
   mcpConfig = pkgs.writeText "pi-mcp.json" (
     builtins.replaceStrings
       [ "@chromeExecutable@" ]

@@ -220,6 +220,7 @@
         "kanttiinit-cli": "kanttiinit-cli",
         "nixpkgs": "nixpkgs",
         "nixpkgs-mise-fixed": "nixpkgs-mise-fixed",
+        "otahontas-nixpkgs": "otahontas-nixpkgs",
         "pi-catppuccin": "pi-catppuccin",
         "pi-nix": "pi-nix"
       },
@@ -363,6 +364,27 @@
     },
     "otahontas-nixpkgs": {
       "inputs": {
+        "nixpkgs": [
+          "home",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783681169,
+        "narHash": "sha256-gOGx4IehN0PsH3Wc5/Ib73z9hAh7/uHYZbryYf1CRGE=",
+        "owner": "otahontas",
+        "repo": "nixpkgs",
+        "rev": "5d2f9f01c1e99343927d75ba0a8ed441bb5afc8e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "otahontas",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "otahontas-nixpkgs_2": {
+      "inputs": {
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
@@ -429,7 +451,7 @@
         "git-hooks": "git-hooks",
         "home": "home",
         "nixpkgs": "nixpkgs_2",
-        "otahontas-nixpkgs": "otahontas-nixpkgs",
+        "otahontas-nixpkgs": "otahontas-nixpkgs_2",
         "pi-nix": [
           "home",
           "pi-nix"

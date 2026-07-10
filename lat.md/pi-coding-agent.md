@@ -7,8 +7,6 @@ Home Manager config for Pi CLI, wrapper tools, package-managed extensions, local
 Directory layout under `home/configs/pi-coding-agent/`.
 
 - `default.nix` — installs Pi through `pi.nix`, wraps it with pass-backed API keys, exposes wrapper-only helper tools, symlinks local extensions/skills/prompts, and writes Pi config files
-- `lat-md.nix` — builds the pinned `lat.md` CLI from the upstream GitHub tag with `pnpm-lock.yaml`
-- `plannotator.nix` — builds the pinned Plannotator CLI package for the Pi wrapper
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md`; see [[architecture#AGENTS.md pipeline]]
 - `extensions/` — local single-file TypeScript extensions symlinked to `~/.pi/agent/extensions/`
 - `skills/` — repo-owned skills symlinked to `~/.pi/agent/skills/`
@@ -18,13 +16,14 @@ Directory layout under `home/configs/pi-coding-agent/`.
 - `settings.json` — default provider/model settings, subagent model overrides, terminal settings, shell command prefix, and unpinned Pi packages
 - `mcp.json` — context7, githits, and chrome-devtools MCP template; `default.nix` replaces `@chromeExecutable@` with the Nix Chrome package path
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module
+- `home/flake.nix` input `otahontas-nixpkgs` (`github:otahontas/nixpkgs`) supplies `lat-md` and `plannotator`
 
 ## Wrapper and package resources
 
 The Pi wrapper loads secrets from pass, extends `PATH`, and lets package-managed extensions supply reusable features.
 
 - `default.nix` reads pass entries for Gemini web search, context7, githits, and `LAT_LLM_KEY` before Pi starts.
-- Wrapper-only tools include the pinned `lat.md` CLI, pinned Plannotator CLI, Poppler tools, and `rtk`.
+- Wrapper-only tools include `lat.md` and `plannotator` from `otahontas-nixpkgs`, plus Poppler tools and `rtk`.
 - `settings.json` defaults to `openai-codex/gpt-5.6-sol` with `xhigh` thinking and enables `openai-codex/gpt-5.6-sol`, `openai-codex/gpt-5.6-terra`, and `openai-codex/gpt-5.6-luna`.
 - Bundled `scout` and `reviewer` use `openai-codex/gpt-5.6-sol`, with reviewer fallback aligned to `openai-codex/gpt-5.6-sol`.
 - NPM Pi packages include `pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, `pi-caveman`, `@plannotator/pi-extension`, `pi-agent-goal`, `pi-rtk-optimizer`, `@quintinshaw/pi-dynamic-workflows`, and `pi-simplify`.

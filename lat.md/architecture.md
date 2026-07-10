@@ -27,7 +27,7 @@ This repo uses devenv for reproducible development environments.
 - Use `devenv up` for process services.
 - Always use devenv to install tools and services or to define tasks.
 - This devenv setup keeps repo-specific tools, tasks, and hooks in `devenv.nix` plus tracked `.devenv-modules/` files.
-- Home Manager installs the global `lat.md` CLI from `home/configs/pi-coding-agent/lat-md.nix`, not from root `devenv.nix`.
+- Home Manager installs the global `lat.md` CLI from `otahontas-nixpkgs` via `home/configs/pi-coding-agent/default.nix`, not from root `devenv.nix`.
 
 ## Root devenv setup
 
@@ -222,8 +222,9 @@ Home, system, and root devenv use `github:NixOS/nixpkgs/nixpkgs-unstable` as the
 - **google-workspace-cli** — upstream Google Workspace CLI flake that supplies `gws`
 - **brew-nix** — package overlay used by `mas` for Mac App Store installs
 - **brew-api** — non-flake Homebrew API source followed by `brew-nix`
+- **otahontas-nixpkgs** — package flake supplying personal CLIs such as `lat-md` and `plannotator`
 
-Root `devenv.yaml` also pulls `github:otahontas/nixpkgs` as `otahontas-nixpkgs` so hooks can install packaged personal tools without local derivations. It imports `./home` only so root `pi-nix` can follow `home/pi-nix` for Pi extension typechecks.
+`home/flake.nix` passes `otahontas-nixpkgs` through to Pi config. Root `devenv.yaml` also pulls `github:otahontas/nixpkgs` as `otahontas-nixpkgs` so hooks can install packaged personal tools without local derivations. It imports `./home` only so root `pi-nix` can follow `home/pi-nix` for Pi extension typechecks.
 
 ## AGENTS.md pipeline
 
@@ -255,7 +256,7 @@ If `readlink` shows a nix store path, find the source (flake config, home-manage
 LAT tooling gets `LAT_LLM_KEY` from the global Pi wrapper, keeping the value outside git and avoiding per-repo secret setup.
 
 - The Pi wrapper in `home/configs/pi-coding-agent/default.nix` reads pass entry `api/lat-md` directly into `LAT_LLM_KEY`.
-- Root `devenv.nix` no longer installs the `lat.md` CLI; `home/configs/pi-coding-agent/default.nix` calls `lat-md.nix` and exposes the result globally.
+- Root `devenv.nix` no longer installs the `lat.md` CLI; `home/configs/pi-coding-agent/default.nix` uses `otahontas-nixpkgs` packages `lat-md` and `plannotator` and exposes them globally.
 
 ## Tasks
 
