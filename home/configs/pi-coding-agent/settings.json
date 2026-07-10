@@ -9,17 +9,6 @@
     "openai-codex/gpt-5.6-terra",
     "openai-codex/gpt-5.6-luna"
   ],
-  "subagents": {
-    "agentOverrides": {
-      "reviewer": {
-        "model": "openai-codex/gpt-5.6-sol",
-        "fallbackModels": ["openai-codex/gpt-5.6-sol"]
-      },
-      "scout": {
-        "model": "openai-codex/gpt-5.6-sol"
-      }
-    }
-  },
   "hideThinkingBlock": true,
   "terminal": {
     "showTerminalProgress": true,
@@ -29,12 +18,8 @@
   "packages": [
     "npm:pi-mcp-adapter",
     "npm:pi-web-access",
-    "npm:pi-subagents",
     "npm:pi-caveman",
     "npm:@plannotator/pi-extension",
-    "npm:pi-agent-goal",
-    "npm:pi-rtk-optimizer",
-    "npm:@quintinshaw/pi-dynamic-workflows",
-    "npm:pi-simplify"
+    "npm:pi-rtk-optimizer"
   ]
 }

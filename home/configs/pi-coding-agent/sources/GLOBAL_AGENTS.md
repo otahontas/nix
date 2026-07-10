@@ -7,7 +7,7 @@
   - When setup gets complex, create `devenv.nix`
   - Don't bypass devenv with global installs
   - `devenv search <query>` to find packages and options
-- When working with external libraries, use MCP tools (`context7`, `githits`) to look up docs and examples instead of guessing APIs
+- When working with external libraries, use MCP tools (`context7`, `githits` and tools for specific libraries, such as `astro`, `cloudflare` if available ) to look up docs and examples instead of guessing APIs
 
 ## Writing
 
@@ -30,17 +30,12 @@
 - Only fix what's asked - no bonus improvements, refactoring, or extra comments unless requested
 - Don't reorganize imports or rename variables unless explicitly asked to
 - Use existing patterns and conventions in the codebase — same error shapes, same file structure, same naming. Don't invent new approaches when there's already a working one.
-- Place tests next to the files they test, not in a separate test directory. Integration tests can be next to the stack/module they test.
 
 ## General workflow
 
 - Always clarify users intention unless request is completely clear
-- If uncertain, say so immediately - don't guess what to implement
 - When debugging, run diagnostic commands and present findings before proposing a fix. Don't jump to solutions.
 - When user says "investigate", "check", "inspect", or "audit", only investigate and report findings. Don't implement changes unless explicitly told to.
-- Delegate complex tasks through pi-subagents: scout → plan → implement → review → fix
-- Run parallel reviewers after every non-trivial implementation
-- Ask oracle for a second opinion before risky decisions
 
 ## Local development scripts
 
