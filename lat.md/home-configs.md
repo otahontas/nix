@@ -43,7 +43,7 @@ Configs worth documenting beyond a table row.
 - **iina** — installs the app and uses `duti` only from the activation store path for media file associations
 - **discord** — installs the signed brew-nix cask and keeps Discord's mutable settings compatible with GUI launch updates
 - **password-store** — pass with GPG integration plus `pass-otp`, `pass-genphrase`, and `pass-update`
-- **neovim** — blink.cmp with Copilot LSP + blink-copilot source; root `.nvim.lua` adds the repo runtime, `.nvim/lua/local_lsp.lua` enables repo LSPs, and `.nvim/lsp/` holds custom configs; Ruby/Python providers disabled; ghost text disabled
+- **neovim** — blink.cmp without copilot source; `copilot.lua` plugin for inline Copilot suggestions, with panel disabled and telemetry set to off; root `.nvim.lua` adds the repo runtime, `.nvim/lua/local_lsp.lua` enables repo LSPs, and `.nvim/lsp/` holds custom configs; Ruby/Python providers disabled; ghost text disabled
 - **git** — GPG-signed commits, allowed_signers, gh CLI helpers, global ignores, worktree scripts
 - **yazi** — file manager with git status, starship prompt, relative motions, and character jump; git fetchers share `group = "git"` for Yazi 26.5.6+
 
@@ -62,7 +62,7 @@ Neovim is Home Manager-managed, while root `.nvim.lua` adds `.nvim/` for repo-lo
 - SchemaStore.nvim is installed so repo-local `.nvim/lsp/` configs can feed SchemaStore catalogs and repo-specific schema extras into JSON/YAML language servers.
 - LSP reference highlights run on `CursorHold` and clear on cursor movement or buffer leave, avoiding a document-highlight request on every cursor move.
 - The Neovim wrapper PATH includes `tree-sitter` for Treesitter health and a private `grealpath` wrapper for yazi relative-path copy without exposing `grealpath` globally.
-- Copilot LSP telemetry is disabled, and GitHub permalink copy resolves the repository from the current buffer path before running `git` or `gh` commands.
+- GitHub permalink copy resolves the repository from the current buffer path before running `git` or `gh` commands. Copilot now uses `copilot.lua` with inline suggestions, auto-trigger enabled, panel disabled, and telemetry off.
 
 ## Config index
 

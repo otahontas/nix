@@ -66,14 +66,13 @@ in
         imagemagick
         mermaid-cli
         google-chrome
-        copilot-language-server
         tree-sitter
         grealpathForNeovim
       ];
       plugins = with pkgs.vimPlugins; [
         # Completion & snippets
         blink-cmp
-        blink-copilot
+        copilot-lua
         friendly-snippets
 
         # Editor enhancements
