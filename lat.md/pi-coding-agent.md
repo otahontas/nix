@@ -25,8 +25,8 @@ The Pi wrapper loads secrets from pass, extends `PATH`, and lets package-managed
 
 - `default.nix` reads pass entries for Gemini web search, context7, githits, and `LAT_LLM_KEY` before Pi starts.
 - Wrapper-only tools include the pinned `lat.md` CLI, pinned Plannotator CLI, Poppler tools, and `rtk`.
-- `settings.json` defaults to OpenAI Codex `gpt-5.5` with `xhigh` thinking and enables `gpt-5.5` plus `gpt-5.3-codex-spark`.
-- Bundled `scout` uses Spark; bundled `reviewer` uses Spark with `gpt-5.5` fallback.
+- `settings.json` defaults to `openai-codex/gpt-5.6-sol` with `xhigh` thinking and enables `openai-codex/gpt-5.6-sol`, `openai-codex/gpt-5.6-terra`, and `openai-codex/gpt-5.6-luna`.
+- Bundled `scout` and `reviewer` use `openai-codex/gpt-5.6-sol`, with reviewer fallback aligned to `openai-codex/gpt-5.6-sol`.
 - NPM Pi packages include `pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, `pi-caveman`, `@plannotator/pi-extension`, `pi-agent-goal`, `pi-rtk-optimizer`, `@quintinshaw/pi-dynamic-workflows`, and `pi-simplify`.
 - Bundled agents come from `pi-subagents` (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate); no local `agents/` directory is needed.
 - Unpinned NPM packages update with `pi update --extensions`.

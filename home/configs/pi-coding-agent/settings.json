@@ -1,18 +1,22 @@
 {
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.5",
+  "defaultModel": "openai-codex/gpt-5.6-sol",
   "defaultThinkingLevel": "xhigh",
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
-  "enabledModels": ["openai-codex/gpt-5.5", "openai-codex/gpt-5.3-codex-spark"],
+  "enabledModels": [
+    "openai-codex/gpt-5.6-sol",
+    "openai-codex/gpt-5.6-terra",
+    "openai-codex/gpt-5.6-luna"
+  ],
   "subagents": {
     "agentOverrides": {
       "reviewer": {
-        "model": "openai-codex/gpt-5.3-codex-spark",
-        "fallbackModels": ["openai-codex/gpt-5.5"]
+        "model": "openai-codex/gpt-5.6-sol",
+        "fallbackModels": ["openai-codex/gpt-5.6-sol"]
       },
       "scout": {
-        "model": "openai-codex/gpt-5.3-codex-spark"
+        "model": "openai-codex/gpt-5.6-sol"
       }
     }
   },
