@@ -7,19 +7,20 @@
   "enabledModels": [
     "openai-codex/gpt-5.6-sol",
     "openai-codex/gpt-5.6-terra",
-    "openai-codex/gpt-5.6-luna"
+    "openai-codex/gpt-5.6-luna",
+    "openai-codex/gpt-5.3-codex-spark"
   ],
   "hideThinkingBlock": true,
   "terminal": {
-    "showTerminalProgress": true,
-    "imageWidthCells": 120
+    "showTerminalProgress": true
   },
   "shellCommandPrefix": "export GIT_EDITOR=true\nexport GIT_SEQUENCE_EDITOR=true\nexport GIT_TERMINAL_PROMPT=0",
   "packages": [
-    "npm:pi-mcp-adapter",
-    "npm:pi-web-access",
-    "npm:pi-caveman",
+    "npm:@dietrichgebert/ponytail",
     "npm:@plannotator/pi-extension",
-    "npm:pi-rtk-optimizer"
+    "npm:pi-caveman",
+    "npm:pi-mcp-adapter",
+    "npm:pi-rtk-optimizer",
+    "npm:pi-web-access"
   ]
 }
