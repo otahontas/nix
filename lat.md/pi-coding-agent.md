@@ -38,6 +38,8 @@ Single-file TypeScript extensions live in `extensions/` and are symlinked to `~/
 
 Root `tsconfig.json` typechecks these files plus root `.pi/extensions/**/*.ts` against Pi's real package types. `prek` runs this typecheck only for staged TypeScript file changes. Root devenv follows `home/pi-nix`, whose revision lives in `home/flake.lock`.
 
+Model-calling extensions use pi-ai's `builtinModels()` runtime with Pi-resolved request auth, avoiding the legacy `/compat` API. Pi 0.80.10 does not expose extension-only providers here, so these best-effort auxiliary calls skip them.
+
 - `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
 - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, slash-containing branch names, non-standard worktree paths, and `--no-verify` commits
 - `starship-widget.ts` — starship prompt as a below-editor widget while Pi's built-in footer stays enabled

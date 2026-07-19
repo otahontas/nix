@@ -6,15 +6,14 @@
  * gets at most one automatic follow-up.
  */
 
-import {
-  completeSimple,
-  type SimpleStreamOptions,
-} from "@earendil-works/pi-ai";
+import type { SimpleStreamOptions } from "@earendil-works/pi-ai";
+import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
 
+const models = builtinModels();
 const MAX_FOLLOWUPS = 1;
 const STOP_HOOK_CHECK_START_EVENT = "otahontas.stop-hook.check-start";
 const STOP_HOOK_CHECK_END_EVENT = "otahontas.stop-hook.check-end";
@@ -90,19 +89,22 @@ async function askGatekeeper(
   const model = ctx.model;
   if (!model) return null;
 
+  if (!models.getProvider(model.provider)) return null;
+
   const auth = await ctx.modelRegistry.getApiKeyAndHeaders(model);
   if (!auth.ok || !auth.apiKey) return null;
 
   const options: SimpleStreamOptions = {
     apiKey: auth.apiKey,
     headers: auth.headers,
+    env: auth.env,
     maxTokens: 16,
   };
   if (thinkingLevel !== "off") {
     options.reasoning = thinkingLevel;
   }
 
-  const response = await completeSimple(
+  const response = await models.completeSimple(
     model,
     { messages: contextMessages },
     options,

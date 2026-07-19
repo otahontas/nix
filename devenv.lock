@@ -272,6 +272,21 @@
         "type": "github"
       }
     },
+    "jail-nix": {
+      "locked": {
+        "lastModified": 1776230864,
+        "narHash": "sha256-YsEjjdOsGEzTeD+iT7ONh071BqWAOQWpzYVei3okAXE=",
+        "owner": "~alexdavid",
+        "repo": "jail.nix",
+        "rev": "404e7da9da5ab9aa643666682b2ba1312fa5fbe8",
+        "type": "sourcehut"
+      },
+      "original": {
+        "owner": "~alexdavid",
+        "repo": "jail.nix",
+        "type": "sourcehut"
+      }
+    },
     "kanttiinit-cli": {
       "inputs": {
         "nixpkgs": [
@@ -442,6 +457,7 @@
     "pi-nix": {
       "inputs": {
         "bun2nix": "bun2nix",
+        "jail-nix": "jail-nix",
         "nixpkgs": [
           "home",
           "nixpkgs"
@@ -449,11 +465,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1783670113,
-        "narHash": "sha256-WiwlLnJTQR/93+sJwEcxIf2l3m41M+yNVwnBmzP7PrU=",
+        "lastModified": 1784443395,
+        "narHash": "sha256-2lzUIQmuII9ArYPnalw7r7KZncx1Rd9BAs03Rrbfh3k=",
         "owner": "lukasl-dev",
         "repo": "pi.nix",
-        "rev": "4487dbbebd9664788f9644a3fe79f8a066e059db",
+        "rev": "ad0e9ee08260b1cb4506bf77e782c250ed35527c",
         "type": "github"
       },
       "original": {

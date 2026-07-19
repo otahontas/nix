@@ -2,12 +2,13 @@
  * Names Pi sessions from the first real user prompt.
  */
 
-import { completeSimple } from "@earendil-works/pi-ai";
+import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
 
+const models = builtinModels();
 const TITLE_MAX_LENGTH = 64;
 
 const GREETING_WORDS = new Set([
@@ -170,12 +171,16 @@ async function generateTitle(
     return undefined;
   }
 
+  if (!models.getProvider(model.provider)) {
+    return undefined;
+  }
+
   const auth = await ctx.modelRegistry.getApiKeyAndHeaders(model);
   if (!auth.ok || !auth.apiKey) {
     return undefined;
   }
 
-  const response = await completeSimple(
+  const response = await models.completeSimple(
     model,
     {
       messages: [
@@ -189,6 +194,7 @@ async function generateTitle(
     {
       apiKey: auth.apiKey,
       headers: auth.headers,
+      env: auth.env,
       maxTokens: 32,
     },
   );
