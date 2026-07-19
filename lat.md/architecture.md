@@ -220,11 +220,12 @@ Home, system, and root devenv use `github:NixOS/nixpkgs/nixpkgs-unstable` as the
 - **kanttiinit-cli** — personal CLI tool
 - **pi-nix** — external flake at `github:lukasl-dev/pi.nix`; supplies the Pi package and Home Manager module
 - **google-workspace-cli** — upstream Google Workspace CLI flake that supplies `gws`
+- **githits-cli** — non-flake GitHits source that supplies its official guided MCP skill
 - **brew-nix** — package overlay used by `mas` for Mac App Store installs
 - **brew-api** — non-flake Homebrew API source followed by `brew-nix`
 - **otahontas-nixpkgs** — package flake supplying personal CLIs such as `lat-md` and `plannotator`
 
-`home/flake.nix` passes `otahontas-nixpkgs` through to Pi config. Root `devenv.yaml` also pulls `github:otahontas/nixpkgs` as `otahontas-nixpkgs` so hooks can install packaged personal tools without local derivations. It imports `./home` only so root `pi-nix` can follow `home/pi-nix` for Pi extension typechecks.
+`home/flake.nix` passes `githits-cli` and `otahontas-nixpkgs` through to Pi config. Root `devenv.yaml` also pulls `github:otahontas/nixpkgs` as `otahontas-nixpkgs` so hooks can install packaged personal tools without local derivations. It imports `./home` only so root `pi-nix` can follow `home/pi-nix` for Pi extension typechecks.
 
 ## AGENTS.md pipeline
 

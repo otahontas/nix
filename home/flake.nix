@@ -28,6 +28,10 @@
       url = "github:googleworkspace/cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    githits-cli = {
+      url = "github:githits-com/githits-cli";
+      flake = false;
+    };
     brew-nix = {
       url = "github:BatteredBunny/brew-nix";
       inputs.brew-api.follows = "brew-api";
@@ -52,6 +56,7 @@
       kanttiinit-cli,
       pi-nix,
       google-workspace-cli,
+      githits-cli,
       otahontas-nixpkgs,
       brew-nix,
       ...
@@ -88,6 +93,7 @@
           inherit
             kanttiinit-cli
             google-workspace-cli
+            githits-cli
             otahontas-nixpkgs
             system
             pi-nix

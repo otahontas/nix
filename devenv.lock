@@ -188,6 +188,22 @@
         "type": "github"
       }
     },
+    "githits-cli": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783689965,
+        "narHash": "sha256-oEtYiWqHfEyiauuSqKdE/azY70hH7y+sKHKhrULMq5g=",
+        "owner": "githits-com",
+        "repo": "githits-cli",
+        "rev": "77509b2b46da32105e0dea1a435a6d9014c5ed8d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "githits-com",
+        "repo": "githits-cli",
+        "type": "github"
+      }
+    },
     "google-workspace-cli": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -215,6 +231,7 @@
         "brew-api": "brew-api",
         "brew-nix": "brew-nix",
         "catppuccin": "catppuccin",
+        "githits-cli": "githits-cli",
         "google-workspace-cli": "google-workspace-cli",
         "home-manager": "home-manager",
         "kanttiinit-cli": "kanttiinit-cli",

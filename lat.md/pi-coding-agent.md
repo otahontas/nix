@@ -8,7 +8,6 @@ Directory layout under `home/configs/pi-coding-agent/`.
 
 - `default.nix` — installs Pi through `pi.nix`, wraps it with pass-backed API keys, exposes wrapper-only helper tools, symlinks local extensions/skills/prompts, and writes Pi config files
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md`; see [[architecture#AGENTS.md pipeline]]
-- `sources/githits-mcp/SKILL.md` — official GitHits guided MCP skill, symlinked to `~/.agents/skills/githits-mcp/SKILL.md`
 - `extensions/` — local single-file TypeScript extensions symlinked to `~/.pi/agent/extensions/`
 - `skills/` — repo-owned skills symlinked to `~/.pi/agent/skills/`
 - `prompts/` — `merge-worktree.md` and `security-review.md`, symlinked to `~/.pi/agent/prompts/`
@@ -17,6 +16,7 @@ Directory layout under `home/configs/pi-coding-agent/`.
 - `settings.json` — default provider/model settings, subagent model overrides, terminal settings, shell command prefix, and unpinned Pi packages
 - `mcp.json` — remote Context7, local GitHits CLI, and local chrome-devtools MCP template; `default.nix` replaces `@chromeExecutable@` with the Nix Chrome package path
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module
+- `home/flake.nix` non-flake input `githits-cli` (`github:githits-com/githits-cli`) supplies the official guided MCP skill
 - `home/flake.nix` input `otahontas-nixpkgs` (`github:otahontas/nixpkgs`) supplies `lat-md` and `plannotator`
 
 ## Wrapper and package resources
@@ -142,7 +142,7 @@ Simplify reviews changed code for clarity, consistency, and maintainability thro
 Repo-owned skills and prompt templates are symlinked to Pi's config directory by Home Manager.
 
 - Local skills live under `skills/`; package-managed skills and commands stay in `settings.json`.
-- GitHits' official guided skill uses the shared `~/.agents/skills/githits-mcp/` path from its Pi setup.
+- GitHits' official guided skill uses its Pi setup's shared `~/.agents/skills/githits-mcp/` path. Home Manager links it directly from the locked `githits-cli` source, so `nix:update` refreshes it.
 - Prompt templates live under `prompts/` and are symlinked to `~/.pi/agent/prompts/`.
 - External skills installed outside this repo are user-level state, not Home Manager state here.
 

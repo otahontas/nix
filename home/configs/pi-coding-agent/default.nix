@@ -3,6 +3,7 @@
   lib,
   config,
   system,
+  githits-cli,
   pi-nix,
   otahontas-nixpkgs,
   ...
@@ -96,7 +97,7 @@ in
     packages = [ piLatMd ];
 
     file = {
-      ".agents/skills/githits-mcp/SKILL.md".source = ./sources/githits-mcp/SKILL.md;
+      ".agents/skills/githits-mcp/SKILL.md".source = githits-cli + "/skills/githits-mcp/SKILL.md";
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
       ".pi/agent/mcp.json".source = mcpConfig;
     }
