@@ -11,7 +11,8 @@ Conventions for writing home-manager configs.
 - **Home manager first** — use `programs`/`services`, fallback to `pkgs`
 - **Catppuccin** — global theme uses `catppuccin.enable = true` plus `autoEnable = true` to keep automatic port enrollment explicit
 - **Session variables** for paths and environment config
-- **GUI apps** — prefer home-manager when nixpkgs has darwin `.app` bundle; `targets.darwin.copyApps.enable = true` for Spotlight
+- **GUI apps** — prefer home-manager when nixpkgs or brew-nix provides a suitable Darwin `.app` bundle; `targets.darwin.copyApps.enable = true` for Spotlight
+- **Brew-nix ownership** — casks installed through `home.packages` count as Nix/Home Manager-managed, not manually installed
 - **Manual apps** — keep system-wide vendor installers in [[system-config#Manual applications]] instead of forcing them into Home Manager
 - **LaunchAgents** via `launchd.agents` for auto-start
 - **Out-of-store symlinks** via `config.lib.file.mkOutOfStoreSymlink` (see `symlinks/`)

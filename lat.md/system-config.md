@@ -21,15 +21,19 @@ macOS defaults and daemon settings.
 
 Manual system-wide apps and audio plug-ins stay outside nix-darwin when vendor installers manage drivers, plug-ins, content libraries, privileged helpers, or licenses better than Nix.
 
-Current manual exceptions:
+Brew-nix casks installed through `home.packages` are Nix/Home Manager-managed per [[home-configs#Patterns]]; package availability alone does not change current ownership.
 
-- **RME Fireface USB Settings / Totalmix** — install through the RME USB driver package so the kernel extension, MIDI driver plugin, LaunchAgent, and macOS approval flow stay vendor-managed.
-- **OrbStack** — may stay manual even though `nixpkgs#orbstack` exists; install from the vendor or Homebrew when system integration matters more than Nix ownership.
-- **Serum 2** — install manually because the vendor installer manages audio plug-ins, shared assets, and license state under system audio locations.
-- **Pianoteq and its plug-ins** — install manually because the Modartt installer manages the standalone app, plug-in formats, instruments, and license activation.
-- **Arturia Software Center and Arturia-installed plug-ins** — install manually because Arturia manages product downloads, plug-ins, shared assets, and license state through its own installer.
-- **Native Access and Native Instruments plug-ins** — install manually because Native Access manages product downloads, plug-ins, content libraries, shared assets, and license state.
-- **Nord Sound Manager** — install manually because Nord manages keyboard sound libraries and device sync through its own app.
+Current manual exceptions and Nix suitability:
+
+- **RME Fireface USB Settings / Totalmix** — keep vendor-managed. Neither locked nixpkgs nor brew-nix provides them, and the RME USB driver package owns the driver, MIDI driver plugin, LaunchAgent, and macOS approval flow.
+- **OrbStack** — keep manually installed system-wide despite `pkgs.orbstack` and `pkgs.brewCasks.orbstack`. Its first-run relocation flow targets `/Applications/OrbStack.app`, while its privileged helper and global `orb`/`orbctl` links depend on system locations. Accepting relocation from Home Manager escapes Nix ownership; declining leaves split ownership.
+- **Serum 2** — keep vendor-managed. No package exists in the locked sets, and the installer owns AU/VST3/AAX plug-ins, presets, shared assets, updates, and license state under system locations.
+- **Pianoteq and its plug-ins** — keep vendor-managed on macOS. Nixpkgs Pianoteq packages are Linux-only, while the Modartt macOS installer owns the standalone app, plug-in formats, instruments, support data, and license activation.
+- **Arturia Software Center-managed products** — keep Arturia Software Center, Analog Lab V standalone, and Arturia plug-ins vendor-managed. `pkgs.brewCasks.arturia-software-center` exists, but brew-nix extracts its vendor `.pkg` without reproducing installer scripts or required system `/Library` helper, agent, and resource placement.
+- **Native Access-managed products** — keep Native Access, Massive standalone, and Native Instruments plug-ins vendor-managed. `pkgs.brewCasks.native-access` packages the manager app, but privileged helpers, product installers, content, auto-updates, and licenses remain imperative; split ownership adds little value.
+- **Nord Sound Manager** — keep manual for now. Neither locked package set provides it; its direct signed DMG and lack of a detected privileged helper make custom Home Manager packaging feasible, but that would add local version and hash maintenance.
+
+No current manual exception benefits from nix-darwin `environment.systemPackages`: it does not reproduce vendor installer scripts or place plug-ins and helpers in required `/Library` locations. Self-contained GUI bundles belong in Home Manager instead.
 
 ## Keyboard layout file
 
