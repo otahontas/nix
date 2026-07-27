@@ -30,6 +30,57 @@ let
     ];
     text = builtins.readFile ./scripts/build-session-index.sh;
   };
+  installUiShSkills = pkgs.writeShellApplication {
+    name = "install-ui-sh-skills";
+    runtimeInputs = [
+      config.programs.password-store.package
+      pkgs.curl
+      pkgs.jq
+    ];
+    text = ''
+      token="$(pass show api/uidotsh)"
+
+      fetch() {
+        curl --fail --silent --show-error \
+          --header @<(printf 'Authorization: Bearer %s\n' "$token") \
+          --header 'Accept: application/json' \
+          "$1"
+      }
+
+      index="$(fetch https://ui.sh/api/skills)"
+      jq --exit-status '
+        .skills | type == "array" and
+        all(.[]; .name | type == "string" and test("^[a-z0-9-]+$"))
+      ' <<< "$index" >/dev/null
+
+      while IFS= read -r -d "" skill; do
+        response="$(fetch "https://ui.sh/api/skills/$skill")"
+        jq --exit-status --arg skill "$skill" '
+          .name == $skill and
+          (.files | type == "object") and
+          all(.files | to_entries[];
+            (.key | type == "string") and
+            (.value | type == "string")
+          )
+        ' <<< "$response" >/dev/null
+
+        while IFS= read -r -d "" file; do
+          case "$file" in
+            "" | /* | . | */. | .. | ../* | */.. | */../*)
+              printf 'Invalid ui.sh skill path: %s\n' "$file" >&2
+              exit 1
+              ;;
+          esac
+
+          target="$HOME/.agents/skills/$skill/$file"
+          mkdir -p "''${target%/*}"
+          jq --join-output --arg file "$file" '.files[$file]' <<< "$response" > "$target"
+        done < <(jq --join-output '.files | keys[] | ., "\u0000"' <<< "$response")
+      done < <(jq --join-output '.skills[].name | ., "\u0000"' <<< "$index")
+
+      printf 'Installed %s ui.sh skills.\n' "$(jq '.skills | length' <<< "$index")"
+    '';
+  };
 
   piWrapper = pkgs.writeShellScriptBin "pi" ''
     # Load API keys from pass before pi starts.
@@ -108,6 +159,9 @@ in
     # Activation script to merge settings into settings.json
     # This preserves all other settings managed by pi itself
     activation = {
+      installUiShSkills = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run ${installUiShSkills}/bin/install-ui-sh-skills
+      '';
       mergeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${pkgs.bash}/bin/bash ${./merge-settings.sh} ${./settings.json}
       '';

@@ -6,7 +6,7 @@ Home Manager config for Pi CLI, wrapper tools, package-managed extensions, local
 
 Directory layout under `home/configs/pi-coding-agent/`.
 
-- `default.nix` — installs Pi through `pi.nix`, wraps it with pass-backed API keys, exposes wrapper-only helper tools, symlinks local extensions/skills/prompts, and writes Pi config files
+- `default.nix` — installs Pi through `pi.nix`, wraps it with pass-backed API keys, refreshes ui.sh skills, exposes wrapper-only helper tools, symlinks local extensions/skills/prompts, and writes Pi config files
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md`; see [[architecture#AGENTS.md pipeline]]
 - `extensions/` — local single-file TypeScript extensions symlinked to `~/.pi/agent/extensions/`
 - `skills/` — repo-owned skills symlinked to `~/.pi/agent/skills/`
@@ -145,8 +145,9 @@ Repo-owned skills and prompt templates are symlinked to Pi's config directory by
 
 - Local skills live under `skills/`; package-managed skills and commands stay in `settings.json`.
 - GitHits' official guided skill uses its Pi setup's shared `~/.agents/skills/githits-mcp/` path. Home Manager links it directly from the locked `githits-cli` source, so `nix:update` refreshes it.
+- Home Manager activation reads `api/uidotsh` from pass and downloads every skill returned by ui.sh's authenticated API into `~/.agents/skills/`. New catalog entries install on the next apply.
 - Prompt templates live under `prompts/` and are symlinked to `~/.pi/agent/prompts/`.
-- External skills installed outside this repo are user-level state, not Home Manager state here.
+- Other external skills installed outside this repo remain user-level state.
 
 ## Adding skills or extensions
 
