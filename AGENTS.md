@@ -1,3 +1,4 @@
+%% lat:begin %%
 # Before starting work
 
 - Run `lat search` to find sections relevant to your task. Read them to understand the design intent before writing code.
@@ -103,3 +104,4 @@ Details about this child topic.
 ```
 
 The second example is invalid because `Bad Section` has no leading paragraph. `lat check` validates this rule and reports errors for missing or overly long leading paragraphs.
+%% lat:end %%

@@ -34,9 +34,9 @@ The Pi wrapper loads secrets from pass, extends `PATH`, and lets package-managed
 
 ## Local extensions
 
-Single-file TypeScript extensions live in `extensions/` and are symlinked to `~/.pi/agent/extensions/`.
+Home Manager-owned TypeScript extensions live in `extensions/`; project-specific extensions live under root `.pi/extensions/`.
 
-Root `tsconfig.json` typechecks these files plus root `.pi/extensions/**/*.ts` against Pi's real package types. `prek` runs this typecheck only for staged TypeScript file changes. Root devenv follows `home/pi-nix`, whose revision lives in `home/flake.lock`.
+Home Manager symlinks its extensions to `~/.pi/agent/extensions/`. Root `tsconfig.json` typechecks both extension sets against Pi's real package types. `prek` runs this typecheck only for staged TypeScript changes. Root devenv follows `home/pi-nix`, whose revision lives in `home/flake.lock`.
 
 Model-calling extensions use pi-ai's `builtinModels()` runtime with Pi-resolved request auth, avoiding the legacy `/compat` API. Pi 0.80.10 does not expose extension-only providers here, so these best-effort auxiliary calls skip them.
 
@@ -47,6 +47,15 @@ Model-calling extensions use pi-ai's `builtinModels()` runtime with Pi-resolved 
 - `name-session.ts` — names UI sessions from the first real user prompt with the current Pi model
 - `clone-cmd.ts` — `/clone-cmd` clones the current branch to a new session and copies a launch command
 - `notify.ts` — sends session-aware OSC 777 notifications with deterministic bodies and sanitized output
+
+### Project lat extension
+
+Project-local lat integration exposes documentation tools and enforces search and sync checks during each Pi turn.
+
+- `.pi/extensions/lat.ts` imports schemas from `typebox` and Pi APIs from the installed `@earendil-works` package family.
+- Six tools wrap `lat search`, `section`, `locate`, `check`, `expand`, and `refs`; each returns Pi's required `details`, while `lat_check` throws command failures as tool errors.
+- Expansion hints use `app.tools.expand`. Custom messages normalize string or rich content and honor Pi's configured output padding.
+- `before_agent_start` requires a search before file access. `agent_end` runs `lat check` and requests a follow-up when code changes lack proportional `lat.md/` updates.
 
 ### starship widget extension
 

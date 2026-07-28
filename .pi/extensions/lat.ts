@@ -169,11 +169,7 @@ export default function (pi: ExtensionAPI) {
         return { content: [{ type: "text", text: output }], details: {} };
       } catch (err: unknown) {
         const e = err as { stdout?: string; stderr?: string };
-        return {
-          content: [{ type: "text", text: e.stdout || e.stderr || "Check failed" }],
-          details: {},
-          isError: true,
-        };
+        throw new Error(e.stdout || e.stderr || "Check failed");
       }
     },
     renderCall(_args, theme) {
@@ -238,9 +234,9 @@ export default function (pi: ExtensionAPI) {
 
   // ── Message renderers ────────────────────────────────────────────
 
-  pi.registerMessageRenderer("lat-reminder", (message, { expanded }, theme) => {
+  pi.registerMessageRenderer("lat-reminder", (message, { expanded, outputPad }, theme) => {
     const content = customMessageText(message.content);
-    const box = new Box(1, 1, (t) => theme.bg("customMessageBg", t));
+    const box = new Box(outputPad, 1, (t) => theme.bg("customMessageBg", t));
     if (expanded) {
       box.addChild(new Text(theme.fg("accent", "lat.md"), 0, 0));
       box.addChild(new Markdown(content, 0, 0, getMarkdownTheme()));
@@ -255,9 +251,9 @@ export default function (pi: ExtensionAPI) {
     return box;
   });
 
-  pi.registerMessageRenderer("lat-check", (message, { expanded }, theme) => {
+  pi.registerMessageRenderer("lat-check", (message, { expanded, outputPad }, theme) => {
     const content = customMessageText(message.content);
-    const box = new Box(1, 1, (t) => theme.bg("customMessageBg", t));
+    const box = new Box(outputPad, 1, (t) => theme.bg("customMessageBg", t));
     if (expanded) {
       box.addChild(new Text(theme.fg("warning", "lat check"), 0, 0));
       box.addChild(new Markdown(content, 0, 0, getMarkdownTheme()));

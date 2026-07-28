@@ -190,7 +190,7 @@ Alternatives considered:
 
 TypeScript diagnostics typecheck local Pi extension files against Pi's real package types.
 
-`tsconfig.json` includes root `.pi/extensions/**/*.ts` and Home Manager-owned `home/configs/pi-coding-agent/extensions/**/*.ts`. The compiler uses `NodeNext`, strict mode, no emit, and Node types from Pi's package closure.
+`tsconfig.json` includes root `.pi/extensions/**/*.ts` and Home Manager-owned `home/configs/pi-coding-agent/extensions/**/*.ts`. The compiler uses `NodeNext`, strict mode, no emit, and Pi-closure paths for `@earendil-works`, `typebox`, and Node types.
 
 `.devenv-modules/packages.nix` adds TypeScript and `typescript-language-server`. `.devenv-modules/git-hooks.nix` keeps Pi's package `node_modules` available as `.devenv/pi-node-modules` for shell/editor use and refreshes that symlink before the TypeScript hook runs, so no Nix store path is committed.
 
@@ -233,7 +233,7 @@ Pi loads AGENTS.md from multiple locations (global + parent dirs + cwd), all con
 
 ### Repository operating rules
 
-Root `AGENTS.md` carries repo-local lat.md workflow and post-task checks.
+Root `AGENTS.md` carries repo-local lat.md workflow and post-task checks. `%% lat:begin %%` and `%% lat:end %%` delimit the lat-managed instruction block.
 
 - All commits can be pushed directly to default branch (`main`) in GitHub.
 - Run `devenv tasks run home:apply` after changing Home Manager config.
