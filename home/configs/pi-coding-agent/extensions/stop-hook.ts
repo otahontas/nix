@@ -84,9 +84,8 @@ function buildGatekeeperMessages(messages: any[]) {
 async function askGatekeeper(
   contextMessages: any[],
   ctx: ExtensionContext,
-  thinkingLevel: ReturnType<ExtensionAPI["getThinkingLevel"]>,
 ): Promise<boolean | null> {
-  const model = ctx.model;
+  const model = models.getModel("openai-codex", "gpt-5.6-luna");
   if (!model) return null;
 
   if (!models.getProvider(model.provider)) return null;
@@ -99,10 +98,8 @@ async function askGatekeeper(
     headers: auth.headers,
     env: auth.env,
     maxTokens: 16,
+    reasoning: "low",
   };
-  if (thinkingLevel !== "off") {
-    options.reasoning = thinkingLevel;
-  }
 
   const response = await models.completeSimple(
     model,
@@ -142,7 +139,6 @@ function looksComplete(messages: any[]): boolean {
 async function shouldSendNudge(
   messages: any[],
   ctx: ExtensionContext,
-  thinkingLevel: ReturnType<ExtensionAPI["getThinkingLevel"]>,
   failureCounter: { count: number },
 ): Promise<boolean> {
   // Skip gatekeeper if too many consecutive failures
@@ -153,9 +149,9 @@ async function shouldSendNudge(
 
   const contextMessages = buildGatekeeperMessages(messages);
 
-  // Ask the same model and thinking level Pi is using for this session.
+  // Use a cheap fixed model for this binary decision.
   try {
-    const result = await askGatekeeper(contextMessages, ctx, thinkingLevel);
+    const result = await askGatekeeper(contextMessages, ctx);
     if (result !== null) {
       failureCounter.count = 0;
       return result;
@@ -198,7 +194,6 @@ export default function (pi: ExtensionAPI) {
       const shouldNudge = await shouldSendNudge(
         event.messages,
         ctx,
-        pi.getThinkingLevel(),
         gatekeeperFailures,
       );
       if (!shouldNudge) return;

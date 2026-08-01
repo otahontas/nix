@@ -26,10 +26,10 @@ The Pi wrapper loads secrets from pass, extends `PATH`, and lets package-managed
 - `default.nix` reads pass entries for Gemini web search, Context7, GitHits, and `LAT_LLM_KEY` before Pi starts. It exports the GitHits secret as `GITHITS_API_TOKEN`.
 - `mcp.json` uses GitHits' official Pi server entry: `GitHits` name, `githits@latest` over stdio, and eager lifecycle. The process inherits `GITHITS_API_TOKEN` from the Pi wrapper.
 - Wrapper-only tools include `lat.md` and `plannotator` from `otahontas-nixpkgs`, plus Poppler tools and `rtk`.
-- `settings.json` defaults to `openai-codex/gpt-5.6-sol` with `xhigh` thinking and enables `openai-codex/gpt-5.6-sol`, `openai-codex/gpt-5.6-terra`, and `openai-codex/gpt-5.6-luna`.
-- Bundled `scout` and `reviewer` use `openai-codex/gpt-5.6-sol`, with reviewer fallback aligned to `openai-codex/gpt-5.6-sol`.
-- NPM Pi packages include `pi-mcp-adapter`, `pi-web-access`, `pi-subagents`, `pi-caveman`, `@plannotator/pi-extension`, `pi-agent-goal`, `pi-rtk-optimizer`, `@quintinshaw/pi-dynamic-workflows`, and `pi-simplify`.
-- Bundled agents come from `pi-subagents` (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate); no local `agents/` directory is needed.
+- `settings.json` defaults to `openai-codex/gpt-5.6-terra` with `high` thinking. Scoped cycling pairs Luna with `medium`, Terra with `high`, and Sol with `xhigh`.
+- `pi-subagents` routes scouting, research, context building, and lightweight delegation to Luna; planning, implementation, and review inherit Terra; oracle and advisor use Sol with `xhigh` thinking.
+- NPM Pi packages include `@dietrichgebert/ponytail`, `@plannotator/pi-extension`, `pi-caveman`, `pi-mcp-adapter`, `pi-rtk-optimizer`, `pi-subagents`, and `pi-web-access`.
+- Bundled agents come from `pi-subagents` (advisor, context-builder, delegate, oracle, planner, researcher, reviewer, scout, worker); no local `agents/` directory is needed.
 - Unpinned NPM packages update with `pi update --extensions`.
 
 ## Local extensions
@@ -40,7 +40,7 @@ Home Manager symlinks its extensions to `~/.pi/agent/extensions/`. Root `tsconfi
 
 Model-calling extensions use pi-ai's `builtinModels()` runtime with Pi-resolved request auth, avoiding the legacy `/compat` API. Pi 0.80.10 does not expose extension-only providers here, so these best-effort auxiliary calls skip them.
 
-- `stop-hook.ts` — current Pi model decides whether to nudge agent after each response, using the active thinking level and emitting in-flight events for `notify.ts`
+- `stop-hook.ts` — GPT-5.6 Luna at low thinking decides whether to nudge after each response and emits in-flight events for `notify.ts`
 - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, slash-containing branch names, non-standard worktree paths, and `--no-verify` commits
 - `starship-widget.ts` — starship prompt as a below-editor widget while Pi's built-in footer stays enabled
 - `search-sessions.ts` — BM25 search over past Pi conversations; `read_session` only reads `.jsonl` files under the Pi sessions directory
@@ -69,9 +69,9 @@ Starship prompt stays above Pi's built-in footer stats while hiding the duplicat
 
 ### stop-hook extension
 
-Stop-hook gates automatic self-review with the active Pi model, so it follows the configured default model and thinking level instead of pinning a separate gatekeeper.
+Stop-hook gates automatic self-review with Luna at low thinking, keeping its binary decision separate from the active session model and effort.
 
-- [[home/configs/pi-coding-agent/extensions/stop-hook.ts#askGatekeeper]] uses `ctx.model` and sets active thinking as `reasoning` when thinking is not `off`.
+- [[home/configs/pi-coding-agent/extensions/stop-hook.ts#askGatekeeper]] uses `openai-codex/gpt-5.6-luna` with `low` reasoning and skips the nudge when that model or its auth is unavailable.
 - [[home/configs/pi-coding-agent/extensions/stop-hook.ts#shouldSendNudge]] still skips obvious completions and stops nudging after repeated gatekeeper failures.
 - [[home/configs/pi-coding-agent/extensions/stop-hook.ts#STOP_CHECK_PROMPT]] keeps follow-ups within the requested scope, so investigation-only requests report findings instead of starting fixes.
 - `agent_end` only queues the self-review prompt after tool-using turns, and shared start/end events let `notify.ts` wait for the gatekeeper.
@@ -134,19 +134,13 @@ Caveman response style comes from the package-managed `pi-caveman` extension ins
 - The package provides `/caveman` for session-level toggles and `/caveman config` for the default level and footer status setting.
 - The extension defaults new sessions to `full` caveman mode when `~/.pi/agent/caveman.json` is absent or sets `defaultLevel` to `full`.
 
-### pi-dynamic-workflows package
+### pi-subagents package
 
-Dynamic workflows come from `@quintinshaw/pi-dynamic-workflows`, enabling script-driven subagent fan-out from Pi.
+Subagents split work by role while matching each role to the cheapest useful GPT-5.6 tier.
 
-- Pi loads `npm:@quintinshaw/pi-dynamic-workflows` from `settings.json`; the package stays unpinned for `pi update --extensions`.
-- The package provides the `workflow` tool and commands such as `/workflows`, `/deep-research`, and `/adversarial-review`.
-
-### pi-simplify package
-
-Simplify reviews changed code for clarity, consistency, and maintainability through a package-managed command.
-
-- Pi loads `npm:pi-simplify` from `settings.json`; the package stays unpinned for `pi update --extensions`.
-- The package provides `/simplify`, including staged, file-specific, and reference-branch review modes.
+- Pi loads `npm:pi-subagents` from `settings.json`; the package stays unpinned for `pi update --extensions`.
+- Luna handles `scout`, `researcher`, `context-builder`, and `delegate`; Terra handles inherited roles such as `planner`, `worker`, and `reviewer`; Sol `xhigh` handles `oracle` and `advisor`.
+- Repo-managed overrides survive Home Manager activation because `merge-settings.sh` removes stale generated overrides before merging `settings.json`.
 
 ## Skills and prompts
 

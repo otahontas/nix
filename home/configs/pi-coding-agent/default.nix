@@ -115,7 +115,7 @@ let
     }) extensionFiles
   );
 
-  # Agent definitions come from pi-subagents package (scout, researcher, planner, worker, reviewer, oracle, context-builder, delegate).
+  # Agent definitions come from pi-subagents package (advisor, context-builder, delegate, oracle, planner, researcher, reviewer, scout, worker).
 
   # Auto-discover simple skills (no deps) - symlink entire directories
   skillDirs = builtins.attrNames (builtins.readDir ./skills);

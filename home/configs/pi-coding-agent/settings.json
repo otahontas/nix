@@ -1,15 +1,40 @@
 {
   "defaultProvider": "openai-codex",
-  "defaultModel": "openai-codex/gpt-5.6-sol",
-  "defaultThinkingLevel": "xhigh",
+  "defaultModel": "openai-codex/gpt-5.6-terra",
+  "defaultThinkingLevel": "high",
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
   "enabledModels": [
-    "openai-codex/gpt-5.6-sol",
-    "openai-codex/gpt-5.6-terra",
-    "openai-codex/gpt-5.6-luna",
-    "openai-codex/gpt-5.3-codex-spark"
+    "openai-codex/gpt-5.6-luna:medium",
+    "openai-codex/gpt-5.6-terra:high",
+    "openai-codex/gpt-5.6-sol:xhigh"
   ],
+  "subagents": {
+    "defaultModel": "openai-codex/gpt-5.6-terra",
+    "defaultThinking": "medium",
+    "agentOverrides": {
+      "advisor": {
+        "model": "openai-codex/gpt-5.6-sol",
+        "thinking": "xhigh"
+      },
+      "context-builder": {
+        "model": "openai-codex/gpt-5.6-luna"
+      },
+      "delegate": {
+        "model": "openai-codex/gpt-5.6-luna"
+      },
+      "oracle": {
+        "model": "openai-codex/gpt-5.6-sol",
+        "thinking": "xhigh"
+      },
+      "researcher": {
+        "model": "openai-codex/gpt-5.6-luna"
+      },
+      "scout": {
+        "model": "openai-codex/gpt-5.6-luna"
+      }
+    }
+  },
   "hideThinkingBlock": true,
   "terminal": {
     "showTerminalProgress": true
@@ -21,6 +46,7 @@
     "npm:pi-caveman",
     "npm:pi-mcp-adapter",
     "npm:pi-rtk-optimizer",
+    "npm:pi-subagents",
     "npm:pi-web-access"
   ]
 }
