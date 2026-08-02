@@ -13,6 +13,10 @@ let
   piPackage = pi-nix.packages.${system}.coding-agent;
   piLatMd = otahontas-nixpkgs.packages.${system}.lat-md;
   piPlannotator = otahontas-nixpkgs.packages.${system}.plannotator;
+  plannotatorBrowser = pkgs.writeShellScript "plannotator-browser" ''
+    exec ${pkgs.google-chrome}/bin/google-chrome-stable \
+      --profile-directory="Profile 5" "$@"
+  '';
   mcpConfig = pkgs.writeText "pi-mcp.json" (
     builtins.replaceStrings
       [ "@chromeExecutable@" ]
@@ -99,6 +103,8 @@ let
       unset pass_cmd
     fi
 
+    unset PLANNOTATOR_BROWSER
+    export BROWSER="${plannotatorBrowser}"
     export PATH="${piLatMd}/bin:${piPlannotator}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
     exec ${piPackage}/bin/pi "$@"
   '';

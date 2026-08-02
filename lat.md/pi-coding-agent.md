@@ -26,6 +26,7 @@ The Pi wrapper loads secrets from pass, extends `PATH`, and lets package-managed
 - `default.nix` reads pass entries for Gemini web search, Context7, GitHits, and `LAT_LLM_KEY` before Pi starts. It exports the GitHits secret as `GITHITS_API_TOKEN`.
 - `mcp.json` uses GitHits' official Pi server entry: `GitHits` name, `githits@latest` over stdio, and eager lifecycle. The process inherits `GITHITS_API_TOKEN` from the Pi wrapper.
 - Wrapper-only tools include `lat.md` and `plannotator` from `otahontas-nixpkgs`, plus Poppler tools and `rtk`.
+- The wrapper sets `BROWSER` to a Nix-built launcher for Chrome `Profile 5`, the local Dev profile, so Plannotator opens there. It clears `PLANNOTATOR_BROWSER` because that variable accepts only an app name in the Pi extension on macOS.
 - `settings.json` defaults to `openai-codex/gpt-5.6-terra` with `high` thinking. Scoped cycling pairs Luna with `medium`, Terra with `high`, and Sol with `xhigh`.
 - `pi-subagents` routes scouting, research, context building, and lightweight delegation to Luna; planning, implementation, and review inherit Terra; oracle and advisor use Sol with `xhigh` thinking.
 - NPM Pi packages include `@dietrichgebert/ponytail`, `@plannotator/pi-extension`, `pi-caveman`, `pi-mcp-adapter`, `pi-rtk-optimizer`, `pi-subagents`, and `pi-web-access`.
