@@ -8,6 +8,7 @@ Directory layout under `home/configs/pi-coding-agent/`.
 
 - `default.nix` — installs Pi through `pi.nix`, wraps it with pass-backed API keys, refreshes ui.sh skills, exposes wrapper-only helper tools, symlinks local extensions/skills/prompts, and writes Pi config files
 - `sources/GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md`; see [[architecture#AGENTS.md pipeline]]
+- `sources/APPEND_SYSTEM.md` — global system-prompt additions symlinked to `~/.pi/agent/APPEND_SYSTEM.md`
 - `extensions/` — local single-file TypeScript extensions symlinked to `~/.pi/agent/extensions/`
 - `skills/` — repo-owned skills symlinked to `~/.pi/agent/skills/`
 - `prompts/` — `merge-worktree.md` and `security-review.md`, symlinked to `~/.pi/agent/prompts/`

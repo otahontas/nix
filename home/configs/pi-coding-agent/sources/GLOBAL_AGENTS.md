@@ -1,4 +1,6 @@
-# Tools
+# AGENTS.md
+
+## Tool
 
 - Always use `trash` instead of `rm` for file deletion
 - Always use `devenv` for developer environments
@@ -8,15 +10,6 @@
   - Don't bypass devenv with global installs
   - `devenv search <query>` to find packages and options
 - When working with external libraries, use MCP tools (`context7`, `githits` and tools for specific libraries, such as `astro`, `cloudflare` if available ) to look up docs and examples instead of guessing APIs
-
-## Writing
-
-- Use sentence case: "Next steps" not "Next Steps", "Plan overview" not "Plan Overview"
-- For answering directly, sacrifice grammar over being concise unless specifically asked to write clearly
-- When actually editing or creating text to be read by humans use skill `writing-clearly-and-concisely`.
-- Prefer bullet points over paragraphs
-- Never include time estimations unless specifically asked
-- Avoid corporate buzzwords and AI phrases (see `writing-clearly-and-concisely` skill for substitution list)
 
 ## Git
 

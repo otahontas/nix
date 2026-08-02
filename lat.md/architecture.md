@@ -240,7 +240,9 @@ Root `AGENTS.md` carries repo-local lat.md workflow and post-task checks. `%% la
 
 ### Global: home-manager
 
-`home/configs/pi-coding-agent/sources/GLOBAL_AGENTS.md` → symlinked to `~/.pi/agent/AGENTS.md` by home-manager. Edit the source file, then `devenv tasks run home:apply`.
+Home Manager installs global Pi context and system-prompt additions from tracked source files.
+
+`home/configs/pi-coding-agent/sources/GLOBAL_AGENTS.md` → symlinked to `~/.pi/agent/AGENTS.md`. `sources/APPEND_SYSTEM.md` → symlinked to `~/.pi/agent/APPEND_SYSTEM.md`. Edit source files, then `devenv tasks run home:apply`.
 
 ### Project: root devenv file
 
@@ -248,7 +250,7 @@ Root `AGENTS.md` carries repo-local lat.md workflow and post-task checks. `%% la
 
 ### Key takeaway
 
-Edit tracked repo files directly. For Home Manager symlinks like global AGENTS.md, modify `home/configs/pi-coding-agent/sources/GLOBAL_AGENTS.md`, then run `devenv tasks run home:apply`.
+Edit tracked repo files directly. For Home Manager symlinks like global AGENTS.md or APPEND_SYSTEM.md, modify files under `home/configs/pi-coding-agent/sources/`, then run `devenv tasks run home:apply`.
 
 If `readlink` shows a nix store path, find the source (flake config, home-manager module, or root devenv setting) and change that instead.
 

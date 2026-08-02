@@ -156,6 +156,7 @@ in
     file = {
       ".agents/skills/githits-mcp/SKILL.md".source = githits-cli + "/skills/githits-mcp/SKILL.md";
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
+      ".pi/agent/APPEND_SYSTEM.md".source = ./sources/APPEND_SYSTEM.md;
       ".pi/agent/mcp.json".source = mcpConfig;
     }
     // extensionSymlinks
