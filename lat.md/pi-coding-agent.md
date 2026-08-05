@@ -14,7 +14,7 @@ Directory layout under `home/configs/pi-coding-agent/`.
 - `prompts/` — `merge-worktree.md` and `security-review.md`, symlinked to `~/.pi/agent/prompts/`
 - `scripts/build-session-index.sh` — launchd-backed session-history indexer with explicit Nix runtime tools
 - `merge-settings.sh` — activation hook that merges repo settings and deletes stale `subagents.agentOverrides` before applying repo-managed overrides
-- `settings.json` — default provider/model settings, subagent model overrides, terminal settings, shell command prefix, and unpinned Pi packages
+- `settings.json` — default provider/model settings, subagent thinking overrides, terminal settings, shell command prefix, and unpinned Pi packages
 - `mcp.json` — remote Context7, local GitHits CLI, and local chrome-devtools MCP template; `default.nix` replaces `@chromeExecutable@` with the Nix Chrome package path
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module
 - `home/flake.nix` non-flake input `githits-cli` (`github:githits-com/githits-cli`) supplies the official guided MCP skill
@@ -28,8 +28,8 @@ The Pi wrapper loads secrets from pass, extends `PATH`, and lets package-managed
 - `mcp.json` uses GitHits' official Pi server entry: `GitHits` name, `githits@latest` over stdio, and eager lifecycle. The process inherits `GITHITS_API_TOKEN` from the Pi wrapper.
 - Wrapper-only tools include `lat.md` and `plannotator` from `otahontas-nixpkgs`, plus Poppler tools and `rtk`.
 - The wrapper sets `BROWSER` to a Nix-built launcher for Chrome `Profile 5`, the local Dev profile, so Plannotator opens there. It clears `PLANNOTATOR_BROWSER` because that variable accepts only an app name in the Pi extension on macOS.
-- `settings.json` defaults to `openai-codex/gpt-5.6-terra` with `high` thinking. Scoped cycling pairs Luna with `medium`, Terra with `high`, and Sol with `xhigh`.
-- `pi-subagents` routes scouting, research, context building, and lightweight delegation to Luna; planning, implementation, and review inherit Terra; oracle and advisor use Sol with `xhigh` thinking.
+- `settings.json` defaults to `openai-codex/gpt-5.6-sol` with `xhigh` thinking and scopes model selection to that pair.
+- `pi-subagents` uses one Sol default for every bundled role; thinking-only overrides replace each bundled role's lower effort with `xhigh`.
 - NPM Pi packages include `@dietrichgebert/ponytail`, `@plannotator/pi-extension`, `pi-caveman`, `pi-mcp-adapter`, `pi-rtk-optimizer`, `pi-subagents`, and `pi-web-access`.
 - Bundled agents come from `pi-subagents` (advisor, context-builder, delegate, oracle, planner, researcher, reviewer, scout, worker); no local `agents/` directory is needed.
 - Unpinned NPM packages update with `pi update --extensions`.
@@ -42,7 +42,8 @@ Home Manager symlinks its extensions to `~/.pi/agent/extensions/`. Root `tsconfi
 
 Model-calling extensions use pi-ai's `builtinModels()` runtime with Pi-resolved request auth, avoiding the legacy `/compat` API. Pi 0.80.10 does not expose extension-only providers here, so these best-effort auxiliary calls skip them.
 
-- `stop-hook.ts` — GPT-5.6 Luna at low thinking decides whether to nudge after each response and emits in-flight events for `notify.ts`
+- `fast-mode.ts` — sends every `openai-codex/gpt-5.6-sol:xhigh` request through OpenAI's Fast service tier
+- `stop-hook.ts` — GPT-5.6 Sol at `xhigh` thinking decides whether to nudge after each response and emits in-flight events for `notify.ts`
 - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, slash-containing branch names, non-standard worktree paths, and `--no-verify` commits
 - `starship-widget.ts` — starship prompt as a below-editor widget while Pi's built-in footer stays enabled
 - `search-sessions.ts` — BM25 search over past Pi conversations; `read_session` only reads `.jsonl` files under the Pi sessions directory
@@ -59,6 +60,14 @@ Project-local lat integration exposes documentation tools and enforces search an
 - Expansion hints use `app.tools.expand`. Custom messages normalize string or rich content and honor Pi's configured output padding.
 - `before_agent_start` requires a search before file access. `agent_end` runs `lat check` and requests a follow-up when code changes lack proportional `lat.md/` updates.
 
+### fast-mode extension
+
+Fast mode routes Sol `xhigh` requests through OpenAI's lower-latency service tier.
+
+- [[home/configs/pi-coding-agent/extensions/fast-mode.ts#enableFastMode]] adds `service_tier: "priority"`, the Pi 0.83-compatible name for Fast mode.
+- The provider hook applies only to `openai-codex/gpt-5.6-sol` at `xhigh` thinking.
+- `stop-hook.ts` and `name-session.ts` reuse the payload helper because their direct pi-ai calls bypass provider request hooks.
+
 ### starship widget extension
 
 Starship prompt stays above Pi's built-in footer stats while hiding the duplicate default location line.
@@ -71,9 +80,9 @@ Starship prompt stays above Pi's built-in footer stats while hiding the duplicat
 
 ### stop-hook extension
 
-Stop-hook gates automatic self-review with Luna at low thinking, keeping its binary decision separate from the active session model and effort.
+Stop-hook gates automatic self-review with Sol at `xhigh` thinking so auxiliary checks follow the session-wide model policy.
 
-- [[home/configs/pi-coding-agent/extensions/stop-hook.ts#askGatekeeper]] uses `openai-codex/gpt-5.6-luna` with `low` reasoning and skips the nudge when that model or its auth is unavailable.
+- [[home/configs/pi-coding-agent/extensions/stop-hook.ts#askGatekeeper]] uses Fast `openai-codex/gpt-5.6-sol` with `xhigh` reasoning and skips the nudge when that model or its auth is unavailable.
 - [[home/configs/pi-coding-agent/extensions/stop-hook.ts#shouldSendNudge]] still skips obvious completions and stops nudging after repeated gatekeeper failures.
 - [[home/configs/pi-coding-agent/extensions/stop-hook.ts#STOP_CHECK_PROMPT]] keeps follow-ups within the requested scope, so investigation-only requests report findings instead of starting fixes.
 - `agent_end` only queues the self-review prompt after tool-using turns, and shared start/end events let `notify.ts` wait for the gatekeeper.
@@ -99,7 +108,7 @@ Name-session assigns display names without depending on native notifications.
 
 Key behavior lives in [[home/configs/pi-coding-agent/extensions/name-session.ts#avoidTitleCase]], [[home/configs/pi-coding-agent/extensions/name-session.ts#generateTitle]], and [[home/configs/pi-coding-agent/extensions/name-session.ts#looksLikeRealTask]].
 
-- In UI sessions, the first real user prompt can generate a 2-6 word session title with the current Pi model. Manual and restored names win, greetings and extension-generated prompts are skipped, and the result is guarded against session switches before `pi.setSessionName` runs.
+- In UI sessions, the first real user prompt can generate a 2-6 word session title with the current Pi model at Fast `xhigh`. Manual and restored names win, greetings and extension prompts are skipped, and session-switch guards prevent stale writes.
 - Generated titles are normalized after the model response: ordinary title-case words become lowercase, while acronyms, mixed-case words, and listed product names keep their casing.
 - Extension-generated prompts are skipped so `stop-hook.ts` follow-ups do not rename the session.
 - Title generation is best effort and never breaks the agent loop.
@@ -138,10 +147,11 @@ Caveman response style comes from the package-managed `pi-caveman` extension ins
 
 ### pi-subagents package
 
-Subagents split work by role while matching each role to the cheapest useful GPT-5.6 tier.
+All bundled subagent roles use Fast GPT-5.6 Sol at `xhigh`, trading higher credit use for one consistent model policy.
 
 - Pi loads `npm:pi-subagents` from `settings.json`; the package stays unpinned for `pi update --extensions`.
-- Luna handles `scout`, `researcher`, `context-builder`, and `delegate`; Terra handles inherited roles such as `planner`, `worker`, and `reviewer`; Sol `xhigh` handles `oracle` and `advisor`.
+- Bundled roles share one Sol default instead of carrying role-specific model overrides.
+- Thinking-only overrides force `xhigh` because bundled agent frontmatter otherwise selects lower levels by role.
 - Repo-managed overrides survive Home Manager activation because `merge-settings.sh` removes stale generated overrides before merging `settings.json`.
 
 ## Skills and prompts

@@ -7,6 +7,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
+import { enableFastMode } from "./fast-mode.js";
 
 const models = builtinModels();
 const TITLE_MAX_LENGTH = 64;
@@ -196,6 +197,8 @@ async function generateTitle(
       headers: auth.headers,
       env: auth.env,
       maxTokens: 32,
+      reasoning: "xhigh",
+      onPayload: enableFastMode,
     },
   );
 

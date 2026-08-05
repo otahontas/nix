@@ -1,38 +1,23 @@
 {
   "defaultProvider": "openai-codex",
-  "defaultModel": "openai-codex/gpt-5.6-terra",
-  "defaultThinkingLevel": "high",
+  "defaultModel": "openai-codex/gpt-5.6-sol",
+  "defaultThinkingLevel": "xhigh",
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
-  "enabledModels": [
-    "openai-codex/gpt-5.6-luna:medium",
-    "openai-codex/gpt-5.6-terra:high",
-    "openai-codex/gpt-5.6-sol:xhigh"
-  ],
+  "enabledModels": ["openai-codex/gpt-5.6-sol:xhigh"],
   "subagents": {
-    "defaultModel": "openai-codex/gpt-5.6-terra",
-    "defaultThinking": "medium",
+    "defaultModel": "openai-codex/gpt-5.6-sol",
+    "defaultThinking": "xhigh",
     "agentOverrides": {
-      "advisor": {
-        "model": "openai-codex/gpt-5.6-sol",
-        "thinking": "xhigh"
-      },
-      "context-builder": {
-        "model": "openai-codex/gpt-5.6-luna"
-      },
-      "delegate": {
-        "model": "openai-codex/gpt-5.6-luna"
-      },
-      "oracle": {
-        "model": "openai-codex/gpt-5.6-sol",
-        "thinking": "xhigh"
-      },
-      "researcher": {
-        "model": "openai-codex/gpt-5.6-luna"
-      },
-      "scout": {
-        "model": "openai-codex/gpt-5.6-luna"
-      }
+      "advisor": { "thinking": "xhigh" },
+      "context-builder": { "thinking": "xhigh" },
+      "delegate": { "thinking": "xhigh" },
+      "oracle": { "thinking": "xhigh" },
+      "planner": { "thinking": "xhigh" },
+      "researcher": { "thinking": "xhigh" },
+      "reviewer": { "thinking": "xhigh" },
+      "scout": { "thinking": "xhigh" },
+      "worker": { "thinking": "xhigh" }
     }
   },
   "hideThinkingBlock": true,

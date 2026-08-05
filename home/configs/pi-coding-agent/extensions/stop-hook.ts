@@ -12,6 +12,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
+import { enableFastMode } from "./fast-mode.js";
 
 const models = builtinModels();
 const MAX_FOLLOWUPS = 1;
@@ -85,7 +86,7 @@ async function askGatekeeper(
   contextMessages: any[],
   ctx: ExtensionContext,
 ): Promise<boolean | null> {
-  const model = models.getModel("openai-codex", "gpt-5.6-luna");
+  const model = models.getModel("openai-codex", "gpt-5.6-sol");
   if (!model) return null;
 
   if (!models.getProvider(model.provider)) return null;
@@ -98,7 +99,8 @@ async function askGatekeeper(
     headers: auth.headers,
     env: auth.env,
     maxTokens: 16,
-    reasoning: "low",
+    reasoning: "xhigh",
+    onPayload: enableFastMode,
   };
 
   const response = await models.completeSimple(
@@ -149,7 +151,7 @@ async function shouldSendNudge(
 
   const contextMessages = buildGatekeeperMessages(messages);
 
-  // Use a cheap fixed model for this binary decision.
+  // Use the fixed session-wide model and thinking level.
   try {
     const result = await askGatekeeper(contextMessages, ctx);
     if (result !== null) {
