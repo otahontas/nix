@@ -9,7 +9,7 @@ Apply with `devenv tasks run home:apply`. Stage new files before applying; don't
 Conventions for writing home-manager configs.
 
 - **Home manager first** — use `programs`/`services`, fallback to `pkgs`
-- **Catppuccin** — global theme uses `catppuccin.enable = true` plus `autoEnable = true` to keep automatic port enrollment explicit
+- **Catppuccin** — global theme uses darkest `mocha` flavor; `catppuccin.enable = true` plus `autoEnable = true` keeps automatic port enrollment explicit
 - **Session variables** for paths and environment config
 - **GUI apps** — prefer home-manager when nixpkgs or brew-nix provides a suitable Darwin `.app` bundle; `targets.darwin.copyApps.enable = true` for Spotlight
 - **Brew-nix ownership** — casks installed through `home.packages` count as Nix/Home Manager-managed, not manually installed

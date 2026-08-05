@@ -127,7 +127,7 @@
               catppuccin = {
                 enable = true;
                 autoEnable = true;
-                flavor = "latte";
+                flavor = "mocha";
                 accent = "blue";
               };
 
