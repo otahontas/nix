@@ -9,6 +9,7 @@ Apply with `devenv tasks run home:apply`. Stage new files before applying; don't
 Conventions for writing home-manager configs.
 
 - **Home manager first** — use `programs`/`services`, fallback to `pkgs`
+- **Global Git ignores** — keep machine-local artifacts such as `.pi-subagents/` out of every repository
 - **Catppuccin** — global theme uses darkest `mocha` flavor; `catppuccin.enable = true` plus `autoEnable = true` keeps automatic port enrollment explicit
 - **Session variables** for paths and environment config
 - **GUI apps** — prefer home-manager when nixpkgs or brew-nix provides a suitable Darwin `.app` bundle; `targets.darwin.copyApps.enable = true` for Spotlight

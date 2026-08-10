@@ -133,6 +133,7 @@ in
         ".DS_Store"
         ".localized"
         "devenv.local.nix"
+        ".pi-subagents/"
         "**/.worktrees/**"
         "**/.local_scripts/**"
         "**/plans/**"
