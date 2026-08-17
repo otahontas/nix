@@ -18,7 +18,6 @@ _: {
       embed-chapters = true;
 
       # Download subtitles
-      write-auto-subs = true;
       sub-langs = "en,en-US";
 
       # Continue downloads
