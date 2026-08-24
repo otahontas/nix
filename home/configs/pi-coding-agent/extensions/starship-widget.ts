@@ -119,7 +119,7 @@ export default function (pi: ExtensionAPI) {
     );
   });
 
-  pi.on("agent_end", async (_event, ctx) => {
+  pi.on("agent_settled", async (_event, ctx) => {
     if (!ctx.hasUI) return;
 
     await refreshStarship(ctx.cwd, sessionGeneration);

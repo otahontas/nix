@@ -6,18 +6,13 @@
  * gets at most one automatic follow-up.
  */
 
-import type { SimpleStreamOptions } from "@earendil-works/pi-ai";
-import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
 import { enableFastMode } from "./fast-mode.js";
 
-const models = builtinModels();
 const MAX_FOLLOWUPS = 1;
-const STOP_HOOK_CHECK_START_EVENT = "otahontas.stop-hook.check-start";
-const STOP_HOOK_CHECK_END_EVENT = "otahontas.stop-hook.check-end";
 const STOP_CHECK_PROMPT =
   "Review your last response. Did you complete everything the user asked? If not, continue working only within the user's requested scope. If the user only asked you to investigate, inspect, check, audit, or report findings, do not fix anything now; report findings and ask before changing anything. If you did complete everything, briefly confirm what was done.";
 
@@ -86,32 +81,22 @@ async function askGatekeeper(
   contextMessages: any[],
   ctx: ExtensionContext,
 ): Promise<boolean | null> {
-  const model = models.getModel("openai-codex", "gpt-5.6-sol");
+  const model = ctx.modelRegistry.find("openai-codex", "gpt-5.6-sol");
   if (!model) return null;
 
-  if (!models.getProvider(model.provider)) return null;
-
-  const auth = await ctx.modelRegistry.getApiKeyAndHeaders(model);
-  if (!auth.ok || !auth.apiKey) return null;
-
-  const options: SimpleStreamOptions = {
-    apiKey: auth.apiKey,
-    headers: auth.headers,
-    env: auth.env,
-    maxTokens: 16,
-    reasoning: "xhigh",
-    onPayload: enableFastMode,
-  };
-
-  const response = await models.completeSimple(
+  const response = await ctx.modelRegistry.complete(
     model,
     { messages: contextMessages },
-    options,
+    {
+      maxTokens: 16,
+      reasoningEffort: "xhigh",
+      onPayload: enableFastMode,
+    },
   );
 
   const text = response.content
     .filter((c: any): c is { type: "text"; text: string } => c.type === "text")
-    .map((c) => c.text)
+    .map((c: { text: string }) => c.text)
     .join("")
     .trim()
     .toUpperCase();
@@ -190,20 +175,15 @@ export default function (pi: ExtensionAPI) {
     );
     if (!hasToolUse) return;
 
-    pi.events.emit(STOP_HOOK_CHECK_START_EVENT, undefined);
-    try {
-      // Ask gatekeeper model whether to nudge
-      const shouldNudge = await shouldSendNudge(
-        event.messages,
-        ctx,
-        gatekeeperFailures,
-      );
-      if (!shouldNudge) return;
+    // Ask gatekeeper model whether to nudge
+    const shouldNudge = await shouldSendNudge(
+      event.messages,
+      ctx,
+      gatekeeperFailures,
+    );
+    if (!shouldNudge) return;
 
-      followupCount++;
-      pi.sendUserMessage(STOP_CHECK_PROMPT, { deliverAs: "followUp" });
-    } finally {
-      pi.events.emit(STOP_HOOK_CHECK_END_EVENT, undefined);
-    }
+    followupCount++;
+    pi.sendUserMessage(STOP_CHECK_PROMPT, { deliverAs: "followUp" });
   });
 }

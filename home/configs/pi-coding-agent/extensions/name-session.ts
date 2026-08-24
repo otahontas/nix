@@ -2,14 +2,12 @@
  * Names Pi sessions from the first real user prompt.
  */
 
-import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
 import { enableFastMode } from "./fast-mode.js";
 
-const models = builtinModels();
 const TITLE_MAX_LENGTH = 64;
 
 const GREETING_WORDS = new Set([
@@ -172,16 +170,7 @@ async function generateTitle(
     return undefined;
   }
 
-  if (!models.getProvider(model.provider)) {
-    return undefined;
-  }
-
-  const auth = await ctx.modelRegistry.getApiKeyAndHeaders(model);
-  if (!auth.ok || !auth.apiKey) {
-    return undefined;
-  }
-
-  const response = await models.completeSimple(
+  const response = await ctx.modelRegistry.complete(
     model,
     {
       messages: [
@@ -193,20 +182,21 @@ async function generateTitle(
       ],
     },
     {
-      apiKey: auth.apiKey,
-      headers: auth.headers,
-      env: auth.env,
       maxTokens: 32,
-      reasoning: "xhigh",
-      onPayload: enableFastMode,
+      reasoningEffort: "xhigh",
+      onPayload:
+        model.provider === "openai-codex" && model.id === "gpt-5.6-sol"
+          ? enableFastMode
+          : undefined,
     },
   );
 
   const rawTitle = response.content
     .filter(
-      (part): part is { type: "text"; text: string } => part.type === "text",
+      (part: any): part is { type: "text"; text: string } =>
+        part.type === "text",
     )
-    .map((part) => part.text)
+    .map((part: { text: string }) => part.text)
     .join("\n");
 
   return cleanGeneratedTitle(rawTitle);

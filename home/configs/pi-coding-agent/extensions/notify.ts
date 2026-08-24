@@ -11,11 +11,6 @@ import type {
 const TITLE_MAX_LENGTH = 64;
 const BODY_MAX_LENGTH = 160;
 const COMMAND_MAX_LENGTH = 96;
-const NOTIFICATION_DELAY_MS = 75;
-const NOTIFICATION_RETRY_MS = 250;
-const NOTIFICATION_MAX_RETRIES = 40;
-const STOP_HOOK_CHECK_START_EVENT = "otahontas.stop-hook.check-start";
-const STOP_HOOK_CHECK_END_EVENT = "otahontas.stop-hook.check-end";
 
 const NEEDS_INPUT_PATTERNS = [
   /\?\s*$/,
@@ -164,39 +159,18 @@ function buildNotificationBody(
 
 export default function (pi: ExtensionAPI) {
   let failedBashCommand: string | undefined;
-  let sessionGeneration = 0;
-  let agentRunGeneration = 0;
-  let stopHookChecksInFlight = 0;
 
   function notificationTitle(): string {
     const sessionName = pi.getSessionName();
     return sessionName ? `Pi: ${sessionName}` : "Pi";
   }
 
-  const cleanupStopHookStart = pi.events.on(STOP_HOOK_CHECK_START_EVENT, () => {
-    stopHookChecksInFlight += 1;
-  });
-
-  const cleanupStopHookEnd = pi.events.on(STOP_HOOK_CHECK_END_EVENT, () => {
-    stopHookChecksInFlight = Math.max(0, stopHookChecksInFlight - 1);
-  });
-
   pi.on("session_start", async () => {
     failedBashCommand = undefined;
-    stopHookChecksInFlight = 0;
-    sessionGeneration += 1;
-  });
-
-  pi.on("session_shutdown", async () => {
-    cleanupStopHookStart();
-    cleanupStopHookEnd();
-    stopHookChecksInFlight = 0;
-    sessionGeneration += 1;
   });
 
   pi.on("agent_start", async () => {
     failedBashCommand = undefined;
-    agentRunGeneration += 1;
   });
 
   pi.on("tool_result", async (event) => {
@@ -211,46 +185,21 @@ export default function (pi: ExtensionAPI) {
     }
   });
 
-  pi.on("agent_end", async (event, ctx) => {
-    if (!canWriteNativeNotification(ctx)) {
-      return;
-    }
+  pi.on("agent_settled", async (_event, ctx) => {
+    if (!canWriteNativeNotification(ctx)) return;
 
-    const body = buildNotificationBody(
-      extractFinalAssistantText(event.messages),
-      failedBashCommand,
-    );
-    const generation = sessionGeneration;
-    const runGeneration = agentRunGeneration;
-    const sessionFile = ctx.sessionManager.getSessionFile();
-
-    const maybeNotify = (retriesLeft: number) => {
-      if (
-        generation !== sessionGeneration ||
-        runGeneration !== agentRunGeneration ||
-        ctx.sessionManager.getSessionFile() !== sessionFile ||
-        !canWriteNativeNotification(ctx)
-      ) {
-        return;
-      }
-
-      if (stopHookChecksInFlight > 0) {
-        if (retriesLeft > 0) {
-          setTimeout(() => maybeNotify(retriesLeft - 1), NOTIFICATION_RETRY_MS);
-        }
-        return;
-      }
-
-      if (!ctx.isIdle() || ctx.hasPendingMessages()) {
-        return;
-      }
-
-      notify(notificationTitle(), body);
-    };
-
-    setTimeout(
-      () => maybeNotify(NOTIFICATION_MAX_RETRIES),
-      NOTIFICATION_DELAY_MS,
+    notify(
+      notificationTitle(),
+      buildNotificationBody(
+        extractFinalAssistantText(
+          ctx.sessionManager
+            .getBranch()
+            .flatMap((entry) =>
+              entry.type === "message" ? [entry.message] : [],
+            ),
+        ),
+        failedBashCommand,
+      ),
     );
   });
 }

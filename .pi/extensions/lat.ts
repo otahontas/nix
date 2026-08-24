@@ -36,18 +36,27 @@ function collapsibleResult(
 /** Absolute path to the lat binary, injected by `lat init`. */
 const LAT = "lat";
 
-function run(args: string[], cwd?: string): string {
-  const { execSync } = require("child_process") as typeof import("child_process");
-  return execSync(`${LAT} ${args.join(" ")}`, {
-    cwd: cwd ?? process.cwd(),
-    encoding: "utf-8",
-    timeout: 30_000,
-  });
+async function run(
+  pi: ExtensionAPI,
+  args: string[],
+  cwd: string,
+  signal?: AbortSignal,
+): Promise<string> {
+  const result = await pi.exec(LAT, args, { cwd, signal, timeout: 30_000 });
+  if (result.code !== 0 || result.killed) {
+    throw new Error(result.stdout || result.stderr || "lat command failed");
+  }
+  return result.stdout;
 }
 
-function tryRun(args: string[]): string {
+async function tryRun(
+  pi: ExtensionAPI,
+  args: string[],
+  cwd: string,
+  signal?: AbortSignal,
+): Promise<string> {
   try {
-    return run(args);
+    return await run(pi, args, cwd, signal);
   } catch {
     return "";
   }
@@ -79,10 +88,10 @@ export default function (pi: ExtensionAPI) {
         Type.Number({ description: "Max results (default 5)", default: 5 }),
       ),
     }),
-    async execute(_id, params) {
-      const args = ["search", JSON.stringify(params.query)];
+    async execute(_id, params, signal, _onUpdate, ctx) {
+      const args = ["search", params.query];
       if (params.limit) args.push("--limit", String(params.limit));
-      const output = tryRun(args);
+      const output = await tryRun(pi, args, ctx.cwd, signal);
       return {
         content: [{ type: "text", text: output || "No results found." }],
         details: {},
@@ -110,8 +119,8 @@ export default function (pi: ExtensionAPI) {
           'Section ID or name (e.g. "cli#init", "Tests#User login")',
       }),
     }),
-    async execute(_id, params) {
-      const output = tryRun(["section", JSON.stringify(params.query)]);
+    async execute(_id, params, signal, _onUpdate, ctx) {
+      const output = await tryRun(pi, ["section", params.query], ctx.cwd, signal);
       return {
         content: [
           { type: "text", text: output || "Section not found." },
@@ -138,8 +147,8 @@ export default function (pi: ExtensionAPI) {
     parameters: Type.Object({
       query: Type.String({ description: "Section name to locate" }),
     }),
-    async execute(_id, params) {
-      const output = tryRun(["locate", JSON.stringify(params.query)]);
+    async execute(_id, params, signal, _onUpdate, ctx) {
+      const output = await tryRun(pi, ["locate", params.query], ctx.cwd, signal);
       return {
         content: [
           { type: "text", text: output || "No sections matching query." },
@@ -163,13 +172,12 @@ export default function (pi: ExtensionAPI) {
       "Validate all wiki links and code refs in lat.md. Returns errors or 'All checks passed'",
     promptSnippet: "Validate lat.md links and code refs",
     parameters: Type.Object({}),
-    async execute() {
+    async execute(_id, _params, signal, _onUpdate, ctx) {
       try {
-        const output = run(["check"]);
+        const output = await run(pi, ["check"], ctx.cwd, signal);
         return { content: [{ type: "text", text: output }], details: {} };
-      } catch (err: unknown) {
-        const e = err as { stdout?: string; stderr?: string };
-        throw new Error(e.stdout || e.stderr || "Check failed");
+      } catch (error) {
+        throw new Error(error instanceof Error ? error.message : "Check failed");
       }
     },
     renderCall(_args, theme) {
@@ -189,8 +197,8 @@ export default function (pi: ExtensionAPI) {
     parameters: Type.Object({
       text: Type.String({ description: "Text containing [[refs]] to expand" }),
     }),
-    async execute(_id, params) {
-      const output = tryRun(["expand", JSON.stringify(params.text)]);
+    async execute(_id, params, signal, _onUpdate, ctx) {
+      const output = await tryRun(pi, ["expand", params.text], ctx.cwd, signal);
       return {
         content: [{ type: "text", text: output || params.text }],
         details: {},
@@ -216,8 +224,8 @@ export default function (pi: ExtensionAPI) {
         description: 'Section ID (e.g. "cli#init", "file#Section")',
       }),
     }),
-    async execute(_id, params) {
-      const output = tryRun(["refs", JSON.stringify(params.query)]);
+    async execute(_id, params, signal, _onUpdate, ctx) {
+      const output = await tryRun(pi, ["refs", params.query], ctx.cwd, signal);
       return {
         content: [{ type: "text", text: output || "No references found." }],
         details: {},
@@ -295,30 +303,28 @@ export default function (pi: ExtensionAPI) {
     };
   });
 
-  pi.on("agent_end", async () => {
+  pi.on("agent_end", async (_event, ctx) => {
     // Don't fire twice per prompt — prevents infinite loop
     if (agentEndFired) return;
     agentEndFired = true;
 
     // Run lat check
-    let checkOutput: string;
     let checkFailed = false;
     try {
-      checkOutput = run(["check"]);
-    } catch (err: unknown) {
+      await run(pi, ["check"], ctx.cwd);
+    } catch {
       checkFailed = true;
-      checkOutput = (err as { stdout?: string }).stdout || "";
     }
 
     // Run git diff --numstat to check if lat.md/ is in sync
     let needsSync = false;
     let codeLines = 0;
     try {
-      const { execSync } = require("child_process") as typeof import("child_process");
-      const numstat = execSync("git diff HEAD --numstat", {
-        encoding: "utf-8",
-        cwd: process.cwd(),
+      const result = await pi.exec("git", ["diff", "HEAD", "--numstat"], {
+        cwd: ctx.cwd,
       });
+      if (result.code !== 0) throw new Error(result.stderr);
+      const numstat = result.stdout;
 
       let latMdLines = 0;
       for (const line of numstat.split("\n")) {

@@ -6,6 +6,7 @@
  */
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { join } from "node:path";
 
 const FILE_MUTATING_TOOLS = new Set(["edit", "write"]);
 
@@ -27,19 +28,17 @@ export default function (pi: ExtensionAPI) {
     }
 
     const result = await pi.exec(
-      "bash",
-      [
-        "-c",
-        `cd "${devenvRoot}" && .devenv/profile/bin/prek run --files "${relPath}"`,
-      ],
+      join(devenvRoot, ".devenv/profile/bin/prek"),
+      ["run", "--files", relPath],
       {
+        cwd: devenvRoot,
+        signal: ctx.signal,
         timeout: 30000,
       },
     );
 
-    if (result.code !== 0) {
-      // prek results are in stdout (devenv --quiet suppresses shell setup noise)
-      const output = (result.stdout || "").trim();
+    if (result.code !== 0 || result.killed) {
+      const output = (result.stdout || result.stderr || "").trim();
       const failures = output
         .split("\n")
         .filter((line) => line.includes("Failed"))

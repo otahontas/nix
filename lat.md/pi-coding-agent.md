@@ -40,10 +40,10 @@ Home Manager-owned TypeScript extensions live in `extensions/`; project-specific
 
 Home Manager symlinks its extensions to `~/.pi/agent/extensions/`. Root `tsconfig.json` typechecks both extension sets against Pi's real package types. `prek` runs this typecheck only for staged TypeScript changes. Root devenv follows `home/pi-nix`, whose revision lives in `home/flake.lock`.
 
-Model-calling extensions use pi-ai's `builtinModels()` runtime with Pi-resolved request auth, avoiding the legacy `/compat` API. Pi 0.80.10 does not expose extension-only providers here, so these best-effort auxiliary calls skip them.
+Model-calling extensions use `ctx.modelRegistry.complete()` so auxiliary requests share Pi's provider composition, resolved authentication, endpoint overrides, and model configuration.
 
 - `fast-mode.ts` — sends every `openai-codex/gpt-5.6-sol:xhigh` request through OpenAI's Fast service tier
-- `stop-hook.ts` — GPT-5.6 Sol at `xhigh` thinking decides whether to nudge after each response and emits in-flight events for `notify.ts`
+- `stop-hook.ts` — GPT-5.6 Sol at `xhigh` thinking decides whether to nudge after each response
 - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, slash-containing branch names, non-standard worktree paths, and `--no-verify` commits
 - `starship-widget.ts` — starship prompt as a below-editor widget while Pi's built-in footer stays enabled
 - `search-sessions.ts` — BM25 search over past Pi conversations; `read_session` only reads `.jsonl` files under the Pi sessions directory
@@ -57,6 +57,8 @@ Project-local lat integration exposes documentation tools and enforces search an
 
 - `.pi/extensions/lat.ts` imports schemas from `typebox` and Pi APIs from the installed `@earendil-works` package family.
 - Six tools wrap `lat search`, `section`, `locate`, `check`, `expand`, and `refs`; each returns Pi's required `details`, while `lat_check` throws command failures as tool errors.
+- Lat and git commands run through `pi.exec()` with argument arrays, session cwd, cancellation, and no shell interpolation.
+- `.pi/extensions/post-edit-hook.ts` runs project `prek` through direct argv execution after successful edit and write tool calls.
 - Expansion hints use `app.tools.expand`. Custom messages normalize string or rich content and honor Pi's configured output padding.
 - `before_agent_start` requires a search before file access. `agent_end` runs `lat check` and requests a follow-up when code changes lack proportional `lat.md/` updates.
 
@@ -66,7 +68,7 @@ Fast mode routes Sol `xhigh` requests through OpenAI's lower-latency service tie
 
 - [[home/configs/pi-coding-agent/extensions/fast-mode.ts#enableFastMode]] adds `service_tier: "priority"`, the Pi 0.83-compatible name for Fast mode.
 - The provider hook applies only to `openai-codex/gpt-5.6-sol` at `xhigh` thinking.
-- `stop-hook.ts` and `name-session.ts` reuse the payload helper because their direct pi-ai calls bypass provider request hooks.
+- `stop-hook.ts` and `name-session.ts` reuse the payload helper because auxiliary `modelRegistry.complete()` calls do not traverse the agent request hook.
 
 ### starship widget extension
 
@@ -77,6 +79,7 @@ Starship prompt stays above Pi's built-in footer stats while hiding the duplicat
 - It does not call `setFooter`; [[home/configs/pi-coding-agent/extensions/starship-widget.ts#patchFooterLocationLine]] wraps `FooterComponent.render()` to drop only the first location row.
 - Built-in footer code still renders token, cache-hit, experimental, model, and extension-status rows, so upstream footer updates keep applying.
 - [[home/configs/pi-coding-agent/extensions/starship-widget.ts#fetchStarship]] runs `starship prompt` with stable status, duration, and job values.
+- `agent_settled` refreshes the prompt only after retries, compaction, and queued continuations finish.
 
 ### stop-hook extension
 
@@ -85,7 +88,7 @@ Stop-hook gates automatic self-review with Sol at `xhigh` thinking so auxiliary 
 - [[home/configs/pi-coding-agent/extensions/stop-hook.ts#askGatekeeper]] uses Fast `openai-codex/gpt-5.6-sol` with `xhigh` reasoning and skips the nudge when that model or its auth is unavailable.
 - [[home/configs/pi-coding-agent/extensions/stop-hook.ts#shouldSendNudge]] still skips obvious completions and stops nudging after repeated gatekeeper failures.
 - [[home/configs/pi-coding-agent/extensions/stop-hook.ts#STOP_CHECK_PROMPT]] keeps follow-ups within the requested scope, so investigation-only requests report findings instead of starting fixes.
-- `agent_end` only queues the self-review prompt after tool-using turns, and shared start/end events let `notify.ts` wait for the gatekeeper.
+- `agent_end` queues the self-review prompt after tool-using turns, before Pi emits `agent_settled`.
 
 ### guardrails extension
 
@@ -128,8 +131,7 @@ Pi notifications carry useful context without model calls.
 
 Key behavior lives in [[home/configs/pi-coding-agent/extensions/notify.ts#buildNotificationBody]], [[home/configs/pi-coding-agent/extensions/notify.ts#canWriteNativeNotification]], and [[home/configs/pi-coding-agent/extensions/notify.ts#notify]].
 
-- `agent_end` notifications only run in interactive TTY sessions. They wait for stop-hook gatekeeper checks, then send only if Pi is idle and has no pending messages.
-- `stop-hook.ts` emits shared start/end events around [[home/configs/pi-coding-agent/extensions/stop-hook.ts#shouldSendNudge]], so notification timers can cancel stale turn-complete alerts when a follow-up starts.
+- `agent_settled` notifications run only in interactive TTY sessions, after retries, compaction, stop-hook checks, and queued continuations finish.
 - Body text is deterministic: failed bash command first, then `needs input` when the final assistant message appears blocked, otherwise `done`.
 - OSC 777 title/body fields collapse whitespace, remove control characters, replace semicolons, and truncate output before writing to stdout. The notifier also emits BEL so Ghostty can trigger its configured title, attention, and border bell effects.
 
