@@ -15,13 +15,6 @@ if [[ ! -f $SETTINGS_FILE ]]; then
   echo '{}' >"$SETTINGS_FILE"
 fi
 
-# Drop stale subagent model overrides before merging so bundled agents use the
-# current Pi default model unless explicitly overridden in repo settings.
-jq 'del(.subagents.agentOverrides) | if .subagents == {} then del(.subagents) else . end' \
-  "$SETTINGS_FILE" >"${SETTINGS_FILE}.tmp"
-
-mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
-
 # Merge settings, preserving existing keys unless overridden
 jq -s '.[0] * .[1]' \
   "$SETTINGS_FILE" \

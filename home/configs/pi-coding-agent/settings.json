@@ -6,19 +6,7 @@
   "enableSkillCommands": true,
   "enabledModels": ["openai-codex/gpt-5.6-sol:xhigh"],
   "subagents": {
-    "defaultModel": "openai-codex/gpt-5.6-sol",
-    "defaultThinking": "xhigh",
-    "agentOverrides": {
-      "advisor": { "thinking": "xhigh" },
-      "context-builder": { "thinking": "xhigh" },
-      "delegate": { "thinking": "xhigh" },
-      "oracle": { "thinking": "xhigh" },
-      "planner": { "thinking": "xhigh" },
-      "researcher": { "thinking": "xhigh" },
-      "reviewer": { "thinking": "xhigh" },
-      "scout": { "thinking": "xhigh" },
-      "worker": { "thinking": "xhigh" }
-    }
+    "defaultModel": "openai-codex/gpt-5.6-sol"
   },
   "hideThinkingBlock": true,
   "terminal": {

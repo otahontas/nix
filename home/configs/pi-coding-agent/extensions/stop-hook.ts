@@ -81,7 +81,7 @@ async function askGatekeeper(
   contextMessages: any[],
   ctx: ExtensionContext,
 ): Promise<boolean | null> {
-  const model = ctx.modelRegistry.find("openai-codex", "gpt-5.6-sol");
+  const model = ctx.model;
   if (!model) return null;
 
   const response = await ctx.modelRegistry.complete(
@@ -136,7 +136,7 @@ async function shouldSendNudge(
 
   const contextMessages = buildGatekeeperMessages(messages);
 
-  // Use the fixed session-wide model and thinking level.
+  // Use the current session model with the shared auxiliary thinking level.
   try {
     const result = await askGatekeeper(contextMessages, ctx);
     if (result !== null) {
@@ -148,7 +148,7 @@ async function shouldSendNudge(
     return false;
   }
 
-  // Default model unavailable — don't nudge without informed decision
+  // Current model unavailable — don't nudge without informed decision
   failureCounter.count++;
   return false;
 }

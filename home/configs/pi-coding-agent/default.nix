@@ -104,6 +104,7 @@ let
     fi
 
     unset PLANNOTATOR_BROWSER
+    export PONYTAIL_DEFAULT_MODE=ultra
     export BROWSER="${plannotatorBrowser}"
     export PATH="${piLatMd}/bin:${piPlannotator}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
     exec ${piPackage}/bin/pi "$@"
@@ -121,7 +122,7 @@ let
     }) extensionFiles
   );
 
-  # Agent definitions come from pi-subagents package (advisor, context-builder, delegate, oracle, planner, researcher, reviewer, scout, worker).
+  # Agent definitions come from the pi-subagents package.
 
   # Auto-discover simple skills (no deps) - symlink entire directories
   skillDirs = builtins.attrNames (builtins.readDir ./skills);

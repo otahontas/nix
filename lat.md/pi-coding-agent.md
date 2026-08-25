@@ -11,10 +11,10 @@ Directory layout under `home/configs/pi-coding-agent/`.
 - `sources/APPEND_SYSTEM.md` — global system-prompt additions symlinked to `~/.pi/agent/APPEND_SYSTEM.md`
 - `extensions/` — local single-file TypeScript extensions symlinked to `~/.pi/agent/extensions/`
 - `skills/` — repo-owned skills symlinked to `~/.pi/agent/skills/`
-- `prompts/` — `merge-worktree.md` and `security-review.md`, symlinked to `~/.pi/agent/prompts/`
+- `prompts/` — `merge-worktree.md`, symlinked to `~/.pi/agent/prompts/`
 - `scripts/build-session-index.sh` — launchd-backed session-history indexer with explicit Nix runtime tools
-- `merge-settings.sh` — activation hook that merges repo settings and deletes stale `subagents.agentOverrides` before applying repo-managed overrides
-- `settings.json` — default provider/model settings, subagent thinking overrides, terminal settings, shell command prefix, and unpinned Pi packages
+- `merge-settings.sh` — activation hook that merges repo settings while preserving other live keys
+- `settings.json` — default provider/model settings, one shared subagent model, terminal settings, shell command prefix, and unpinned Pi packages
 - `mcp.json` — remote Context7, local GitHits CLI, and local chrome-devtools MCP template; `default.nix` replaces `@chromeExecutable@` with the Nix Chrome package path
 - `home/flake.nix` input `pi-nix` (`github:lukasl-dev/pi.nix`) supplies the Pi package and Home Manager module
 - `home/flake.nix` non-flake input `githits-cli` (`github:githits-com/githits-cli`) supplies the official guided MCP skill
@@ -28,10 +28,11 @@ The Pi wrapper loads secrets from pass, extends `PATH`, and lets package-managed
 - `mcp.json` uses GitHits' official Pi server entry: `GitHits` name, `githits@latest` over stdio, and eager lifecycle. The process inherits `GITHITS_API_TOKEN` from the Pi wrapper.
 - Wrapper-only tools include `lat.md` and `plannotator` from `otahontas-nixpkgs`, plus Poppler tools and `rtk`.
 - The wrapper sets `BROWSER` to a Nix-built launcher for Chrome `Profile 5`, the local Dev profile, so Plannotator opens there. It clears `PLANNOTATOR_BROWSER` because that variable accepts only an app name in the Pi extension on macOS.
+- The wrapper sets `PONYTAIL_DEFAULT_MODE=ultra`; Ponytail keeps all other behavior at package defaults.
 - `settings.json` defaults to `openai-codex/gpt-5.6-sol` with `xhigh` thinking and scopes model selection to that pair.
-- `pi-subagents` uses one Sol default for every bundled role; thinking-only overrides replace each bundled role's lower effort with `xhigh`.
+- `pi-subagents` uses one Sol default while builtin agent definitions control their own thinking levels.
 - NPM Pi packages include `@dietrichgebert/ponytail`, `@plannotator/pi-extension`, `pi-caveman`, `pi-mcp-adapter`, `pi-rtk-optimizer`, `pi-subagents`, and `pi-web-access`.
-- Bundled agents come from `pi-subagents` (advisor, context-builder, delegate, oracle, planner, researcher, reviewer, scout, worker); no local `agents/` directory is needed.
+- Builtin agents come from `pi-subagents`; package runtime discovery stays authoritative, so no local `agents/` directory is needed.
 - Unpinned NPM packages update with `pi update --extensions`.
 
 ## Local extensions
@@ -43,13 +44,13 @@ Home Manager symlinks its extensions to `~/.pi/agent/extensions/`. Root `tsconfi
 Model-calling extensions use `ctx.modelRegistry.complete()` so auxiliary requests share Pi's provider composition, resolved authentication, endpoint overrides, and model configuration.
 
 - `fast-mode.ts` — sends every `openai-codex/gpt-5.6-sol:xhigh` request through OpenAI's Fast service tier
-- `stop-hook.ts` — GPT-5.6 Sol at `xhigh` thinking decides whether to nudge after each response
+- `stop-hook.ts` — the current session model at `xhigh` thinking decides whether to nudge after each response
 - `guardrails.ts` — blocks non-conventional commits, `rm`, `npx`, slash-containing branch names, non-standard worktree paths, and `--no-verify` commits
 - `starship-widget.ts` — starship prompt as a below-editor widget while Pi's built-in footer stays enabled
 - `search-sessions.ts` — BM25 search over past Pi conversations; `read_session` only reads `.jsonl` files under the Pi sessions directory
 - `name-session.ts` — names UI sessions from the first real user prompt with the current Pi model
 - `clone-cmd.ts` — `/clone-cmd` clones the current branch to a new session and copies a launch command
-- `notify.ts` — sends session-aware OSC 777 notifications with deterministic bodies and sanitized output
+- `notify.ts` — sends sanitized session-named OSC 777 completion notifications
 
 ### Project lat extension
 
@@ -83,9 +84,9 @@ Starship prompt stays above Pi's built-in footer stats while hiding the duplicat
 
 ### stop-hook extension
 
-Stop-hook gates automatic self-review with Sol at `xhigh` thinking so auxiliary checks follow the session-wide model policy.
+Stop-hook gates automatic self-review with the current session model at `xhigh` thinking, matching name-session model selection.
 
-- [[home/configs/pi-coding-agent/extensions/stop-hook.ts#askGatekeeper]] uses Fast `openai-codex/gpt-5.6-sol` with `xhigh` reasoning and skips the nudge when that model or its auth is unavailable.
+- [[home/configs/pi-coding-agent/extensions/stop-hook.ts#askGatekeeper]] uses `ctx.model`, always passes the shared Fast-mode payload hook, and skips the nudge when no current model is available.
 - [[home/configs/pi-coding-agent/extensions/stop-hook.ts#shouldSendNudge]] still skips obvious completions and stops nudging after repeated gatekeeper failures.
 - [[home/configs/pi-coding-agent/extensions/stop-hook.ts#STOP_CHECK_PROMPT]] keeps follow-ups within the requested scope, so investigation-only requests report findings instead of starting fixes.
 - `agent_end` queues the self-review prompt after tool-using turns, before Pi emits `agent_settled`.
@@ -127,17 +128,25 @@ Key behavior lives in [[home/configs/pi-coding-agent/extensions/clone-cmd.ts#cop
 
 ### notify extension
 
-Pi notifications carry useful context without model calls.
+Pi notifications announce settled sessions without model calls or transcript parsing.
 
-Key behavior lives in [[home/configs/pi-coding-agent/extensions/notify.ts#buildNotificationBody]], [[home/configs/pi-coding-agent/extensions/notify.ts#canWriteNativeNotification]], and [[home/configs/pi-coding-agent/extensions/notify.ts#notify]].
+Key behavior lives in [[home/configs/pi-coding-agent/extensions/notify.ts#canWriteNativeNotification]] and [[home/configs/pi-coding-agent/extensions/notify.ts#notify]].
 
 - `agent_settled` notifications run only in interactive TTY sessions, after retries, compaction, stop-hook checks, and queued continuations finish.
-- Body text is deterministic: failed bash command first, then `needs input` when the final assistant message appears blocked, otherwise `done`.
-- OSC 777 title/body fields collapse whitespace, remove control characters, replace semicolons, and truncate output before writing to stdout. The notifier also emits BEL so Ghostty can trigger its configured title, attention, and border bell effects.
+- The title uses the Pi session name when available, and the body is always `done`.
+- OSC 777 title text collapses whitespace, removes control characters, and replaces semicolons. The notifier also emits BEL so Ghostty can trigger its configured title, attention, and border bell effects.
 
 ## Package-managed behavior
 
 Package-managed extensions provide reusable Pi behavior outside the local single-file extension set.
+
+### Ponytail package
+
+Ponytail applies minimal-code guidance at `ultra` intensity while leaving other package behavior at defaults.
+
+- Pi loads `npm:@dietrichgebert/ponytail` from `settings.json`.
+- The Pi wrapper sets `PONYTAIL_DEFAULT_MODE=ultra`, so no separate Ponytail config file is needed.
+- Per-session `/ponytail` commands can still change the active mode.
 
 ### pi-caveman package
 
@@ -145,16 +154,15 @@ Caveman response style comes from the package-managed `pi-caveman` extension ins
 
 - Pi loads `npm:pi-caveman` from `settings.json`; the package stays unpinned so `pi update --extensions` can update it.
 - The package provides `/caveman` for session-level toggles and `/caveman config` for the default level and footer status setting.
-- The extension defaults new sessions to `full` caveman mode when `~/.pi/agent/caveman.json` is absent or sets `defaultLevel` to `full`.
+- User-level `~/.pi/agent/caveman.json` sets `defaultLevel` to `ultra`; omitted fields use package defaults.
 
 ### pi-subagents package
 
-All bundled subagent roles use Fast GPT-5.6 Sol at `xhigh`, trading higher credit use for one consistent model policy.
+Builtin subagents share one Sol model while package definitions control role-specific thinking and behavior.
 
 - Pi loads `npm:pi-subagents` from `settings.json`; the package stays unpinned for `pi update --extensions`.
-- Bundled roles share one Sol default instead of carrying role-specific model overrides.
-- Thinking-only overrides force `xhigh` because bundled agent frontmatter otherwise selects lower levels by role.
-- Repo-managed overrides survive Home Manager activation because `merge-settings.sh` removes stale generated overrides before merging `settings.json`.
+- `subagents.defaultModel` selects `openai-codex/gpt-5.6-sol` for every builtin without model frontmatter.
+- No `agentOverrides` or shared thinking override are configured; package runtime discovery and agent definitions stay authoritative.
 
 ## Skills and prompts
 
