@@ -1,42 +1,31 @@
 # System config
 
-nix-darwin flake in `system/`. Manages macOS defaults, user accounts, firewall, nix daemon, keyboard layouts. Requires sudo — always ask user to apply, never apply yourself.
+nix-darwin owns macOS defaults, accounts, firewall, Nix daemon settings, keyboard data, and Mac App Store declarations. Applying it requires sudo and remains a user action.
 
-Apply with `devenv tasks run system:apply`.
+## System ownership
 
-## What it configures
+System configuration is limited to state that requires machine-wide or nix-darwin ownership.
 
-macOS defaults and daemon settings.
+This includes macOS UI and input defaults, Touch ID sudo, firewall policy, Nix daemon settings, Fish as the default shell, keyboard layouts, and declarative Mac App Store apps.
 
-- **Finder/Dock/trackpad** — show pathbar, autohide dock, tap-to-click, three-finger drag
-- **Keyboard** — fast repeat, no press-and-hold, custom US International no-dead-keys layout in `system/keyboard/`
-- **Screencapture** — PNG to home dir, no shadow, no thumbnail
-- **Nix daemon** — auto gc (weekly), substituters (cache.nixos.org, nix-community), experimental features, linux-builder
-- **TouchID** for sudo via PAM
-- **Firewall** with stealth mode
-- **Fish** as default shell
-- **Mac App Store** — declarative app installs through nix-darwin `programs.mas`, without automatic app updates
+User tools and suitable app bundles belong to Home Manager; vendor software with privileged installers remains manual.
 
 ## Manual applications
 
-Manual system-wide apps and audio plug-ins stay outside nix-darwin when vendor installers manage drivers, plug-ins, content libraries, privileged helpers, or licenses better than Nix.
+Vendor-managed software stays outside Nix when installers own drivers, plug-ins, content, privileged helpers, updates, or license state.
 
-Brew-nix casks installed through `home.packages` are Nix/Home Manager-managed per [[home-configs#Patterns]]; package availability alone does not change current ownership.
+Brew-nix casks installed through `home.packages` remain Home Manager-owned per [[home-configs#Patterns]]. Package availability alone does not justify split ownership.
 
-Current manual exceptions and Nix suitability:
+Surprising exceptions where a package exists but manual ownership still wins:
 
-- **RME Fireface USB Settings / Totalmix** — keep vendor-managed. Neither locked nixpkgs nor brew-nix provides them, and the RME USB driver package owns the driver, MIDI driver plugin, LaunchAgent, and macOS approval flow.
-- **OrbStack** — keep manually installed system-wide despite `pkgs.orbstack` and `pkgs.brewCasks.orbstack`. Its first-run relocation flow targets `/Applications/OrbStack.app`, while its privileged helper and global `orb`/`orbctl` links depend on system locations. Accepting relocation from Home Manager escapes Nix ownership; declining leaves split ownership.
-- **Serum 2** — keep vendor-managed. No package exists in the locked sets, and the installer owns AU/VST3/AAX plug-ins, presets, shared assets, updates, and license state under system locations.
-- **Pianoteq and its plug-ins** — keep vendor-managed on macOS. Nixpkgs Pianoteq packages are Linux-only, while the Modartt macOS installer owns the standalone app, plug-in formats, instruments, support data, and license activation.
-- **Arturia Software Center-managed products** — keep Arturia Software Center, Analog Lab V standalone, and Arturia plug-ins vendor-managed. `pkgs.brewCasks.arturia-software-center` exists, but brew-nix extracts its vendor `.pkg` without reproducing installer scripts or required system `/Library` helper, agent, and resource placement.
-- **Native Access-managed products** — keep Native Access, Massive standalone, and Native Instruments plug-ins vendor-managed. `pkgs.brewCasks.native-access` packages the manager app, but privileged helpers, product installers, content, auto-updates, and licenses remain imperative; split ownership adds little value.
-- **Nord Sound Manager** — keep manual for now. Neither locked package set provides it; its direct signed DMG and lack of a detected privileged helper make custom Home Manager packaging feasible, but that would add local version and hash maintenance.
+- **OrbStack** — relocation, privileged helpers, and global CLI links expect system locations.
+- **Arturia Software Center** — the packaged manager does not reproduce vendor scripts or required `/Library` resources.
+- **Native Access** — the packaged manager does not own downstream product installers, content, helpers, updates, or licenses.
 
-No current manual exception benefits from nix-darwin `environment.systemPackages`: it does not reproduce vendor installer scripts or place plug-ins and helpers in required `/Library` locations. Self-contained GUI bundles belong in Home Manager instead.
+Other vendor audio software stays manual under the same rule; absent packages do not need an inventory here.
 
 ## Keyboard layout file
 
-The custom keylayout file is Apple keyboard-layout data, not a normal XML config target.
+The custom keylayout is generated Apple keyboard data, not ordinary XML configuration.
 
-`system/keyboard/us-international-nodeadkeys.keylayout` is generated by Ukelele and installed by nix-darwin. Generic XML linting is skipped because XML tools reject Apple control character references and `plutil` expects property-list roots.
+`system/keyboard/us-international-nodeadkeys.keylayout` contains Apple-valid control references and CR line endings, so generic XML tools and `plutil` are intentionally skipped.
