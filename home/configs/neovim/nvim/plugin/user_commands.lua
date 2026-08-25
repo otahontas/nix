@@ -1,20 +1,7 @@
 -- Helper function to open a file in a floating window
 local function open_in_float(file_path)
-	-- Check if buffer for this file already exists
-	local existing_buf = vim.fn.bufnr(file_path)
-	local buf
-
-	if existing_buf ~= -1 then
-		-- Use existing buffer
-		buf = existing_buf
-	else
-		-- Create new buffer and load the file
-		buf = vim.api.nvim_create_buf(false, false)
-		vim.api.nvim_buf_set_name(buf, file_path)
-		vim.api.nvim_buf_call(buf, function()
-			vim.cmd("edit! " .. vim.fn.fnameescape(file_path))
-		end)
-	end
+	local buf = vim.fn.bufadd(file_path)
+	vim.fn.bufload(buf)
 
 	-- Calculate window dimensions (80% of editor size)
 	local width = math.floor(vim.o.columns * 0.8)
@@ -41,23 +28,23 @@ end
 
 local utils = require("utils")
 
-local function fish_path(fn_name)
-	local out = utils.run_cmd({ "fish", "-lc", fn_name }, { namespace = "fish" })
+local function command_path(name)
+	local out = utils.run_cmd({ name }, { namespace = name })
 	return out and vim.trim(out) or nil
 end
 
--- Open todo.txt in a floating window (path comes from fish)
+-- Open todo.txt in a floating window
 vim.api.nvim_create_user_command("Todo", function()
-	local path = fish_path("todo_path")
+	local path = command_path("todo_path")
 	if not path then
 		return
 	end
 	open_in_float(path)
 end, { desc = "Open todo in floating window" })
 
--- Open daily note in a floating window (fish creates it if needed)
+-- Open daily note in a floating window
 vim.api.nvim_create_user_command("Daily", function()
-	local path = fish_path("daily_path")
+	local path = command_path("daily_path")
 	if not path then
 		return
 	end

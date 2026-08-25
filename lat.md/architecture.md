@@ -8,7 +8,7 @@ Top-level directories and key files.
 
 ```text
 home/            home-manager flake — shells, CLI/GUI tools, catppuccin, pi-coding-agent
-  configs/       per-tool directories, each with default.nix (49 configs)
+  configs/       per-tool directories, each with default.nix (51 configs)
 system/          nix-darwin flake — macOS defaults, keyboard, firewall, nix daemon
   keyboard/      custom US International no-dead-keys layout
 devenv.nix       root devenv entrypoint importing tracked modules
@@ -51,9 +51,9 @@ Root language tooling covers repo filetypes that need editor or hook support.
 
 - `devenv.nix` imports `.devenv-modules/`; `packages.nix` installs LSPs for Fish, JSON, Lua, TypeScript, YAML, and TOML, plus markdownlint for editor/hook linting, while `git-hooks.nix` takes config-file-validator from the `otahontas-nixpkgs` input for schema hooks. JSON uses standalone `vscode-json-languageserver` because the extracted bundle fails at startup.
 - `.nvim.lua` adds `.nvim/` to `runtimepath` and loads repo-local modules; `.nvim/lua/local_lsp.lua` enables `nixd`, `bashls`, `fish_lsp`, `jsonls`, `emmylua_ls`, `yamlls`, `ts_ls`, and `taplo`; custom LSP config files live in `.nvim/lsp/`, and `.nvim/lua/local_lint.lua` defines repo-only nvim-lint behavior.
-- Hooks check Nix with deadnix, Statix, and treefmt/nixfmt; shell scripts with ShellCheck's default severity and source following to match bashls more closely; Fish syntax with `fish --no-execute`; JSON syntax with `jq empty`; Lua with EmmyLua; TypeScript with `tsc --noEmit`; Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`; TOML with `taplo lint`; YAML with relaxed `yamllint`; and JSON/YAML/TOML schemas with config-file-validator.
+- Hooks check Nix with deadnix, Statix, and treefmt/nixfmt; shell scripts with ShellCheck's default severity and source following to match bashls more closely; Fish syntax with `fish --no-execute`; JSON/YAML/TOML syntax and schemas with config-file-validator; Lua with EmmyLua; TypeScript with `tsc --noEmit`; Markdown with markdownlint using `.markdownlint.json` and `.markdownlintignore`; TOML with `taplo lint`; and YAML with relaxed `yamllint`.
 - Manual hook runs use `prek`, never `pre-commit`. `.pre-commit-config.yaml` is generated hook config, not the CLI to invoke.
-- JSON keeps `jsonls` for editor syntax and schema diagnostics while hooks keep fast `jq empty` syntax checks and add config-file-validator for SchemaStore-backed schema checks.
+- JSON keeps `jsonls` for editor syntax and schema diagnostics while hooks use config-file-validator for both syntax and SchemaStore-backed schema checks.
 - Lock files are generated state: never add lint hooks, formatters, schema checks, filetype overrides, nvim-lint mappings, or LSP setup for them.
 - EmmyLua reads `.emmyrc.json` for LuaJIT, Neovim globals, ignored generated dirs, repo `.nvim/lua`, and Home Manager Neovim runtime libraries so plugin `require()` calls resolve in editor and hooks.
 - `.emmyrc.json` ignores `mini.nvim`'s `mini/base16.lua` because EmmyLua 0.23.2 hangs when indexing that file.
@@ -121,9 +121,9 @@ Alternatives considered:
 
 #### JSON diagnostics
 
-JSON diagnostics use jsonls in Neovim, `jq empty` for fast hook syntax checks, and config-file-validator for SchemaStore-backed schema checks.
+JSON diagnostics use jsonls in Neovim and config-file-validator in hooks for syntax plus SchemaStore-backed schema checks.
 
-`jsonls` uses standalone `vscode-json-languageserver` because the extracted bundle failed at startup under Node. Hooks keep `jq empty` because it is fast and catches invalid JSON before the broader schema hook runs.
+`jsonls` uses standalone `vscode-json-languageserver` because the extracted bundle failed at startup under Node. The config validator handles unmatched JSON as syntax-only and adds schemas when SchemaStore matches a file.
 
 Alternatives considered:
 
@@ -169,7 +169,6 @@ Lua diagnostics use EmmyLua in Neovim and hooks so editor and commit checks shar
 
 - `${workspaceFolder}/home/configs/neovim/nvim/lua` for tracked Home Manager modules.
 - `${workspaceFolder}/.nvim/lua` for repo-local Neovim modules.
-- `{env:HOME}/.config/nvim/lua` for Home Manager-generated modules such as `treesitter_filetypes`.
 - `{env:HOME}/.local/share/nvim/site/pack/hm/start` for Home Manager-installed plugin modules.
 
 The hook calls `emmylua_check --config .emmyrc.json --warnings-as-errors` directly. Direct config keeps the hook simple and avoids generated config scripts.
@@ -215,13 +214,12 @@ TOML diagnostics use Taplo for editor and hook linting, with config-file-validat
 
 Home, system, and root devenv use `github:NixOS/nixpkgs/nixpkgs-unstable` as their primary `nixpkgs` source. `home/` pulls extra inputs:
 
-- **nixpkgs-mise-fixed** — temporary Home Manager input pinned to NixOS/nixpkgs#534965's merge commit so `mise` avoids the Darwin setuid test failure; remove once primary nixpkgs includes that fix
 - **catppuccin / pi-catppuccin** — global theme (latte/blue) across terminal, editor, pi TUI
 - **kanttiinit-cli** — personal CLI tool
 - **pi-nix** — external flake at `github:lukasl-dev/pi.nix`; supplies the Pi package and Home Manager module
 - **google-workspace-cli** — upstream Google Workspace CLI flake that supplies `gws`
 - **githits-cli** — non-flake GitHits source that supplies its official guided MCP skill
-- **brew-nix** — package overlay used by `mas` for Mac App Store installs
+- **brew-nix** — package overlay used for Homebrew casks installed through Home Manager
 - **brew-api** — non-flake Homebrew API source followed by `brew-nix`
 - **otahontas-nixpkgs** — package flake supplying personal CLIs such as `lat-md` and `plannotator`
 

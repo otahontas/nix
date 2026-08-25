@@ -2,6 +2,7 @@
 let
   ghScript = builtins.readFile ./scripts/gh.sh;
   gitExtrasScript = builtins.readFile ./scripts/git-extras.sh;
+  worktreeHelperScript = builtins.readFile ./scripts/git-worktree-helper.sh;
 in
 {
   home = {
@@ -10,6 +11,7 @@ in
     packages = [
       (pkgs.writeShellScriptBin "format-duration" gitExtrasScript)
       (pkgs.writeShellScriptBin "git-worktree-prune" gitExtrasScript)
+      (pkgs.writeShellScriptBin "git-worktree-helper" worktreeHelperScript)
       (pkgs.writeShellScriptBin "gh-pr-select" ghScript)
       (pkgs.writeShellScriptBin "gh-pr-get-url" ghScript)
       (pkgs.writeShellScriptBin "gh-pr-copy-url" ghScript)

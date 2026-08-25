@@ -61,7 +61,7 @@ Project-local lat integration exposes documentation tools and enforces search an
 - Lat and git commands run through `pi.exec()` with argument arrays, session cwd, cancellation, and no shell interpolation.
 - `.pi/extensions/post-edit-hook.ts` runs project `prek` through direct argv execution after successful edit and write tool calls.
 - Expansion hints use `app.tools.expand`. Custom messages normalize string or rich content and honor Pi's configured output padding.
-- `before_agent_start` requires a search before file access. `agent_end` runs `lat check` and requests a follow-up when code changes lack proportional `lat.md/` updates.
+- `before_agent_start` requires a search before file access. `agent_end` runs `lat check` and requests a follow-up only when validation fails.
 
 ### fast-mode extension
 
@@ -110,10 +110,10 @@ Search-sessions exposes past Pi conversations through a prebuilt BM25 index.
 
 Name-session assigns display names without depending on native notifications.
 
-Key behavior lives in [[home/configs/pi-coding-agent/extensions/name-session.ts#avoidTitleCase]], [[home/configs/pi-coding-agent/extensions/name-session.ts#generateTitle]], and [[home/configs/pi-coding-agent/extensions/name-session.ts#looksLikeRealTask]].
+Key behavior lives in [[home/configs/pi-coding-agent/extensions/name-session.ts#generateTitle]] and [[home/configs/pi-coding-agent/extensions/name-session.ts#cleanGeneratedTitle]].
 
-- In UI sessions, the first real user prompt can generate a 2-6 word session title with the current Pi model at Fast `xhigh`. Manual and restored names win, greetings and extension prompts are skipped, and session-switch guards prevent stale writes.
-- Generated titles are normalized after the model response: ordinary title-case words become lowercase, while acronyms, mixed-case words, and listed product names keep their casing.
+- In UI sessions, the first non-empty user prompt can generate a 2-6 word session title with the current Pi model at Fast `xhigh`. Manual and restored names win, extension prompts are skipped, and session-switch guards prevent stale writes.
+- The generation prompt returns `EMPTY` for greetings or acknowledgements and requests lowercase ordinary words; post-processing trims, unwraps, and truncates the response.
 - Extension-generated prompts are skipped so `stop-hook.ts` follow-ups do not rename the session.
 - Title generation is best effort and never breaks the agent loop.
 

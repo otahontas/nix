@@ -1,14 +1,14 @@
-local treesitter_filetypes = require("treesitter_filetypes")
-
 vim.treesitter.language.register("yaml", "yaml.docker-compose")
 vim.treesitter.language.register("yaml", "yaml.github-action")
 
 vim.api.nvim_create_autocmd("FileType", {
-	pattern = treesitter_filetypes,
-	callback = function()
-		vim.treesitter.start()
+	pattern = "*",
+	callback = function(args)
+		if not pcall(vim.treesitter.start, args.buf) then
+			return
+		end
 		vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-		vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+		vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
 	end,
 })
 

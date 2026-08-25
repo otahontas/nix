@@ -6,8 +6,6 @@ let
     gwnew = "git-worktree-new";
     gwpr = "git-worktree-pr";
     gwprune = "git-worktree-prune";
-    pic = "pi -c";
-    pir = "pi -r";
   };
 in
 {

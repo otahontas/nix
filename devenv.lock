@@ -236,7 +236,6 @@
         "home-manager": "home-manager",
         "kanttiinit-cli": "kanttiinit-cli",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-mise-fixed": "nixpkgs-mise-fixed",
         "otahontas-nixpkgs": "otahontas-nixpkgs",
         "pi-catppuccin": "pi-catppuccin",
         "pi-nix": "pi-nix"
@@ -343,22 +342,6 @@
         "owner": "NixOS",
         "ref": "nixpkgs-unstable",
         "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs-mise-fixed": {
-      "locked": {
-        "lastModified": 1782768440,
-        "narHash": "sha256-ETjRnnvcOllA+0TeX3uwcZABfniXkKYfnGcnltkT/y4=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "36b689324a65f495c6e01a44905457f7ca74e676",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "36b689324a65f495c6e01a44905457f7ca74e676",
         "type": "github"
       }
     },

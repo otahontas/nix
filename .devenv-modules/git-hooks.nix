@@ -45,13 +45,6 @@ in
       files = "\\.fish$";
       types = [ "file" ];
     };
-    # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#JSON diagnostics]]
-    json-syntax = {
-      enable = true;
-      entry = "${pkgs.jq}/bin/jq empty";
-      files = "\\.json$";
-      types = [ "file" ];
-    };
     # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Config schema diagnostics]]
     config-schema = {
       enable = true;

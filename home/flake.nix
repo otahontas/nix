@@ -2,8 +2,6 @@
   description = "home config";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    # TODO: remove when primary nixpkgs includes NixOS/nixpkgs#534965.
-    nixpkgs-mise-fixed.url = "github:NixOS/nixpkgs/36b689324a65f495c6e01a44905457f7ca74e676";
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -49,7 +47,6 @@
   outputs =
     {
       nixpkgs,
-      nixpkgs-mise-fixed,
       home-manager,
       catppuccin,
       pi-catppuccin,
@@ -69,11 +66,6 @@
         config.allowUnfree = true;
         overlays = [
           brew-nix.overlays.default
-          # TODO: remove when primary nixpkgs includes NixOS/nixpkgs#534965.
-          # mise 2026.6.11 fails on Darwin because Nix sandbox strips setuid bits.
-          (_: _: {
-            mise = nixpkgs-mise-fixed.legacyPackages.${system}.mise;
-          })
           # https://github.com/NixOS/nixpkgs/pull/485980
           (_: prev: {
             dbus = prev.dbus.overrideAttrs (old: {

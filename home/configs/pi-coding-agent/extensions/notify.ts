@@ -24,33 +24,8 @@ function notify(title: string): void {
   process.stdout.write("\x07");
 }
 
-function getCliMode(): string | undefined {
-  const modeArg = process.argv.find((arg) => arg.startsWith("--mode="));
-  if (modeArg) {
-    return modeArg.slice("--mode=".length);
-  }
-
-  const modeIndex = process.argv.indexOf("--mode");
-  if (modeIndex >= 0) {
-    return process.argv[modeIndex + 1];
-  }
-
-  return undefined;
-}
-
 function canWriteNativeNotification(ctx: ExtensionContext): boolean {
-  if (!ctx.hasUI || !process.stdout.isTTY) {
-    return false;
-  }
-
-  const mode = getCliMode();
-  if (mode && mode !== "interactive") {
-    return false;
-  }
-
-  return !process.argv.some(
-    (arg) => arg === "-p" || arg === "--print" || arg === "--json",
-  );
+  return ctx.mode === "tui" && process.stdout.isTTY;
 }
 
 export default function (pi: ExtensionAPI) {

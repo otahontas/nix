@@ -1,30 +1,5 @@
 { pkgs, ... }:
 let
-  treesitterFiletypes = pkgs.writeText "treesitter-filetypes.lua" (
-    let
-      names = builtins.attrNames pkgs.vimPlugins.nvim-treesitter-parsers;
-      body = builtins.concatStringsSep "\n" (map (name: "  \"${name}\",") names);
-    in
-    ''
-      return {
-      ${body}
-      }
-    ''
-  );
-
-  treesitterFiletypesDir = pkgs.runCommand "treesitter-lua-dir" { } ''
-    mkdir -p $out
-    cp ${treesitterFiletypes} $out/treesitter_filetypes.lua
-  '';
-
-  treesitterLuaDir = pkgs.symlinkJoin {
-    name = "nvim-lua";
-    paths = [
-      ./nvim/lua
-      treesitterFiletypesDir
-    ];
-  };
-
   todoScript = builtins.readFile ./scripts/todo.sh;
   dailyScript = builtins.readFile ./scripts/daily.sh;
   grealpathForNeovim = pkgs.writeShellScriptBin "grealpath" ''
@@ -33,11 +8,8 @@ let
 in
 {
   xdg.configFile = {
-    # Note: "nvim/lua" is sourced as a directory, so avoid adding
-    # "nvim/lua/treesitter_filetypes.lua" via xdg.configFile.text, which
-    # would conflict with this directory mapping.
     "nvim/filetype.lua".source = ./nvim/filetype.lua;
-    "nvim/lua".source = treesitterLuaDir;
+    "nvim/lua".source = ./nvim/lua;
     "nvim/plugin".source = ./nvim/plugin;
     "nvim/after".source = ./nvim/after;
   };

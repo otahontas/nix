@@ -1,4 +1,4 @@
-local has_schemastore, schemastore = pcall(require, "schemastore")
+local schemastore = require("schemastore")
 
 local devenvYamlSchema = {
 	description = "devenv project configuration",
@@ -6,16 +6,6 @@ local devenvYamlSchema = {
 	name = "devenv.yaml",
 	url = "https://devenv.sh/devenv.schema.json",
 }
-
-local yamlSchemas = {
-	[devenvYamlSchema.url] = devenvYamlSchema.fileMatch,
-}
-
-if has_schemastore then
-	yamlSchemas = schemastore.yaml.schemas({
-		extra = { devenvYamlSchema },
-	})
-end
 
 -- @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Config schema diagnostics]]
 return {
@@ -28,11 +18,13 @@ return {
 	},
 	settings = {
 		yaml = {
-			schemaStore = has_schemastore and {
+			schemaStore = {
 				enable = false,
 				url = "",
-			} or nil,
-			schemas = yamlSchemas,
+			},
+			schemas = schemastore.yaml.schemas({
+				extra = { devenvYamlSchema },
+			}),
 		},
 	},
 }

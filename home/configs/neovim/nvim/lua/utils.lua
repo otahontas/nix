@@ -42,22 +42,10 @@ M.get_current_directory = function()
 	return vim.fn.fnamemodify(current_file, ":h")
 end
 
--- Get closest ancestor directory that has the given file, falling back to cwd when
--- current directory is not available
+-- Get closest ancestor directory that has the given file, falling back to cwd.
 ---@param filename string the file to look for
 M.get_closest_ancestor_directory_that_has_file = function(filename)
-	local current_file = vim.fn.expand("%:p")
-	if current_file == "" then
-		return vim.fn.getcwd()
-	end
-	local dir = vim.fn.fnamemodify(current_file, ":h")
-	while dir ~= "/" do
-		if vim.fn.filereadable(dir .. "/" .. filename) == 1 then
-			return dir
-		end
-		dir = vim.fn.fnamemodify(dir, ":h")
-	end
-	return vim.fn.getcwd() -- fallback to cwd if file not found
+	return vim.fs.root(0, filename) or vim.fn.getcwd()
 end
 
 -- Override gra (code action) to show spell actions when cursor is on a misspelled word,

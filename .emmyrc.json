@@ -13,7 +13,6 @@
     "library": [
       "${workspaceFolder}/home/configs/neovim/nvim/lua",
       "${workspaceFolder}/.nvim/lua",
-      "{env:HOME}/.config/nvim/lua",
       {
         "path": "{env:HOME}/.local/share/nvim/site/pack/hm/start",
         "ignoreGlobs": ["mini.nvim/lua/mini/base16.lua"]

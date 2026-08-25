@@ -1,9 +1,3 @@
--- Add the same capabilities to ALL server configurations.
--- Refer to :h vim.lsp.config() for more information.
-vim.lsp.config("*", {
-	capabilities = vim.lsp.protocol.make_client_capabilities(),
-})
-
 vim.api.nvim_create_autocmd("LspAttach", {
 	group = vim.api.nvim_create_augroup("EnableFeaturesBasedOnClientCapabilities", {}),
 	callback = function(args)

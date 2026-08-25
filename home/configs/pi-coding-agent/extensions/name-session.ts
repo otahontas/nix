@@ -10,71 +10,6 @@ import { enableFastMode } from "./fast-mode.js";
 
 const TITLE_MAX_LENGTH = 64;
 
-const GREETING_WORDS = new Set([
-  "ahoy",
-  "cool",
-  "hello",
-  "hey",
-  "hi",
-  "hola",
-  "jou",
-  "jouu",
-  "lol",
-  "nice",
-  "ok",
-  "okay",
-  "sup",
-  "thanks",
-  "thx",
-  "yo",
-  "yollooo",
-]);
-
-const TASK_VERBS = [
-  "add",
-  "audit",
-  "build",
-  "change",
-  "check",
-  "create",
-  "debug",
-  "explain",
-  "fix",
-  "help",
-  "implement",
-  "inspect",
-  "investigate",
-  "plan",
-  "refactor",
-  "remove",
-  "review",
-  "run",
-  "suggest",
-  "test",
-  "update",
-  "write",
-];
-
-const PRESERVE_CASE_WORDS = new Set([
-  "API",
-  "CLI",
-  "CSS",
-  "HTML",
-  "HTTP",
-  "JSON",
-  "LLM",
-  "MCP",
-  "Nix",
-  "Pi",
-  "SDK",
-  "SSH",
-  "TUI",
-  "UI",
-  "URL",
-]);
-
-const WORD_PATTERN = /[A-Za-z]+(?:[’'][A-Za-z]+)?/g;
-
 function collapseWhitespace(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
@@ -85,51 +20,6 @@ function truncate(value: string, maxLength: number): string {
   }
 
   return `${value.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
-}
-
-function preserveCasing(word: string): boolean {
-  return (
-    PRESERVE_CASE_WORDS.has(word) ||
-    /^[A-Z0-9]+$/.test(word) ||
-    /[a-z][A-Z]/.test(word) ||
-    /[A-Z][a-z]+[A-Z]/.test(word)
-  );
-}
-
-function avoidTitleCase(value: string): string {
-  return value.replace(WORD_PATTERN, (word) => {
-    if (preserveCasing(word)) {
-      return word;
-    }
-
-    if (/^[A-Z][a-z]+(?:[’'][A-Za-z]+)?$/.test(word)) {
-      return word.toLowerCase();
-    }
-
-    return word;
-  });
-}
-
-function looksLikeRealTask(prompt: string): boolean {
-  const text = collapseWhitespace(prompt).toLowerCase();
-  if (!text) {
-    return false;
-  }
-
-  if (text.includes("?")) {
-    return true;
-  }
-
-  const words = text.match(/[a-z0-9]+/g) ?? [];
-  if (words.length > 0 && words.every((word) => GREETING_WORDS.has(word))) {
-    return false;
-  }
-
-  if (text.length <= 16 && !words.some((word) => TASK_VERBS.includes(word))) {
-    return false;
-  }
-
-  return text.length > 48 || words.some((word) => TASK_VERBS.includes(word));
 }
 
 function buildTitlePrompt(prompt: string): string {
@@ -158,7 +48,7 @@ function cleanGeneratedTitle(value: string): string | undefined {
     return undefined;
   }
 
-  return truncate(avoidTitleCase(title), TITLE_MAX_LENGTH - "Pi: ".length);
+  return truncate(title, TITLE_MAX_LENGTH - "Pi: ".length);
 }
 
 async function generateTitle(
@@ -221,9 +111,7 @@ export default function (pi: ExtensionAPI) {
       return;
     }
 
-    if (!looksLikeRealTask(prompt)) {
-      return;
-    }
+    if (!collapseWhitespace(prompt)) return;
 
     titleGenerationAttempted = true;
     titleGenerationInFlight = true;

@@ -179,10 +179,3 @@ vim.defer_fn(function()
 		},
 	})
 end, 0)
-
--- Explicitly enable filetype detection and syntax highlighting
--- (usually enabled by default but some plugins may require explicit call)
-vim.cmd("filetype plugin indent on")
-if vim.fn.exists("syntax_on") ~= 1 then
-	vim.cmd("syntax enable")
-end

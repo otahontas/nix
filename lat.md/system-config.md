@@ -15,7 +15,7 @@ macOS defaults and daemon settings.
 - **TouchID** for sudo via PAM
 - **Firewall** with stealth mode
 - **Fish** as default shell
-- **Sudo** — passwordless `/run/current-system/sw/bin/mas install *` for the user
+- **Mac App Store** — declarative app installs through nix-darwin `programs.mas`, without automatic app updates
 
 ## Manual applications
 

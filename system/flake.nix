@@ -103,11 +103,28 @@
               };
             };
             security.pam.services.sudo_local.touchIdAuth = true;
-            security.sudo.extraConfig = ''
-              ${username} ALL=(root) NOPASSWD: \
-                /run/current-system/sw/bin/mas install *
-            '';
-            programs.fish.enable = true;
+            programs = {
+              fish.enable = true;
+              mas = {
+                enable = true;
+                update = false;
+                packages = {
+                  forScore = 363738376;
+                  "iReal Pro" = 409035833;
+                  Keynote = 361285480;
+                  "Logic Pro" = 634148309;
+                  Lungo = 1263070803;
+                  MainStage = 634159523;
+                  "Paprika Recipe Manager 3" = 1303222628;
+                  reMarkable = 1276493162;
+                  Slack = 803453959;
+                  Telegram = 747648890;
+                  uFocus = 583995251;
+                  Velja = 1607635845;
+                  WhatsApp = 310633997;
+                };
+              };
+            };
             environment = {
               systemPackages = with nixpkgs.legacyPackages.aarch64-darwin; [
                 home-manager

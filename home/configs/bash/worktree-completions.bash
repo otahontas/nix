@@ -18,7 +18,7 @@ _bash_compgen_words() {
 }
 
 _worktree_name_complete() {
-  _bash_compgen_words "$(__git_worktree_names)" "${COMP_WORDS[COMP_CWORD]}"
+  _bash_compgen_words "$(git-worktree-helper names)" "${COMP_WORDS[COMP_CWORD]}"
 }
 
 _pr_branch_complete() {

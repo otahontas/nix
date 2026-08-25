@@ -1,6 +1,6 @@
 # Home configs
 
-One directory per tool under `home/configs/` (52 configs), each with `default.nix`. The home flake imports only `home/configs/*/default.nix`; helper `.nix` files must be called explicitly.
+One directory per tool under `home/configs/` (51 configs), each with `default.nix`. The home flake imports only `home/configs/*/default.nix`; helper `.nix` files must be called explicitly.
 
 Apply with `devenv tasks run home:apply`. Stage new files before applying; don't commit unless asked.
 
@@ -17,7 +17,7 @@ Conventions for writing home-manager configs.
 - **Manual apps** — keep system-wide vendor installers in [[system-config#Manual applications]] instead of forcing them into Home Manager
 - **LaunchAgents** via `launchd.agents` for auto-start
 - **Out-of-store symlinks** via `config.lib.file.mkOutOfStoreSymlink` (see `symlinks/`)
-- **Mac App Store** apps via a `mas` activation script that calls the store path directly; `mas` stays out of the user PATH (pending native nix-darwin module)
+- **Mac App Store** apps belong to nix-darwin `programs.mas`; see [[system-config]]
 
 ## Fish integration
 
@@ -54,21 +54,21 @@ Configs worth documenting beyond a table row.
 
 Worktree helpers assume branch, worktree, and path names are dash-only.
 
-Bash and Fish helpers keep branch names and `.worktrees/<branch>` paths identical. Slash-containing branch names are out of policy and blocked by Pi guardrails instead of normalized.
+`git-worktree-helper` owns shared create, lookup, and listing logic. Bash and Fish retain thin wrappers for changing the current shell directory and native completions.
 
 ### neovim
 
 Neovim is Home Manager-managed, while root `.nvim.lua` adds `.nvim/` for repo-local Lua modules and LSP overrides.
 
 - nvim-lint is installed with a global save autocmd; repo-local `.nvim/lua/local_lint.lua` defines file-path Markdown linting and chooses which linters apply.
-- SchemaStore.nvim is installed so repo-local `.nvim/lsp/` configs can feed SchemaStore catalogs and repo-specific schema extras into JSON/YAML language servers.
+- SchemaStore.nvim is installed unconditionally, so repo-local `.nvim/lsp/` configs load it directly and feed its catalogs plus repo-specific extras into JSON/YAML language servers.
 - LSP reference highlights run on `CursorHold` and clear on cursor movement or buffer leave, avoiding a document-highlight request on every cursor move.
-- The Neovim wrapper PATH includes `tree-sitter` for Treesitter health and a private `grealpath` wrapper for yazi relative-path copy without exposing `grealpath` globally.
+- Treesitter starts through a guarded `FileType` callback for every filetype with an installed parser. The wrapper PATH keeps `tree-sitter` for health checks and a private `grealpath` wrapper for yazi relative-path copy.
 - GitHub permalink copy resolves the repository from the current buffer path before running `git` or `gh` commands. Copilot now uses `copilot.lua` with inline suggestions, auto-trigger enabled, panel disabled, and telemetry off.
 
 ## Config index
 
-All 52 configs under `home/configs/`:
+All 51 configs under `home/configs/`:
 
 | Config               | What it manages                                   |
 | -------------------- | ------------------------------------------------- |
@@ -102,7 +102,6 @@ All 52 configs under `home/configs/`:
 | lazygit              | terminal UI for git                               |
 | less                 | pager config                                      |
 | libreoffice          | office suite                                      |
-| mas                  | Mac App Store installs via activation script      |
 | meetingbar           | calendar menu bar app                             |
 | mermaid-cli          | diagram generation                                |
 | mise                 | tool version manager with Bash/Fish hooks         |
