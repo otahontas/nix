@@ -17,7 +17,7 @@ let
     fi
 
     tmp="$settings_file.tmp"
-    ${pkgs.jq}/bin/jq '. + {SKIP_HOST_UPDATE: true, USE_NEW_UPDATER: false}' "$settings_file" >"$tmp"
+    ${pkgs.jq}/bin/jq '. + {SKIP_HOST_UPDATE: true}' "$settings_file" >"$tmp"
     mv "$tmp" "$settings_file"
   '';
 in

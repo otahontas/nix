@@ -32,7 +32,7 @@ Only ownership boundaries and non-obvious conflicts are documented here; package
 - **GPG/SSH** — gpg-agent owns SSH authentication and Git signing through the YubiKey; SSH points `IdentityAgent` at that agent.
 - **Ghostty** — uses the Darwin package and links its XDG config into macOS Application Support; title and bell effects surface Pi notifications.
 - **IINA** — `duti` runs only from the activation store path when applying media associations.
-- **Discord** — brew-nix owns the signed app, so host self-updates stay disabled.
+- **Discord** — brew-nix owns the signed app, so `SKIP_HOST_UPDATE` disables host self-updates while Discord's module updater stays enabled.
 - **fzf** — its `Ctrl-R` binding stays disabled because atuin owns history search.
 - **Git worktrees** — shared helpers assume dash-only branch and path names; Bash and Fish wrappers only change directories and provide completion.
 - **Neovim** — Home Manager owns plugins and global save hooks; root `.nvim.lua` owns repository-only LSP and lint behavior documented in [[architecture#Root devenv setup]].
