@@ -26,6 +26,10 @@
       url = "github:googleworkspace/cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    hunk = {
+      url = "github:modem-dev/hunk";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     githits-cli = {
       url = "github:githits-com/githits-cli";
       flake = false;
@@ -53,6 +57,7 @@
       kanttiinit-cli,
       pi-nix,
       google-workspace-cli,
+      hunk,
       githits-cli,
       otahontas-nixpkgs,
       brew-nix,
@@ -93,6 +98,7 @@
         };
         modules = [
           catppuccin.homeModules.catppuccin
+          hunk.homeManagerModules.default
           pi-catppuccin.homeManagerModules.default
           pi-nix.homeModules.default
           (

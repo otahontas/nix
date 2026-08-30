@@ -31,6 +31,7 @@ Only ownership boundaries and non-obvious conflicts are documented here; package
 
 - **GPG/SSH** — gpg-agent owns SSH authentication and Git signing through the YubiKey; SSH points `IdentityAgent` at that agent.
 - **Ghostty** — uses the Darwin package and links its XDG config into macOS Application Support; title and bell effects surface Pi notifications.
+- **Hunk** — upstream Home Manager module owns installation; Git, Jujutsu, and Claude integrations remain opt-in.
 - **IINA** — `duti` runs only from the activation store path when applying media associations.
 - **Discord** — brew-nix owns the signed app, so `SKIP_HOST_UPDATE` disables host self-updates while Discord's module updater stays enabled.
 - **fzf** — its `Ctrl-R` binding stays disabled because atuin owns history search.
