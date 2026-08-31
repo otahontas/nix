@@ -8,6 +8,8 @@ Tracked files under `home/configs/pi-coding-agent/` are source of truth for glob
 
 `default.nix` installs the wrapped Pi package and links local resources. `settings.json` owns package, model, and subagent defaults; `mcp.json` owns MCP server configuration.
 
+Pi's top-level default stores provider and bare model ID separately; package settings such as subagents may use qualified `provider/model` strings.
+
 Global AGENTS and system-prompt sources follow [[architecture#AGENTS.md pipeline]]. Root `.pi/` contains repository-only extensions and lat.md skill source.
 
 ## Wrapper behavior
