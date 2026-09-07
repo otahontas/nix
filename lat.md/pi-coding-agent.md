@@ -84,4 +84,6 @@ Reusable behavior stays package-managed instead of being copied into local exten
 
 Home Manager links repo-owned skills and prompts into Pi's global config.
 
+`/merge-worktree` infers its non-main target from context, commits all changes, rebases onto local `main`, fast-forwards `main`, then safely removes the merged worktree and branch without remote operations.
+
 GitHits' guided skill comes from its locked source. Authenticated ui.sh skills refresh during Home Manager activation. Explain Diff generates self-contained HTML walkthroughs for code changes. `/plannotator-loop` revises one file in the current Pi context until approval. Skills installed outside this repo remain user state.
