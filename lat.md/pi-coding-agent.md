@@ -10,6 +10,8 @@ Tracked files under `home/configs/pi-coding-agent/` are source of truth for glob
 
 Pi's top-level default stores provider and bare model ID separately; package settings such as subagents may use qualified `provider/model` strings.
 
+OpenAI Codex model cycling includes GPT-5.6 Sol and GPT-6 Astra without pinned thinking levels, leaving each model's supported thinking cycle—including `max`—available.
+
 Global AGENTS and system-prompt sources follow [[architecture#AGENTS.md pipeline]]. Root `.pi/` contains repository-only extensions and lat.md skill source.
 
 ## Wrapper behavior

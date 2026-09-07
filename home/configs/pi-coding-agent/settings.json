@@ -4,7 +4,7 @@
   "defaultThinkingLevel": "xhigh",
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
-  "enabledModels": ["openai-codex/gpt-5.6-sol:xhigh"],
+  "enabledModels": ["openai-codex/gpt-5.6-sol", "openai-codex/gpt-6-astra"],
   "subagents": {
     "defaultModel": "openai-codex/gpt-5.6-sol"
   },
