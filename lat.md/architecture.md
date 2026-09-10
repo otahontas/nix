@@ -85,6 +85,8 @@ The generated `.devenv/pi-node-modules` symlink exposes those types. `home/flake
 
 The hook runs the full project for staged TypeScript changes; Neovim uses the same `tsconfig.json` through `ts_ls`.
 
+Path mappings use explicit `./` targets without `baseUrl`, which TypeScript 7 removed.
+
 #### TOML diagnostics
 
 TOML uses Taplo for formatting, editor diagnostics, and hook linting, with config-file-validator adding matched schema checks.
@@ -94,6 +96,8 @@ TOML uses Taplo for formatting, editor diagnostics, and hook linting, with confi
 Home, system, and root devenv use unstable nixpkgs while each lock file owns its layer's inputs.
 
 The Home Manager flake owns Pi and user-tool inputs. Root devenv imports `./home` only so `pi-nix` follows the Home Manager revision used by installed Pi extensions.
+
+`pi-nix` retains its upstream nixpkgs lock: its build still requires `typescript-go`, removed from newer nixpkgs. Do not make it follow Home Manager's nixpkgs until upstream supports the rename.
 
 ## AGENTS.md pipeline
 

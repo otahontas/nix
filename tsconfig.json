@@ -9,11 +9,10 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
     "paths": {
-      "@earendil-works/*": [".devenv/pi-node-modules/@earendil-works/*"],
-      "typebox": [".devenv/pi-node-modules/typebox"],
-      "typebox/*": [".devenv/pi-node-modules/typebox/*"]
+      "@earendil-works/*": ["./.devenv/pi-node-modules/@earendil-works/*"],
+      "typebox": ["./.devenv/pi-node-modules/typebox"],
+      "typebox/*": ["./.devenv/pi-node-modules/typebox/*"]
     },
     "typeRoots": [".devenv/pi-node-modules/@types"],
     "types": ["node"]

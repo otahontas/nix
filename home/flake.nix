@@ -20,7 +20,6 @@
     };
     pi-nix = {
       url = "github:lukasl-dev/pi.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
     google-workspace-cli = {
       url = "github:googleworkspace/cli";
