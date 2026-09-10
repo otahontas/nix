@@ -2,11 +2,11 @@
  * Names Pi sessions from the first real user prompt.
  */
 
+import { getSupportedThinkingLevels } from "@earendil-works/pi-ai";
 import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
-import { enableFastMode } from "./fast-mode.js";
 
 const TITLE_MAX_LENGTH = 64;
 
@@ -60,6 +60,12 @@ async function generateTitle(
     return undefined;
   }
 
+  const reasoningEffort = getSupportedThinkingLevels(model).includes("minimal")
+    ? "minimal"
+    : ctx.thinkingLevel === "off"
+      ? undefined
+      : ctx.thinkingLevel;
+
   const response = await ctx.modelRegistry.complete(
     model,
     {
@@ -73,11 +79,7 @@ async function generateTitle(
     },
     {
       maxTokens: 32,
-      reasoningEffort: "xhigh",
-      onPayload:
-        model.provider === "openai-codex" && model.id === "gpt-5.6-sol"
-          ? enableFastMode
-          : undefined,
+      reasoningEffort,
     },
   );
 

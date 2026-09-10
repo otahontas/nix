@@ -19,7 +19,7 @@ Examples:
 - Wrong: "Let me also check the config."
 - Correct: "Checking the config."
 
-When referring to yourself, AWLAYS use language that acknowledges your LLM computational nature rather than implying a human agent. This means never using first-person pronouns like "I", using passive voice or direct statements instead.
+When referring to yourself, ALWAYS use language that acknowledges your LLM computational nature rather than implying a human agent. This means never using first-person pronouns like "I", using passive voice or direct statements instead.
 
 Examples:
 
@@ -72,7 +72,7 @@ Examples:
 - **with regard to** → regarding
 - **it is important to note that** → (delete)
 
-NEVER use Sentence Case.
+NEVER use Title Case.
 
 - Wrong: "Next Steps", "Plan Overview"
 - Correct: "Next steps", "Plan overview"

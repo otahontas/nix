@@ -159,6 +159,7 @@ in
       ".pi/agent/AGENTS.md".source = ./sources/GLOBAL_AGENTS.md;
       ".pi/agent/APPEND_SYSTEM.md".source = ./sources/APPEND_SYSTEM.md;
       ".pi/agent/mcp.json".source = mcpConfig;
+      ".pi/agent/models.json".source = ./models.json;
     }
     // extensionSymlinks
     // skillSymlinks

@@ -26,7 +26,7 @@
 
 ## General workflow
 
-- Always clarify users intention unless request is completely clear
+- Clarify only when ambiguity could materially change the result
 - When debugging, run diagnostic commands and present findings before proposing a fix. Don't jump to solutions.
 - When user says "investigate", "check", "inspect", or "audit", only investigate and report findings. Don't implement changes unless explicitly told to.
 

@@ -6,11 +6,11 @@ Home Manager owns Pi CLI installation, global configuration, local extensions, s
 
 Tracked files under `home/configs/pi-coding-agent/` are source of truth for global Pi state.
 
-`default.nix` installs the wrapped Pi package and links local resources. `settings.json` owns package, model, and subagent defaults; `mcp.json` owns MCP server configuration.
+`default.nix` installs the wrapped Pi package and links local resources. `settings.json` owns package, model, and subagent defaults; `models.json` owns model metadata overrides; `mcp.json` owns MCP server configuration.
 
-Pi's top-level default stores provider and bare model ID separately; GPT-6 Astra starts at `max`. Package settings such as subagents may use qualified `provider/model` strings.
+Pi's top-level default stores provider and bare model ID separately; GPT-6 Astra starts at `max` with an 872K OpenAI Codex context override. This delays automatic compaction while leaving manual compaction available. Package settings such as subagents may use qualified `provider/model` strings.
 
-OpenAI Codex model cycling includes GPT-5.6 Sol and GPT-6 Astra without pinned per-model thinking levels, leaving each model's supported thinking cycle—including `max`—available.
+OpenAI Codex model cycling pins GPT-5.6 Sol to `xhigh` and GPT-6 Astra to `max`, preserving each model's intended role when cycling.
 
 Global AGENTS and system-prompt sources follow [[architecture#AGENTS.md pipeline]]. Root `.pi/` contains repository-only extensions and lat.md skill source.
 
@@ -62,7 +62,7 @@ Search-sessions reads a launchd-built BM25 index; session reads are restricted t
 
 Name-session derives a short title from the first real prompt while preserving manual or restored names and ignoring extension-generated prompts.
 
-Generation is best effort and guarded against session switches so stale calls cannot rename another session.
+Generation uses the active model at `minimal` when supported, otherwise its current effort. It is best effort and guarded against session switches so stale calls cannot rename another session.
 
 ### clone-cmd extension
 
