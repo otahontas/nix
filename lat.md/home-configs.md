@@ -19,6 +19,8 @@ Each tool owns its Fish integration in its config directory.
 
 Aliases use `shellAliases`; interactive setup and function bodies live in external files; completions use `fish/conf.d/` entries to avoid replacing upstream completions. Devenv activation belongs to the devenv config.
 
+Devenv auto-activation uses `--no-reload` because packaged devenv 2.3.1 and libghostty-vt have incompatible terminal ABIs. Hot-reload stays disabled until a compatible package build is verified.
+
 ## Shell scripts
 
 Scripts live beside their owning config and are loaded with `builtins.readFile` plus `writeShellScriptBin`.
