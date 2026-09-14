@@ -20,6 +20,7 @@
     "npm:@dietrichgebert/ponytail",
     "npm:@plannotator/pi-extension",
     "npm:pi-caveman",
+    "npm:pi-codex-image-gen",
     "npm:pi-mcp-adapter",
     "npm:pi-rtk-optimizer",
     "npm:pi-subagents",

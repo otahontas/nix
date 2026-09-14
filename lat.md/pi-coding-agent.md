@@ -78,7 +78,9 @@ OSC 777 plus BEL lets Ghostty own visual and attention effects without transcrip
 
 Reusable behavior stays package-managed instead of being copied into local extensions.
 
-`settings.json` owns Ponytail, Caveman, subagents, MCP adapter, Plannotator, RTK, and web access packages. pi-subagents runtime definitions remain authoritative; user-level Caveman state owns its default response style.
+`settings.json` owns Ponytail, Caveman, Codex image generation, subagents, MCP adapter, Plannotator, RTK, and web access packages. pi-subagents runtime definitions remain authoritative; user-level Caveman state owns its default response style.
+
+`pi-codex-image-gen` supplies `codex_generate_image` and the `imagegen` skill, reusing Pi's Codex login rather than API-key billing. Impeccable can select this tool without per-prompt routing instructions.
 
 ## Skills and prompts
 
@@ -87,3 +89,5 @@ Home Manager links repo-owned skills and prompts into Pi's global config.
 `/merge-worktree` infers its non-main target from context, commits all changes, rebases onto local `main`, fast-forwards `main`, then safely removes the merged worktree and branch without remote operations.
 
 GitHits' guided skill comes from its locked source. Authenticated ui.sh skills refresh during Home Manager activation. Explain Diff generates self-contained HTML walkthroughs for code changes. `/plannotator-loop` revises one file in the current Pi context until approval. Skills installed outside this repo remain user state.
+
+Impeccable's Pi skill and native engine are Nix-pinned. `IMPECCABLE_BIN` directs its launcher to the store binary, avoiding first-use downloads. Invoke with `/skill:impeccable`; updates belong to Nix, and automatic edit hooks are not installed.
