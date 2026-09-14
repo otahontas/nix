@@ -33,3 +33,14 @@
 ## Local development scripts
 
 - Use `.local_scripts/` for temporary, messy, repo-specific scripts that shouldn't be committed
+
+## Product UI copy
+
+These rules apply to text rendered in products, not assistant responses.
+
+- Only add text that helps users decide, act, understand meaningful state, or recover from an error.
+- Never add implementation commentary, feature narration ("This section lets you..."), or instructions for obvious controls.
+- Never add headings, subtitles, helper text, or status labels that repeat information already visible.
+- Never fill empty space with explanatory copy. Omit unnecessary text instead of rephrasing it.
+- Keep existing copy unchanged during unrelated UI changes.
+- Preserve text needed for accessibility, safety, privacy, consent, or non-obvious constraints.

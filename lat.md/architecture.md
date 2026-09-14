@@ -105,4 +105,6 @@ Pi concatenates global and repository `AGENTS.md` files, so each file contains o
 
 Home Manager links `home/configs/pi-coding-agent/sources/GLOBAL_AGENTS.md` and `APPEND_SYSTEM.md` into global Pi state. Root `AGENTS.md` remains tracked and carries repository lat.md workflow.
 
+Global product UI copy rules distinguish task-relevant text from implementation commentary and redundant guidance; assistant response style remains separate.
+
 Edit Home Manager-managed source files at their tracked paths, then run `devenv tasks run home:apply`; edit root files directly.
