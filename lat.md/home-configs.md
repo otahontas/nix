@@ -41,3 +41,7 @@ Only ownership boundaries and non-obvious conflicts are documented here; package
 - **Git worktrees** — shared helpers assume dash-only branch and path names; Bash and Fish wrappers only change directories and provide completion.
 - **Neovim** — Home Manager owns plugins and global save hooks; root `.nvim.lua` owns repository-only LSP and lint behavior documented in [[architecture#Root devenv setup]].
 - **Pi coding agent** — [[pi-coding-agent]] owns wrapper, extension, skill, prompt, and MCP behavior.
+
+## Neovim password buffers
+
+Neovim identifies `pass edit` temporary files as `pass`. Both Blink and Copilot block that filetype; Blink's gate alone cannot block Copilot's independent inline suggestions.

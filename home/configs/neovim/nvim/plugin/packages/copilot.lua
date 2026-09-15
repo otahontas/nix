@@ -1,4 +1,5 @@
 require("copilot").setup({
+	filetypes = { pass = false },
 	panel = {
 		enabled = false,
 	},
