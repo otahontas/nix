@@ -91,3 +91,7 @@ Home Manager links repo-owned skills and prompts into Pi's global config.
 GitHits' guided skill comes from its locked source. Authenticated ui.sh skills refresh during Home Manager activation. Explain Diff generates self-contained HTML walkthroughs for code changes. `/plannotator-loop` revises one file in the current Pi context until approval. Skills installed outside this repo remain user state.
 
 Impeccable's Pi skill and native engine are Nix-pinned. `IMPECCABLE_BIN` directs its launcher to the store binary, avoiding first-use downloads. Invoke with `/skill:impeccable`; updates belong to Nix, and automatic edit hooks are not installed.
+
+### Skill refresh failure reporting
+
+Empty or invalid ui.sh responses must identify the failed index or skill and stop activation before writing that response's files.

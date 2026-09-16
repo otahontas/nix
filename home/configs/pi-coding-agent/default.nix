@@ -65,7 +65,10 @@ let
       jq --exit-status '
         .skills | type == "array" and
         all(.[]; .name | type == "string" and test("^[a-z0-9-]+$"))
-      ' <<< "$index" >/dev/null
+      ' <<< "$index" >/dev/null || {
+        printf 'Invalid ui.sh skills index\n' >&2
+        exit 1
+      }
 
       while IFS= read -r -d "" skill; do
         response="$(fetch "https://ui.sh/api/skills/$skill")"
@@ -76,7 +79,10 @@ let
             (.key | type == "string") and
             (.value | type == "string")
           )
-        ' <<< "$response" >/dev/null
+        ' <<< "$response" >/dev/null || {
+          printf 'Invalid ui.sh skill response: %s\n' "$skill" >&2
+          exit 1
+        }
 
         while IFS= read -r -d "" file; do
           case "$file" in
