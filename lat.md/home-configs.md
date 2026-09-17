@@ -11,7 +11,7 @@ Home configs prefer declarative ownership and keep tool-specific behavior with i
 - Treat brew-nix casks in `home.packages` as Nix-owned, not manual installs.
 - Keep vendor-managed system software under [[system-config#Manual applications]].
 - Use `launchd.agents` for startup jobs and out-of-store symlinks only for intentionally mutable paths.
-- Keep machine-local artifacts in global Git ignores rather than every repository.
+- Keep machine-local artifacts, including Obsidian's `.obsidian` settings, in global Git ignores rather than every repository.
 
 ## Fish integration
 

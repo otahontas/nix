@@ -134,6 +134,7 @@ in
       ignores = [
         ".DS_Store"
         ".localized"
+        ".obsidian"
         "devenv.local.nix"
         ".pi-subagents/"
         "**/.worktrees/**"
