@@ -320,7 +320,7 @@ for _, m in ipairs({
 	end, { buffer = 0, desc = m[3] })
 end
 
--- Sort todo.txt: due → threshold → priority → area → natural alphabetical (sans priority)
+-- Sort todo.txt: unfinished first → due → threshold → priority → area → natural alphabetical (sans priority)
 local function sort_buffer()
 	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
@@ -392,6 +392,7 @@ local function sort_buffer()
 
 		table.insert(indexed_lines, {
 			line = line,
+			done = todo.prefix[1] == "x",
 			due = todo:get_meta_value("due") or "",
 			threshold = todo:get_meta_value("t") or "",
 			priority = todo.priority or "",
@@ -401,6 +402,10 @@ local function sort_buffer()
 	end
 
 	table.sort(indexed_lines, function(a, b)
+		if a.done ~= b.done then
+			return not a.done
+		end
+
 		local r = cmp(a.due, b.due)
 		if r ~= nil then
 			return r
@@ -435,7 +440,7 @@ vim.api.nvim_buf_create_user_command(
 	0,
 	"Sort",
 	sort_buffer,
-	{ desc = "Sort by due, threshold, priority, area, then alphabetically" }
+	{ desc = "Sort unfinished first, then by due, threshold, priority, area, and alphabetically" }
 )
 vim.api.nvim_buf_create_user_command(0, "Format", format_buffer, { desc = "Normalize todo.txt tokens" })
 

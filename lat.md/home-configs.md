@@ -46,3 +46,9 @@ Only ownership boundaries and non-obvious conflicts are documented here; package
 ## Neovim password buffers
 
 Neovim identifies `pass edit` temporary files as `pass`. Both Blink and Copilot block that filetype; Blink's gate alone cannot block Copilot's independent inline suggestions.
+
+## Neovim todo.txt sorting
+
+`:Sort` places unfinished tasks before completed tasks. Each group retains due date → threshold date → priority → area → natural alphabetical order, excluding priority from alphabetical comparison.
+
+Completion follows the parsed leading `x`, including indented entries and entries without completion dates. Missing dates, priorities, and areas still sort last within each completion group.
