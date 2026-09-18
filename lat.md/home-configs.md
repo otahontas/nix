@@ -35,6 +35,7 @@ Only ownership boundaries and non-obvious conflicts are documented here; package
 - **Ghostty** — uses the Darwin package and links its XDG config into macOS Application Support; title and bell effects surface Pi notifications.
 - **Hunk** — upstream Home Manager module owns installation; Git, Jujutsu, and Claude integrations remain opt-in.
 - **Obsidian** — upstream Home Manager module installs the Darwin app and disables self-updates; vaults stay user-managed.
+- **OpenClaw** — Home Manager owns the macOS app through brew-nix; gateway setup and credentials stay user-managed.
 - **IINA** — `duti` runs only from the activation store path when applying media associations.
 - **Discord** — brew-nix owns the signed app, so `SKIP_HOST_UPDATE` disables host self-updates while Discord's module updater stays enabled.
 - **fzf** — its `Ctrl-R` binding stays disabled because atuin owns history search.
