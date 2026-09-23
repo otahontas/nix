@@ -279,11 +279,11 @@ export default function (pi: ExtensionAPI) {
 
   // ── Lifecycle hooks ────────────────────────────────────────────────
 
-  // Guard to prevent agent_end from firing twice per prompt (infinite loop)
-  let agentEndFired = false;
+  // Request at most one automatic correction per prompt.
+  let checkRequested = false;
 
   pi.on("before_agent_start", async () => {
-    agentEndFired = false;
+    checkRequested = false;
 
     const reminder = [
       "Before starting work, run `lat_search` with one or more queries describing the user's intent.",
@@ -303,23 +303,28 @@ export default function (pi: ExtensionAPI) {
     };
   });
 
-  pi.on("agent_end", async (_event, ctx) => {
-    // Don't fire twice per prompt — prevents infinite loop
-    if (agentEndFired) return;
-    agentEndFired = true;
+  pi.on("agent_before_settle", async (event, ctx) => {
+    if (event.outcome !== "completed") return;
 
     try {
       await run(pi, ["check"], ctx.cwd);
     } catch {
-      pi.sendMessage(
-        {
-          customType: "lat-check",
-          content:
-            "`lat check` failed. Run `lat_check`, fix the errors, and repeat until it passes.",
-          display: true,
-        },
-        { deliverAs: "followUp", triggerTurn: true },
-      );
+      if (checkRequested) return;
+      checkRequested = true;
+
+      return {
+        entries: [
+          ...event.entries,
+          {
+            type: "custom_message" as const,
+            customType: "lat-check",
+            content:
+              "`lat check` failed. Run `lat_check`, fix the errors, and repeat until it passes.",
+            display: true,
+          },
+        ],
+        continue: true,
+      };
     }
   });
 }

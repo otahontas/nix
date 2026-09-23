@@ -1,7 +1,7 @@
 /**
  * Stop Hook Extension
  *
- * After the agent stops, sends one follow-up asking it to verify it completed
+ * Before final settlement, requests one continuation to verify it completed
  * everything. Resets counter on each new user prompt so every human message
  * gets at most one automatic follow-up.
  */
@@ -10,7 +10,6 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
-import { enableFastMode } from "./fast-mode.js";
 
 const MAX_FOLLOWUPS = 1;
 const STOP_CHECK_PROMPT =
@@ -90,7 +89,6 @@ async function askGatekeeper(
     {
       maxTokens: 16,
       reasoningEffort: "xhigh",
-      onPayload: enableFastMode,
     },
   );
 
@@ -155,35 +153,50 @@ async function shouldSendNudge(
 
 export default function (pi: ExtensionAPI) {
   let followupCount = 0;
+  let usedTools = false;
   const gatekeeperFailures = { count: 0 };
 
   pi.on("input", async (event) => {
     if (event.source !== "extension") {
       followupCount = 0;
+      usedTools = false;
     }
   });
 
-  pi.on("agent_end", async (event, ctx) => {
-    if (followupCount >= MAX_FOLLOWUPS) return;
+  pi.on("tool_execution_start", () => {
+    usedTools = true;
+  });
 
-    // Skip nudge when agent made no tool calls (simple Q&A)
-    const hasToolUse = event.messages.some(
-      (m: any) =>
-        m.role === "assistant" &&
-        Array.isArray(m.content) &&
-        m.content.some((b: any) => b.type === "toolCall"),
-    );
-    if (!hasToolUse) return;
+  pi.on("agent_before_settle", async (event, ctx) => {
+    if (
+      event.outcome !== "completed" ||
+      event.continue ||
+      event.context.pendingMessages.length > 0 ||
+      followupCount >= MAX_FOLLOWUPS ||
+      !usedTools
+    )
+      return;
 
     // Ask gatekeeper model whether to nudge
     const shouldNudge = await shouldSendNudge(
-      event.messages,
+      event.context.contextMessages,
       ctx,
       gatekeeperFailures,
     );
     if (!shouldNudge) return;
 
     followupCount++;
-    pi.sendUserMessage(STOP_CHECK_PROMPT, { deliverAs: "followUp" });
+    return {
+      entries: [
+        ...event.entries,
+        {
+          type: "custom_message" as const,
+          customType: "stop-check",
+          content: STOP_CHECK_PROMPT,
+          display: true,
+        },
+      ],
+      continue: true,
+    };
   });
 }

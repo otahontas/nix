@@ -2,8 +2,23 @@
   "providers": {
     "openai-codex": {
       "modelOverrides": {
+        "gpt-6-sol": {
+          "contextWindow": 872000,
+          "thinkingLevelMap": {
+            "off": null,
+            "minimal": null,
+            "low": null,
+            "medium": null
+          }
+        },
         "gpt-6-astra": {
-          "contextWindow": 872000
+          "contextWindow": 872000,
+          "thinkingLevelMap": {
+            "off": null,
+            "minimal": null,
+            "low": null,
+            "medium": null
+          }
         }
       }
     }

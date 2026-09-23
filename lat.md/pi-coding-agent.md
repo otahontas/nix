@@ -8,9 +8,11 @@ Tracked files under `home/configs/pi-coding-agent/` are source of truth for glob
 
 `default.nix` installs the wrapped Pi package and links local resources. `settings.json` owns package, model, and subagent defaults; `models.json` owns model metadata overrides; `mcp.json` owns MCP server configuration.
 
-Pi's top-level default stores provider and bare model ID separately; GPT-6 Astra starts at `max` with an 872K OpenAI Codex context override. This delays automatic compaction while leaving manual compaction available. Package settings such as subagents may use qualified `provider/model` strings.
+Pi's top-level default stores provider and bare model ID separately; GPT-6 Sol starts at `high`. Per-model defaults and model cycling select Sol at `high` and Astra at `max`. Subagents use Sol with package-defined thinking levels, clamped to the configured choices.
 
-OpenAI Codex model cycling pins GPT-5.6 Sol to `xhigh` and GPT-6 Astra to `max`, preserving each model's intended role when cycling.
+Both OpenAI Codex models have an 872K context override to delay compaction. Their published context window is 1,050,000 tokens; Pi's bundled 272K value matches the higher-priced long-context threshold, not the model's full capacity. Account-specific Codex limits still apply.
+
+Model metadata restricts thinking choices to `high`, `xhigh`, and `max`; unsupported lower requests clamp to `high`, including subagents. This affects both the picker and cycling. No local extension forces the paid priority service tier.
 
 Global AGENTS and system-prompt sources follow [[architecture#AGENTS.md pipeline]]. Root `.pi/` contains repository-only extensions and lat.md skill source.
 
@@ -32,11 +34,9 @@ Model-calling extensions use `ctx.modelRegistry.complete()` so authentication, p
 
 Project-local lat integration exposes search, section, locate, check, expand, and refs tools through direct argument execution.
 
-`before_agent_start` requires lat search before file access. `agent_end` runs `lat check`, while the post-edit hook runs project `prek` after successful writes.
+`before_agent_start` requires lat search before file access. `agent_before_settle` runs `lat check` after successful runs and their recovery work, while the post-edit hook runs project `prek` after successful writes.
 
-### fast-mode extension
-
-Fast mode adds OpenAI's priority service tier only to the configured Sol model at `xhigh`; auxiliary model calls reuse the same payload helper.
+A failed check appends a boundary message and requests at most one correction per prompt. The next successful boundary rechecks the result without creating an unbounded correction loop; errors and aborts do not trigger corrections.
 
 ### starship widget extension
 
@@ -48,7 +48,9 @@ The prompt refresh waits for `agent_settled` so retries, compaction, and queued 
 
 Stop-hook asks the current session model whether another pass is needed after tool-using turns and stops after repeated gatekeeper failures.
 
-Its prompt preserves requested scope, so investigation-only work reports findings instead of applying fixes.
+Its prompt preserves requested scope, so investigation-only work reports findings instead of applying fixes. `agent_before_settle` waits for retries, compaction, and queued work before checking; errors and aborts are ignored.
+
+Tool-use tracking resets for each non-extension input, so old transcript tools cannot trigger a nudge for a new tool-free prompt. One boundary message requests a continuation without inserting a synthetic user message.
 
 ### guardrails extension
 
@@ -81,6 +83,12 @@ Reusable behavior stays package-managed instead of being copied into local exten
 `settings.json` owns Ponytail, Caveman, Codex image generation, subagents, MCP adapter, Plannotator, RTK, and web access packages. pi-subagents runtime definitions remain authoritative; user-level Caveman state owns its default response style.
 
 `pi-codex-image-gen` supplies `codex_generate_image` and the `imagegen` skill, reusing Pi's Codex login rather than API-key billing. Impeccable can select this tool without per-prompt routing instructions.
+
+## Verification
+
+Offline checks verify model budgets, thinking choices, defaults, and bounded completion-hook continuations without provider requests.
+
+Run `devenv shell -- node tests/pi-config.mjs`. Checks cover entry preservation, error and abort exits, per-prompt tool tracking, correction rechecks, and continuation limits. TypeScript checks validate the hooks against the installed Pi API.
 
 ## Skills and prompts
 

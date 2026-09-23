@@ -1,15 +1,19 @@
 {
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-6-astra",
-  "defaultThinkingLevel": "max",
+  "defaultModel": "gpt-6-sol",
+  "defaultThinkingLevel": "high",
+  "modelThinkingLevels": {
+    "openai-codex/gpt-6-sol": "high",
+    "openai-codex/gpt-6-astra": "max"
+  },
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
   "enabledModels": [
-    "openai-codex/gpt-6-astra:max",
-    "openai-codex/gpt-5.6-sol:xhigh"
+    "openai-codex/gpt-6-sol:high",
+    "openai-codex/gpt-6-astra:max"
   ],
   "subagents": {
-    "defaultModel": "openai-codex/gpt-5.6-sol"
+    "defaultModel": "openai-codex/gpt-6-sol"
   },
   "hideThinkingBlock": true,
   "terminal": {
