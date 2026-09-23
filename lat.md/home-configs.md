@@ -38,7 +38,7 @@ Only ownership boundaries and non-obvious conflicts are documented here; package
 - **OpenClaw** — Home Manager owns the macOS app through brew-nix; gateway setup and credentials stay user-managed.
 - **Syncthing** — native Home Manager service installs the CLI and macOS launchd agent; devices and folders stay user-managed and survive service restarts. Web UI/API stays on loopback; no desktop app is installed.
 - **IINA** — `duti` runs only from the activation store path when applying media associations.
-- **Discord** — brew-nix owns the signed app, so `SKIP_HOST_UPDATE` disables host self-updates while Discord's module updater stays enabled.
+- **Discord** — brew-nix installs the signed app; Discord handles runtime updates in the writable copy. Keep its ShipIt service enabled: blocking it traps startup in an update loop. `SKIP_HOST_UPDATE` only affects the legacy updater.
 - **fzf** — its `Ctrl-R` binding stays disabled because atuin owns history search.
 - **Git worktrees** — shared helpers assume dash-only branch and path names; Bash and Fish wrappers only change directories and provide completion.
 - **Neovim** — Home Manager owns plugins and global save hooks; root `.nvim.lua` owns repository-only LSP and lint behavior documented in [[architecture#Root devenv setup]].
