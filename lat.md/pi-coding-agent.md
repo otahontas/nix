@@ -8,6 +8,8 @@ Tracked files under `home/configs/pi-coding-agent/` are source of truth for glob
 
 `default.nix` installs the wrapped Pi package and links local resources. `settings.json` owns package, model, and subagent defaults; `models.json` owns model metadata overrides; `mcp.json` owns MCP server configuration.
 
+`home/configs/symlinks/default.nix` links Pi's session directory to iCloud-backed `~/Documents/pi-coding-agent-sessions`. Cutover requires Pi to be stopped and both stores verified; keep the original directory until the new link is confirmed.
+
 Pi's top-level default stores provider and bare model ID separately; GPT-6 Sol starts at `high`. Per-model defaults and model cycling select Sol at `high` and Astra at `max`. Subagents use Sol with package-defined thinking levels, clamped to the configured choices.
 
 Both OpenAI Codex models have an 872K context override to delay compaction. Their published context window is 1,050,000 tokens; Pi's bundled 272K value matches the higher-priced long-context threshold, not the model's full capacity. Account-specific Codex limits still apply.
