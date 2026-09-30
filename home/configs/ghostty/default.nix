@@ -1,8 +1,8 @@
-{ config, pkgs, ... }:
+{ config, ... }:
 {
   programs.ghostty = {
     enable = true;
-    package = pkgs.ghostty-bin;
+    package = null;
     settings = {
       macos-option-as-alt = "left";
       bell-features = "title,attention,border";

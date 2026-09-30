@@ -25,21 +25,8 @@
       url = "github:googleworkspace/cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    hunk = {
-      url = "github:modem-dev/hunk";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     githits-cli = {
       url = "github:githits-com/githits-cli";
-      flake = false;
-    };
-    brew-nix = {
-      url = "github:BatteredBunny/brew-nix";
-      inputs.brew-api.follows = "brew-api";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    brew-api = {
-      url = "github:BatteredBunny/brew-api";
       flake = false;
     };
     otahontas-nixpkgs = {
@@ -56,10 +43,8 @@
       kanttiinit-cli,
       pi-nix,
       google-workspace-cli,
-      hunk,
       githits-cli,
       otahontas-nixpkgs,
-      brew-nix,
       ...
     }:
     let
@@ -69,7 +54,6 @@
         inherit system;
         config.allowUnfree = true;
         overlays = [
-          brew-nix.overlays.default
           # https://github.com/NixOS/nixpkgs/pull/485980
           (_: prev: {
             dbus = prev.dbus.overrideAttrs (old: {
@@ -97,7 +81,6 @@
         };
         modules = [
           catppuccin.homeModules.catppuccin
-          hunk.homeManagerModules.default
           pi-catppuccin.homeManagerModules.default
           pi-nix.homeModules.default
           (
@@ -116,9 +99,8 @@
               };
               xdg.enable = true;
 
-              # use copyApps for GUI apps (works with Spotlight)
               targets.darwin.linkApps.enable = false;
-              targets.darwin.copyApps.enable = true;
+              targets.darwin.copyApps.enable = false;
 
               # enable catppuccin globally
               catppuccin = {

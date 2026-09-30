@@ -1,3 +1,0 @@
-{
-  programs.hunk.enable = true;
-}

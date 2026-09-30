@@ -24,13 +24,12 @@ let
     executable = true;
   };
   plannotatorBrowser = pkgs.writeShellScript "plannotator-browser" ''
-    exec ${pkgs.google-chrome}/bin/google-chrome-stable \
-      --profile-directory="Profile 5" "$@"
+    exec "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" "$@"
   '';
   mcpConfig = pkgs.writeText "pi-mcp.json" (
     builtins.replaceStrings
       [ "@chromeExecutable@" ]
-      [ "${pkgs.google-chrome}/bin/google-chrome-stable" ]
+      [ "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ]
       (builtins.readFile ./mcp.json)
   );
   sessionIndexer = pkgs.writeShellApplication {

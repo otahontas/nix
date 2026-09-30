@@ -22,7 +22,9 @@ Global AGENTS and system-prompt sources follow [[architecture#AGENTS.md pipeline
 
 The Pi wrapper loads API keys from pass, exposes wrapper-only tools, and sets process-level integration required by installed packages.
 
-It supplies Gemini, Context7, GitHits, and LAT credentials; sets the Plannotator browser profile; exposes `lat.md`, Plannotator, Poppler, and `rtk`; and selects Ponytail's `ultra` default.
+It supplies Gemini, Context7, GitHits, and LAT credentials; exposes `lat.md`, Plannotator, Poppler, and `rtk`; and selects Ponytail's `ultra` default.
+
+Plannotator and Chrome DevTools MCP use `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`, not a Nix browser. Plannotator does not select a Chrome profile.
 
 Package-managed extensions remain unpinned and update through `pi update --extensions`.
 

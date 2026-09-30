@@ -8,15 +8,17 @@ System configuration is limited to state that requires machine-wide or nix-darwi
 
 This includes macOS UI and input defaults, Touch ID sudo, firewall policy, Nix daemon settings, Fish as the default shell, keyboard layouts, and declarative Mac App Store apps.
 
-User tools and suitable app bundles belong to Home Manager; vendor software with privileged installers remains manual.
+User CLI tools, services, and selected app settings belong to Home Manager; GUI app bundles remain outside Nix.
+
+Only selected App Store apps in `system/flake.nix` are provisioned through `programs.mas.packages`; nix-darwin does not run App Store updates.
 
 ## Manual applications
 
-Vendor-managed software stays outside Nix when installers own drivers, plug-ins, content, privileged helpers, updates, or license state.
+GUI applications are installed and updated outside Nix in `/Applications`; Mac App Store declarations remain under nix-darwin.
 
-Brew-nix casks installed through `home.packages` remain Home Manager-owned per [[home-configs#Patterns]]. Package availability alone does not justify split ownership.
+Home Manager retains selected app settings and file associations per [[home-configs#Patterns]], but does not install, copy, or link app bundles.
 
-Surprising exceptions where a package exists but manual ownership still wins:
+Vendor installers also own drivers, plug-ins, content, privileged helpers, and license state:
 
 - **OrbStack** — relocation, privileged helpers, and global CLI links expect system locations.
 - **Arturia Software Center** — the packaged manager does not reproduce vendor scripts or required `/Library` resources.
