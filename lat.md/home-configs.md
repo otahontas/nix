@@ -7,6 +7,7 @@ Home Manager imports each `home/configs/*/default.nix`; helper files require an 
 Home configs prefer declarative ownership and keep tool-specific behavior with its package.
 
 - Use Home Manager `programs` or `services` before adding raw packages.
+- Remove tool-specific flake inputs, special arguments, and unused entries in Home Manager and devenv locks with their owning config.
 - Install and update GUI apps outside Nix in `/Applications`; Home Manager app copying and linking stay disabled.
 - Keep selected app settings in Home Manager without installing their binaries; see [[system-config#Manual applications]].
 - Use `launchd.agents` for startup jobs and out-of-store symlinks only for intentionally mutable paths.

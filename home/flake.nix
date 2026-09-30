@@ -21,10 +21,6 @@
     pi-nix = {
       url = "github:lukasl-dev/pi.nix";
     };
-    google-workspace-cli = {
-      url = "github:googleworkspace/cli";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     githits-cli = {
       url = "github:githits-com/githits-cli";
       flake = false;
@@ -42,7 +38,6 @@
       pi-catppuccin,
       kanttiinit-cli,
       pi-nix,
-      google-workspace-cli,
       githits-cli,
       otahontas-nixpkgs,
       ...
@@ -72,7 +67,6 @@
         extraSpecialArgs = {
           inherit
             kanttiinit-cli
-            google-workspace-cli
             githits-cli
             otahontas-nixpkgs
             system
