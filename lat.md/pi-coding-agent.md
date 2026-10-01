@@ -6,15 +6,17 @@ Home Manager owns Pi CLI installation, global configuration, local extensions, s
 
 Tracked files under `home/configs/pi-coding-agent/` are source of truth for global Pi state.
 
-`default.nix` installs the wrapped Pi package and links local resources. `settings.json` owns package, model, and subagent defaults; `models.json` owns model metadata overrides; `mcp.json` owns MCP server configuration.
+`default.nix` installs the wrapped Pi package and links local resources. `settings.json` owns package and startup model defaults; activation merges it with other Pi preferences. `models.json` owns model metadata overrides; `mcp.json` owns MCP server configuration.
 
 `home/configs/symlinks/default.nix` links Pi's session directory to iCloud-backed `~/Documents/pi-coding-agent-sessions`. Cutover requires Pi to be stopped and both stores verified; keep the original directory until the new link is confirmed.
 
-Pi's top-level default stores provider and bare model ID separately; GPT-6 Sol starts at `high`. Per-model defaults and model cycling select Sol at `high` and Astra at `max`. Subagents use Sol with package-defined thinking levels, clamped to the configured choices.
+Pi's top-level default stores provider and bare model ID separately; OpenAI GPT-6.1 Sol starts at `max`. Model cycling is not restricted. Subagents inherit the active parent model unless their own definitions or run options select another.
 
-Both OpenAI Codex models have an 872K context override to delay compaction. Their published context window is 1,050,000 tokens; Pi's bundled 272K value matches the higher-priced long-context threshold, not the model's full capacity. Account-specific Codex limits still apply.
+OpenAI GPT-6.1 Sol has an 872K context override to delay compaction beyond Pi's bundled 272K limit. This changes Pi's local limit, not the provider's account-specific limits or long-context pricing.
 
-Model metadata restricts thinking choices to `high`, `xhigh`, and `max`; unsupported lower requests clamp to `high`, including subagents. This affects both the picker and cycling. No local extension forces the paid priority service tier.
+GPT-6.1 Sol uses Pi's built-in thinking choices without a local thinking-level override. The explicit startup default is `max`; subagents may request other supported levels. No local extension forces the paid priority service tier.
+
+The OpenAI default requires `/login openai`. Legacy Codex models and their overrides are removed; the old `openai-codex` credential can be deleted after signing in. Built-in MCP reads the Home Manager-linked `mcp.json` without the unused adapter.
 
 Global AGENTS and system-prompt sources follow [[architecture#AGENTS.md pipeline]]. Root `.pi/` contains repository-only extensions and lat.md skill source.
 
@@ -84,9 +86,9 @@ OSC 777 plus BEL lets Ghostty own visual and attention effects without transcrip
 
 Reusable behavior stays package-managed instead of being copied into local extensions.
 
-`settings.json` owns Ponytail, Caveman, Codex image generation, subagents, MCP adapter, Plannotator, RTK, and web access packages. pi-subagents runtime definitions remain authoritative; user-level Caveman state owns its default response style.
+`settings.json` owns Ponytail, Caveman, subagents, Plannotator, RTK, and web access packages. Pi's built-in MCP reads `mcp.json`; pi-subagents runtime definitions remain authoritative. User-level Caveman state owns its default response style.
 
-`pi-codex-image-gen` supplies `codex_generate_image` and the `imagegen` skill, reusing Pi's Codex login rather than API-key billing. Impeccable can select this tool without per-prompt routing instructions.
+The legacy Codex image-generation package is not loaded, so `codex_generate_image` is unavailable. It requires the `openai-codex` credential, which the new OpenAI login does not replace.
 
 ## Verification
 

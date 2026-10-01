@@ -1,20 +1,9 @@
 {
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-6-sol",
-  "defaultThinkingLevel": "high",
-  "modelThinkingLevels": {
-    "openai-codex/gpt-6-sol": "high",
-    "openai-codex/gpt-6-astra": "max"
-  },
+  "defaultProvider": "openai",
+  "defaultModel": "gpt-6.1-sol",
+  "defaultThinkingLevel": "max",
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
-  "enabledModels": [
-    "openai-codex/gpt-6-sol:high",
-    "openai-codex/gpt-6-astra:max"
-  ],
-  "subagents": {
-    "defaultModel": "openai-codex/gpt-6-sol"
-  },
   "hideThinkingBlock": true,
   "terminal": {
     "showTerminalProgress": true
@@ -24,8 +13,6 @@
     "npm:@dietrichgebert/ponytail",
     "npm:@plannotator/pi-extension",
     "npm:pi-caveman",
-    "npm:pi-codex-image-gen",
-    "npm:pi-mcp-adapter",
     "npm:pi-rtk-optimizer",
     "npm:pi-subagents",
     "npm:pi-web-access"
