@@ -7,13 +7,6 @@ git-worktree-new() {
   cd "$path" || return
 }
 
-git-worktree-pr() {
-  git-worktree-helper pr "$@" || return
-  local path
-  path=$(git-worktree-helper path "${1:-}") || return
-  cd "$path" || return
-}
-
 git-worktree-cd() {
   local path
   path=$(git-worktree-helper path "${1:-}") || return

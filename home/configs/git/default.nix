@@ -11,7 +11,6 @@ let
     gsw = "git sw";
     gwcd = "git-worktree-cd";
     gwnew = "git-worktree-new";
-    gwpr = "git-worktree-pr";
     gwprune = "git-worktree-prune";
   };
 in
@@ -23,15 +22,9 @@ in
       (pkgs.writeShellScriptBin "format-duration" gitExtrasScript)
       (pkgs.writeShellScriptBin "git-worktree-prune" gitExtrasScript)
       (pkgs.writeShellScriptBin "git-worktree-helper" worktreeHelperScript)
-      (pkgs.writeShellScriptBin "gh-pr-select" ghScript)
-      (pkgs.writeShellScriptBin "gh-pr-get-url" ghScript)
-      (pkgs.writeShellScriptBin "gh-pr-copy-url" ghScript)
       (pkgs.writeShellScriptBin "gh-repo-get-url" ghScript)
       (pkgs.writeShellScriptBin "gh-repo-copy-url" ghScript)
-      (pkgs.writeShellScriptBin "gh-pr-review" ghScript)
-      (pkgs.writeShellScriptBin "gh-pr-approve-and-merge" ghScript)
       (pkgs.writeShellScriptBin "gh-run-view" ghScript)
-      (pkgs.writeShellScriptBin "gh-release-slack" ghScript)
     ];
   };
 
@@ -49,7 +42,6 @@ in
         pager = "bat";
         prompt = "enabled";
         aliases = {
-          co = "pr checkout";
           web = "repo view --web";
         };
       };

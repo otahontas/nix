@@ -104,7 +104,7 @@ Offline installation checks cover the pinned launcher, global skill discovery, i
 
 Home Manager links repo-owned skills and prompts into Pi's global config.
 
-`/merge-worktree` infers its non-main target from context, commits all changes, rebases onto local `main`, fast-forwards `main`, then safely removes the merged worktree and branch without remote operations.
+`/merge-worktree` infers its non-main target from context, commits all changes, rebases onto local `main`, fast-forwards `main`, then safely removes the merged worktree and branch without remote operations. The worktree skill covers local branches only; PR fetching and PR-specific diff guidance are removed.
 
 GitHits' guided skill comes from its locked source. Explain Diff generates self-contained HTML walkthroughs for code changes. `/plannotator-loop` revises one file in the current Pi context until approval. Skills installed outside this repo remain user state.
 
