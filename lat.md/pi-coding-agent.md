@@ -102,8 +102,6 @@ Home Manager links repo-owned skills and prompts into Pi's global config.
 
 `/merge-worktree` infers its non-main target from context, commits all changes, rebases onto local `main`, fast-forwards `main`, then safely removes the merged worktree and branch without remote operations.
 
-GitHits' guided skill comes from its locked source. Authenticated ui.sh skills refresh during Home Manager activation. Explain Diff generates self-contained HTML walkthroughs for code changes. `/plannotator-loop` revises one file in the current Pi context until approval. Skills installed outside this repo remain user state.
+GitHits' guided skill comes from its locked source. Explain Diff generates self-contained HTML walkthroughs for code changes. `/plannotator-loop` revises one file in the current Pi context until approval. Skills installed outside this repo remain user state.
 
-### Skill refresh failure reporting
-
-Empty or invalid ui.sh responses must identify the failed index or skill and stop activation before writing that response's files.
+ui.sh skills are removed from shared `~/.agents/skills/`, and Home Manager no longer downloads them during activation.
