@@ -60,20 +60,7 @@ create_worktree() {
   echo "Location: $worktree_path"
   mkdir -p "$root/.worktrees"
 
-  if [ -d "$root/.git/git-crypt" ]; then
-    echo "Detected git-crypt encryption"
-    git -c filter.git-crypt.smudge=cat -c filter.git-crypt.clean=cat worktree add -b "$branch_name" "$worktree_path"
-
-    local worktree_basename git_crypt_link
-    worktree_basename=$(basename "$worktree_path")
-    git_crypt_link="$root/.git/worktrees/$worktree_basename/git-crypt"
-    if [ ! -e "$git_crypt_link" ]; then
-      ln -s "$root/.git/git-crypt" "$git_crypt_link"
-    fi
-    git -C "$worktree_path" checkout -- . 2>/dev/null || true
-  else
-    git worktree add -b "$branch_name" "$worktree_path"
-  fi
+  git worktree add -b "$branch_name" "$worktree_path"
 
   local status_output
   status_output=$(git -C "$worktree_path" status --short)

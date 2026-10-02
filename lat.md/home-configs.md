@@ -38,7 +38,7 @@ Only ownership boundaries and non-obvious conflicts are documented here; package
 - **Syncthing** — native Home Manager service installs the CLI and macOS launchd agent; devices and folders stay user-managed and survive service restarts. Web UI/API stays on loopback; no desktop app is installed.
 - **IINA** — manually installed app; `duti` runs only from the activation store path after `writeBoundary` to apply media associations.
 - **fzf** — its `Ctrl-R` binding stays disabled because atuin owns history search.
-- **Git worktrees** — Git owns local-branch helpers, shell aliases, and Bash/Fish wrappers. Helpers assume dash-only branch and path names; wrappers only change directories and provide completion.
+- **Git worktrees** — Git owns local-branch helpers, shell aliases, and Bash/Fish wrappers. Helpers assume dash-only branch and path names and use standard worktree creation without encryption-specific filters or metadata links; wrappers only change directories and provide completion.
 - **GitHub CLI** — repository URLs, workflow-run viewing, and Neovim permalinks remain; custom PR commands, PR worktrees, and PR-derived release messaging are removed.
 - **Password store** — `pass-otp` and `pass-genphrase` remain installed; `pass-update` is removed.
 - **Neovim** — Home Manager owns plugins and global save hooks; root `.nvim.lua` owns repository-only LSP and lint behavior documented in [[architecture#Root devenv setup]].
