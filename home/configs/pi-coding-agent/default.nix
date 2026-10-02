@@ -13,6 +13,16 @@ let
   piPackage = pi-nix.packages.${system}.coding-agent;
   piLatMd = otahontas-nixpkgs.packages.${system}.lat-md;
   piPlannotator = otahontas-nixpkgs.packages.${system}.plannotator;
+  impeccableBundle = pkgs.fetchzip {
+    url = "https://github.com/pbakaus/impeccable/releases/download/skill-v4.5.0/universal.zip";
+    hash = "sha256-+gh8Bv7bhY36udcbMUODKj1JZtS0R0rGPNbgeXoQBYI=";
+    stripRoot = false;
+  };
+  impeccableEngine = pkgs.fetchurl {
+    url = "https://github.com/pbakaus/impeccable/releases/download/engine-v0.1.11/impeccable-darwin-arm64";
+    hash = "sha256-PBxGxQmTKAqj9FH/9Ssmm70utR6Cq2ntlnmfZG3KVuo=";
+    executable = true;
+  };
   plannotatorBrowser = pkgs.writeShellScript "plannotator-browser" ''
     exec "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" "$@"
   '';
@@ -53,6 +63,7 @@ let
     unset PLANNOTATOR_BROWSER
     export PONYTAIL_DEFAULT_MODE=ultra
     export BROWSER="${plannotatorBrowser}"
+    export IMPECCABLE_BIN="${impeccableEngine}"
     export PATH="${piLatMd}/bin:${piPlannotator}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"
     exec ${piPackage}/bin/pi "$@"
   '';
@@ -107,6 +118,7 @@ in
       ".pi/agent/APPEND_SYSTEM.md".source = ./sources/APPEND_SYSTEM.md;
       ".pi/agent/mcp.json".source = mcpConfig;
       ".pi/agent/models.json".source = ./models.json;
+      ".pi/agent/skills/impeccable".source = "${impeccableBundle}/.pi/skills/impeccable";
     }
     // extensionSymlinks
     // skillSymlinks

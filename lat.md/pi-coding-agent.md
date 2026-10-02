@@ -16,7 +16,7 @@ OpenAI GPT-6.1 Sol has an 872K context override to delay compaction beyond Pi's 
 
 GPT-6.1 Sol uses Pi's built-in thinking choices without a local thinking-level override. The explicit startup default is `max`; subagents may request other supported levels. No local extension forces the paid priority service tier.
 
-The OpenAI default requires `/login openai`. Legacy Codex models and their overrides are removed; the old `openai-codex` credential can be deleted after signing in. Built-in MCP reads the Home Manager-linked `mcp.json` without the unused adapter.
+The OpenAI chat default requires `/login openai`. Legacy Codex chat overrides are removed; subscription image generation separately requires `/login openai-codex`. Built-in MCP reads the Home Manager-linked `mcp.json` without the unused adapter.
 
 Global AGENTS and system-prompt sources follow [[architecture#AGENTS.md pipeline]]. Root `.pi/` contains repository-only extensions and lat.md skill source.
 
@@ -28,7 +28,7 @@ It supplies Gemini, Context7, GitHits, and LAT credentials; exposes `lat.md`, Pl
 
 Plannotator and Chrome DevTools MCP use `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`, not a Nix browser. Plannotator does not select a Chrome profile.
 
-Package-managed extensions remain unpinned and update through `pi update --extensions`.
+Package-managed extensions update through `pi update --extensions`; image generation is version-pinned so its reviewed tool contract stays fixed.
 
 ## Local extensions
 
@@ -86,15 +86,19 @@ OSC 777 plus BEL lets Ghostty own visual and attention effects without transcrip
 
 Reusable behavior stays package-managed instead of being copied into local extensions.
 
-`settings.json` owns Ponytail, Caveman, subagents, Plannotator, RTK, and web access packages. Pi's built-in MCP reads `mcp.json`; pi-subagents runtime definitions remain authoritative. User-level Caveman state owns its default response style.
+`settings.json` owns Ponytail, Caveman, subagents, Plannotator, RTK, web access, and image-generation packages. Pi's built-in MCP reads `mcp.json`; pi-subagents runtime definitions remain authoritative. User-level Caveman state owns its default response style.
 
-The legacy MCP adapter and Codex image-generation package are not installed. Effect MCP is absent from `mcp.json` and its stale installation and cache entries are removed.
+The legacy MCP adapter and `pi-codex-image-gen` package are not installed. Effect MCP is absent from `mcp.json` and its stale installation and cache entries are removed.
+
+`@abhishek944/pi-image-gen@0.4.2` supplies `image_generate`. Its fixed `codex-subscription` / `gpt-image-2` route uses separate Codex OAuth without changing the OpenAI chat default or silently falling back to paid API billing. It calls the Codex image endpoints directly and does not require the standalone Codex CLI. Reference edits, size, quality, and native transparency are exposed; actual backend output needs workflow testing.
 
 ## Verification
 
 TypeScript checks validate root and Home Manager Pi extensions against Pi's installed package types.
 
 Run `devenv shell -- tsc -p tsconfig.json --noEmit --pretty false`. This checks types, not runtime behavior.
+
+Offline installation checks cover the pinned launcher, global skill discovery, image tool registration and schema, and unchanged chat defaults without model or image requests. Image generation is tested in frontend projects after Codex login.
 
 ## Skills and prompts
 
@@ -105,3 +109,5 @@ Home Manager links repo-owned skills and prompts into Pi's global config.
 GitHits' guided skill comes from its locked source. Explain Diff generates self-contained HTML walkthroughs for code changes. `/plannotator-loop` revises one file in the current Pi context until approval. Skills installed outside this repo remain user state.
 
 ui.sh skills are removed from shared `~/.agents/skills/`, and Home Manager no longer downloads them during activation.
+
+Impeccable 4.5.0 and its required native engine 0.1.11 are Nix-pinned. Home Manager links the global Pi skill; `IMPECCABLE_BIN` selects the store binary without first-use downloads. Invoke `/skill:impeccable`; automatic edit hooks are not installed. Its native image workflow can use `image_generate`, with prompt metadata and sidecars handled by the skill.

@@ -9,12 +9,17 @@
     "showTerminalProgress": true
   },
   "shellCommandPrefix": "export GIT_EDITOR=true\nexport GIT_SEQUENCE_EDITOR=true\nexport GIT_TERMINAL_PROMPT=0",
+  "pi-image-gen": {
+    "defaultProvider": "codex-subscription",
+    "defaultModel": "gpt-image-2"
+  },
   "packages": [
     "npm:@dietrichgebert/ponytail",
     "npm:@plannotator/pi-extension",
     "npm:pi-caveman",
     "npm:pi-rtk-optimizer",
     "npm:pi-subagents",
-    "npm:pi-web-access"
+    "npm:pi-web-access",
+    "npm:@abhishek944/pi-image-gen@0.4.2"
   ]
 }
