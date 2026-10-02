@@ -9,7 +9,6 @@
     package = pkgs.pass.withExtensions (exts: [
       exts.pass-otp
       exts.pass-genphrase
-      exts.pass-update
     ]);
     settings = {
       PASSWORD_STORE_DIR = "${config.xdg.dataHome}/password-store";

@@ -18,9 +18,9 @@ Home configs prefer declarative ownership and keep tool-specific behavior with i
 
 Each tool owns its Fish integration in its config directory.
 
-Aliases use `shellAliases`; interactive setup and function bodies live in external files; completions use `fish/conf.d/` entries to avoid replacing upstream completions. Devenv activation belongs to the devenv config.
+Aliases use `shellAliases` in their tool's config: Git owns worktree aliases and Bat owns `cat`. Interactive setup and function bodies live in external files; completions use `fish/conf.d/` entries to avoid replacing upstream completions.
 
-Devenv auto-activation uses `--no-reload` because packaged devenv 2.3.1 and libghostty-vt have incompatible terminal ABIs. Hot-reload stays disabled until a compatible package build is verified.
+Devenv's custom PWD hook still activates shells with `--no-reload`, retained after a terminal ABI failure. Devenv 2.4.0 provides native Fish hooks and dynamic task completion; the existing custom integration remains installed.
 
 ## Shell scripts
 
@@ -38,7 +38,8 @@ Only ownership boundaries and non-obvious conflicts are documented here; package
 - **Syncthing** — native Home Manager service installs the CLI and macOS launchd agent; devices and folders stay user-managed and survive service restarts. Web UI/API stays on loopback; no desktop app is installed.
 - **IINA** — manually installed app; `duti` runs only from the activation store path after `writeBoundary` to apply media associations.
 - **fzf** — its `Ctrl-R` binding stays disabled because atuin owns history search.
-- **Git worktrees** — shared helpers assume dash-only branch and path names; Bash and Fish wrappers only change directories and provide completion.
+- **Git worktrees** — Git owns shared helpers, shell aliases, and Bash/Fish wrappers. Helpers assume dash-only branch and path names; wrappers only change directories and provide completion.
+- **Password store** — `pass-otp` and `pass-genphrase` remain installed; `pass-update` is removed.
 - **Neovim** — Home Manager owns plugins and global save hooks; root `.nvim.lua` owns repository-only LSP and lint behavior documented in [[architecture#Root devenv setup]].
 - **Pi coding agent** — [[pi-coding-agent]] owns wrapper, extension, skill, prompt, and MCP behavior.
 

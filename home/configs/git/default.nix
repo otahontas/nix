@@ -3,6 +3,17 @@ let
   ghScript = builtins.readFile ./scripts/gh.sh;
   gitExtrasScript = builtins.readFile ./scripts/git-extras.sh;
   worktreeHelperScript = builtins.readFile ./scripts/git-worktree-helper.sh;
+  bashFiles = [
+    ./worktree-functions.bash
+    ./worktree-completions.bash
+  ];
+  sharedAliases = {
+    gsw = "git sw";
+    gwcd = "git-worktree-cd";
+    gwnew = "git-worktree-new";
+    gwpr = "git-worktree-pr";
+    gwprune = "git-worktree-prune";
+  };
 in
 {
   home = {
@@ -25,6 +36,11 @@ in
   };
 
   programs = {
+    bash = {
+      shellAliases = sharedAliases;
+      bashrcExtra = builtins.concatStringsSep "\n" (map builtins.readFile bashFiles);
+    };
+
     gh = {
       enable = true;
       settings = {
@@ -145,6 +161,7 @@ in
     };
 
     fish = {
+      shellAliases = sharedAliases;
       interactiveShellInit = builtins.readFile ./worktree.fish;
     };
   };
