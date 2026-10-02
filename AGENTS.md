@@ -1,3 +1,5 @@
+- Never commit any tests to this repository. If testing, test with temporary scripts.
+
 %% lat:begin %%
 # Before starting work
 
