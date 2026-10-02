@@ -92,9 +92,9 @@ The legacy MCP adapter and Codex image-generation package are not installed. Eff
 
 ## Verification
 
-Offline checks verify model budgets, thinking choices, defaults, and bounded completion-hook continuations without provider requests.
+TypeScript checks validate root and Home Manager Pi extensions against Pi's installed package types.
 
-Run `devenv shell -- node tests/pi-config.mjs`. Checks cover entry preservation, error and abort exits, per-prompt tool tracking, correction rechecks, and continuation limits. TypeScript checks validate the hooks against the installed Pi API.
+Run `devenv shell -- tsc -p tsconfig.json --noEmit --pretty false`. This checks types, not runtime behavior.
 
 ## Skills and prompts
 
