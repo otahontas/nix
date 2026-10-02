@@ -58,10 +58,6 @@ Its prompt preserves requested scope, so investigation-only work reports finding
 
 Tool-use tracking resets for each non-extension input, so old transcript tools cannot trigger a nudge for a new tool-free prompt. One boundary message requests a continuation without inserting a synthetic user message.
 
-### guardrails extension
-
-Guardrails reject commands that violate repository policy: unsafe deletion, package runners, invalid commit or branch forms, non-standard worktree paths, and skipped commit hooks.
-
 ### search-sessions extension
 
 Search-sessions reads a launchd-built BM25 index; session reads are restricted to JSONL files inside Pi's session directory.
