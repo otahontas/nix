@@ -7,14 +7,15 @@ PARALLEL="${PARALLEL:-8}"
 
 # Staleness check: skip rebuild if index is newer than all session files
 if [[ -f $INDEX_FILE ]]; then
-  newer=$(find "$SESSIONS_DIR" -name "*.jsonl" -newer "$INDEX_FILE" -print -quit 2>/dev/null || true)
+  newer=$(find "$SESSIONS_DIR/" -name "*.jsonl" -newer "$INDEX_FILE" -print -quit 2>/dev/null || true)
   if [[ -z $newer ]]; then
     echo "Index is up to date, skipping rebuild."
     exit 0
   fi
 fi
 
-TMPDIR=$(mktemp -d)
+mkdir -p "$(dirname "$INDEX_FILE")"
+TMPDIR=$(mktemp -d "${INDEX_FILE}.XXXXXX")
 trap 'rm -rf "$TMPDIR"' EXIT
 
 # Prefilter files with user messages using rg
@@ -75,11 +76,11 @@ export -f extract_entry
 xargs -P "$PARALLEL" -I{} bash -c 'extract_entry "{}"' <"$TMPDIR/files.txt" >"$TMPDIR/entries.jsonl" 2>/dev/null
 
 # Wrap into final index JSON
-mkdir -p "$(dirname "$INDEX_FILE")"
 jq -s \
   --arg built "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   '{version:2, built:$built, entries:.}' \
-  "$TMPDIR/entries.jsonl" >"$INDEX_FILE"
+  "$TMPDIR/entries.jsonl" >"$TMPDIR/index.json"
+mv "$TMPDIR/index.json" "$INDEX_FILE"
 
 count=$(jq '.entries | length' "$INDEX_FILE")
 echo "Index built: $count entries written to $INDEX_FILE"

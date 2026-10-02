@@ -62,6 +62,10 @@ Tool-use tracking resets for each non-extension input, so old transcript tools c
 
 Search-sessions reads a launchd-built BM25 index; session reads are restricted to JSONL files inside Pi's session directory.
 
+The indexer follows the session directory symlink and publishes rebuilt indexes with an atomic rename. Each query checks the index modification time and refreshes cached entries and BM25 metadata when it changes.
+
+Document frequency counts each term once per session across title and content. Length normalization uses token counts, and positive IDF keeps common terms searchable.
+
 ### name-session extension
 
 Name-session derives a short title from the first real prompt while preserving manual or restored names and ignoring extension-generated prompts.

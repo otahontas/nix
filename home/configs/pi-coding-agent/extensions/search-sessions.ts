@@ -5,7 +5,7 @@
 
 import { Type } from "typebox";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { readFile, realpath } from "node:fs/promises";
+import { readFile, realpath, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, join, relative } from "node:path";
 
@@ -47,12 +47,12 @@ function computeMeta(entries: IndexEntry[]): IndexMeta {
   let totalContentLen = 0;
 
   for (const entry of entries) {
-    const titleTokens = new Set(tokenize(entry.title));
-    const contentTokens = new Set(tokenize(entry.content));
-    totalTitleLen += titleTokens.size || 1;
-    totalContentLen += contentTokens.size || 1;
-    for (const t of titleTokens) df.set(t, (df.get(t) || 0) + 1);
-    for (const t of contentTokens) df.set(t, (df.get(t) || 0) + 1);
+    const titleTokens = tokenize(entry.title);
+    const contentTokens = tokenize(entry.content);
+    totalTitleLen += titleTokens.length || 1;
+    totalContentLen += contentTokens.length || 1;
+    for (const t of new Set([...titleTokens, ...contentTokens]))
+      df.set(t, (df.get(t) || 0) + 1);
   }
 
   return {
@@ -86,7 +86,7 @@ function bm25Score(
   for (const term of queryTerms) {
     const termDF = df.get(term) || 0;
     if (termDF === 0) continue;
-    const idf = Math.log((N - termDF + 0.5) / (termDF + 0.5));
+    const idf = Math.log(1 + (N - termDF + 0.5) / (termDF + 0.5));
 
     // Title score
     const ttf = titleTF.get(term) || 0;
@@ -111,14 +111,17 @@ const INDEX_PATH = join(homedir(), ".cache", "pi-session-index.json");
 const SESSIONS_DIR = join(homedir(), ".pi", "agent", "sessions");
 let cachedIndex: Index | null = null;
 let cachedMeta: IndexMeta | null = null;
+let cachedMtimeMs: number | null = null;
 
 async function loadIndex(): Promise<{ index: Index; meta: IndexMeta }> {
-  if (cachedIndex && cachedMeta)
-    return { index: cachedIndex, meta: cachedMeta };
   try {
+    const { mtimeMs } = await stat(INDEX_PATH);
+    if (cachedIndex && cachedMeta && cachedMtimeMs === mtimeMs)
+      return { index: cachedIndex, meta: cachedMeta };
     const raw = await readFile(INDEX_PATH, "utf-8");
     cachedIndex = JSON.parse(raw) as Index;
     cachedMeta = computeMeta(cachedIndex.entries);
+    cachedMtimeMs = mtimeMs;
     return { index: cachedIndex, meta: cachedMeta };
   } catch {
     throw new Error(
