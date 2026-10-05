@@ -10,11 +10,11 @@ Tracked files under `home/configs/pi-coding-agent/` are source of truth for glob
 
 `home/configs/symlinks/default.nix` links Pi's session directory to iCloud-backed `~/Documents/pi-coding-agent-sessions`. Cutover requires Pi to be stopped and both stores verified; keep the original directory until the new link is confirmed.
 
-Pi's top-level default stores provider and bare model ID separately; OpenAI GPT-6.1 Sol starts at `max`. Model cycling is not restricted. Subagents inherit the active parent model unless their own definitions or run options select another.
+Pi's top-level default stores provider and bare model ID separately; OpenAI GPT-6.1 Sol starts at `medium`. Model cycling is not restricted. Subagents inherit the active parent model unless their own definitions or run options select another.
 
 OpenAI GPT-6.1 Sol has an 872K context override to delay compaction beyond Pi's bundled 272K limit. This changes Pi's local limit, not the provider's account-specific limits or long-context pricing.
 
-GPT-6.1 Sol uses Pi's built-in thinking choices without a local thinking-level override. The explicit startup default is `max`; subagents may request other supported levels. No local extension forces the paid priority service tier.
+GPT-6.1 Sol uses Pi's built-in thinking choices without a local thinking-level override. The explicit startup default is `medium`; subagents may request other supported levels. Its model override sets `samplingParams.service_tier` to `priority`, so main and auxiliary calls request Fast without a local extension. The actual service tier remains provider-controlled; ChatGPT OAuth can report `default` despite this request.
 
 The OpenAI chat default requires `/login openai`. Legacy Codex chat overrides are removed; subscription image generation separately requires `/login openai-codex`. Built-in MCP reads the Home Manager-linked `mcp.json` without the unused adapter.
 
@@ -99,6 +99,10 @@ TypeScript checks validate root and Home Manager Pi extensions against Pi's inst
 Run `devenv shell -- tsc -p tsconfig.json --noEmit --pretty false`. This checks types, not runtime behavior.
 
 Offline installation checks cover the pinned launcher, global skill discovery, image tool registration and schema, and unchanged chat defaults without model or image requests. Image generation is tested in frontend projects after Codex login.
+
+Temporary model benchmarks stay in `.local_scripts/` without changing startup settings. Use identical tasks and exact-match scoring across supported efforts; record elapsed request time and returned `service_tier`. Keep errors and 240-second cutoffs in elapsed-time and quality averages, with zero quality for missing answers; report completion rate separately. ChatGPT OAuth may return `default` for `priority` and reject `fast`.
+
+Paired speed checks hold model, effort, and prompt fixed, balance request order, run sequentially, and exclude warm-ups. Explicit per-request `samplingParams.service_tier` prevents the configured priority override from contaminating the default comparison. Record text throughput, reasoning/output token counts, cache hits, and response tier separately; a tier label alone does not establish a latency benefit or its absence.
 
 ## Skills and prompts
 

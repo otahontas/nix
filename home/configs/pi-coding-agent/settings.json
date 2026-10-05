@@ -1,7 +1,7 @@
 {
   "defaultProvider": "openai",
   "defaultModel": "gpt-6.1-sol",
-  "defaultThinkingLevel": "max",
+  "defaultThinkingLevel": "medium",
   "doubleEscapeAction": "tree",
   "enableSkillCommands": true,
   "hideThinkingBlock": true,
