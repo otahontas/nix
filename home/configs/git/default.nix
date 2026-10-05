@@ -1,6 +1,5 @@
 { pkgs, config, ... }:
 let
-  ghScript = builtins.readFile ./scripts/gh.sh;
   gitExtrasScript = builtins.readFile ./scripts/git-extras.sh;
   worktreeHelperScript = builtins.readFile ./scripts/git-worktree-helper.sh;
   bashFiles = [
@@ -22,9 +21,6 @@ in
       (pkgs.writeShellScriptBin "format-duration" gitExtrasScript)
       (pkgs.writeShellScriptBin "git-worktree-prune" gitExtrasScript)
       (pkgs.writeShellScriptBin "git-worktree-helper" worktreeHelperScript)
-      (pkgs.writeShellScriptBin "gh-repo-get-url" ghScript)
-      (pkgs.writeShellScriptBin "gh-repo-copy-url" ghScript)
-      (pkgs.writeShellScriptBin "gh-run-view" ghScript)
     ];
   };
 

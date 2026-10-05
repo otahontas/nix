@@ -22,10 +22,3 @@ set("n", "<leader>tn", "<cmd>tabnew<cr>", { silent = true, desc = "Open new tab"
 set("n", "<leader>ww", "<cmd>w!<cr>", { silent = false, desc = "Save file" })
 -- Go to normal mode with Ctrl-W-Esc in terminal mode
 set("t", "<C-w><Esc>", "<C-\\><C-n>", { silent = true, desc = "Go to normal mode with Ctrl-W Esc in terminal mode" })
--- Copy github permalink for current line to clipboard
-set(
-	"n",
-	"<leader>gy",
-	require("gh").copy_github_permalink,
-	{ silent = true, desc = "Copy GitHub permalink for current line" }
-)
