@@ -29,8 +29,8 @@ function canWriteNativeNotification(ctx: ExtensionContext): boolean {
 }
 
 export default function (pi: ExtensionAPI) {
-  pi.on("agent_settled", async (_event, ctx) => {
-    if (!canWriteNativeNotification(ctx)) return;
+  pi.on("agent_settled", async (event, ctx) => {
+    if (event.aborted || !canWriteNativeNotification(ctx)) return;
 
     const sessionName = pi.getSessionName();
     notify(sessionName ? `Pi: ${sessionName}` : "Pi");

@@ -8,6 +8,8 @@ Tracked files under `home/configs/pi-coding-agent/` are source of truth for glob
 
 `default.nix` installs the wrapped Pi package and links local resources. `settings.json` owns package and startup model defaults; activation merges it with other Pi preferences. `models.json` owns model metadata overrides; `mcp.json` owns MCP server configuration.
 
+`defaultTools: ["+codemode"]` keeps codemode available without MCP while preserving the inherited default tools.
+
 `home/configs/symlinks/default.nix` links Pi's session directory to iCloud-backed `~/Documents/pi-coding-agent-sessions`. Cutover requires Pi to be stopped and both stores verified; keep the original directory until the new link is confirmed.
 
 Pi's top-level default stores provider and bare model ID separately; OpenAI GPT-6.1 Sol starts at `medium`. Model cycling is not restricted. Subagents inherit the active parent model unless their own definitions or run options select another.
@@ -78,9 +80,11 @@ Generation uses the active model at `minimal` when supported, otherwise its curr
 
 ### notify extension
 
-Notifications fire only after `agent_settled` in interactive sessions and use sanitized session names with a fixed `done` body.
+Notifications fire after non-aborted `agent_settled` events in interactive sessions and use sanitized session names with a fixed `done` body. Cancelled runs produce neither a notification nor BEL.
 
 OSC 777 plus BEL lets Ghostty own visual and attention effects without transcript parsing or model calls.
+
+Ghostty 1.3.1 answers an OSC 4 control query but not the OSC 7501 support query. Pi's program-status detection stays automatic; forcing reports cannot add missing terminal support.
 
 ## Package-managed behavior
 
