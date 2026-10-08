@@ -61,7 +61,6 @@ let
     fi
 
     unset PLANNOTATOR_BROWSER
-    export PONYTAIL_DEFAULT_MODE=ultra
     export BROWSER="${plannotatorBrowser}"
     export IMPECCABLE_BIN="${impeccableEngine}"
     export PATH="${piLatMd}/bin:${piPlannotator}/bin:${pkgs."poppler-utils"}/bin:${pkgs.rtk}/bin:$PATH"

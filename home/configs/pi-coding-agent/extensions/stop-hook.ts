@@ -13,7 +13,7 @@ import type {
 
 const MAX_FOLLOWUPS = 1;
 const STOP_CHECK_PROMPT =
-  "Review your last response. Did you complete everything the user asked? If not, continue working only within the user's requested scope. If the user only asked you to investigate, inspect, check, audit, or report findings, do not fix anything now; report findings and ask before changing anything. If you did complete everything, briefly confirm what was done.";
+  "Review your last response. Did you complete everything the user asked? If not, continue working only within the user's requested scope. If the user only asked you to investigate, inspect, check, audit, or report findings, do not fix anything now; report findings and ask before changing anything.";
 
 const MAX_GATEKEEPER_FAILURES = 3;
 

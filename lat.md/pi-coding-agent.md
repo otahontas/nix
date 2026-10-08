@@ -22,11 +22,13 @@ The OpenAI chat default requires `/login openai`. Legacy Codex chat overrides ar
 
 Global AGENTS and system-prompt sources follow [[architecture#AGENTS.md pipeline]]. Root `.pi/` contains repository-only extensions and lat.md skill source.
 
+`APPEND_SYSTEM.md` prioritizes information needed to understand, decide, or act, while preserving necessary reasoning and clear grammar. It omits obvious caveats and mandatory closing summaries, retaining neutral tone, sentence-case headings, and no unsolicited time estimates.
+
 ## Wrapper behavior
 
 The Pi wrapper loads API keys from pass, exposes wrapper-only tools, and sets process-level integration required by installed packages.
 
-It supplies Gemini, Context7, GitHits, and LAT credentials; exposes `lat.md`, Plannotator, Poppler, and `rtk`; and selects Ponytail's `ultra` default.
+It supplies Gemini, Context7, GitHits, and LAT credentials and exposes `lat.md`, Plannotator, Poppler, and `rtk`.
 
 Plannotator and Chrome DevTools MCP use `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`, not a Nix browser. Plannotator does not select a Chrome profile.
 
@@ -58,7 +60,7 @@ Stop-hook asks the current session model whether another pass is needed after to
 
 Its prompt preserves requested scope, so investigation-only work reports findings instead of applying fixes. `agent_before_settle` waits for retries, compaction, and queued work before checking; errors and aborts are ignored.
 
-Tool-use tracking resets for each non-extension input, so old transcript tools cannot trigger a nudge for a new tool-free prompt. One boundary message requests a continuation without inserting a synthetic user message.
+Tool-use tracking resets for each non-extension input, so old transcript tools cannot trigger a nudge for a new tool-free prompt. One boundary message requests a continuation without inserting a synthetic user message or requiring another completion confirmation.
 
 ### search-sessions extension
 
@@ -90,7 +92,9 @@ Ghostty 1.3.1 answers an OSC 4 control query but not the OSC 7501 support query.
 
 Reusable behavior stays package-managed instead of being copied into local extensions.
 
-`settings.json` owns Ponytail, Caveman, subagents, Plannotator, RTK, web access, and image-generation packages. Pi's built-in MCP reads `mcp.json`; pi-subagents runtime definitions remain authoritative. User-level Caveman state owns its default response style.
+`settings.json` owns subagents, Plannotator, RTK, web access, and image-generation packages. Pi's built-in MCP reads `mcp.json`; pi-subagents runtime definitions remain authoritative.
+
+Ponytail and Caveman are not loaded. Coding scope and KISS/YAGNI rules remain in global AGENTS; response style comes from `APPEND_SYSTEM.md` without package-injected brevity or mandatory risk footers.
 
 The legacy MCP adapter and `pi-codex-image-gen` package are not installed. Effect MCP is absent from `mcp.json` and its stale installation and cache entries are removed.
 
