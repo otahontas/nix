@@ -25,6 +25,8 @@ Editor diagnostics and commit hooks use matching engines where practical; except
 
 Manual hook runs use `prek`. `.pre-commit-config.yaml` is generated configuration, not the command to run.
 
+Gitleaks uses the upstream hook entry and arguments together to preserve staged scanning and redaction; overriding only the entry can pair legacy subcommands with incompatible flags.
+
 #### Lock file diagnostics
 
 Generated lock files intentionally receive no editor or hook diagnostics.

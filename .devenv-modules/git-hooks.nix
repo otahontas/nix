@@ -93,10 +93,7 @@ in
       stages = [ "commit-msg" ];
       entry = "${pkgs.commitlint}/bin/commitlint --extends @commitlint/config-conventional --edit";
     };
-    gitleaks = {
-      enable = true;
-      entry = "${pkgs.gitleaks}/bin/gitleaks protect --staged --verbose";
-    };
+    gitleaks.enable = true;
     # @lat: [[architecture#Architecture#Root devenv setup#Root language tooling#Nix diagnostics]]
     statix = {
       enable = true;
