@@ -282,7 +282,9 @@ export default function (pi: ExtensionAPI) {
   // Request at most one automatic correction per prompt.
   let checkRequested = false;
 
-  pi.on("before_agent_start", async () => {
+  pi.on("before_agent_start", async (event) => {
+    if (event.messageType !== "user") return;
+
     checkRequested = false;
 
     const reminder = [

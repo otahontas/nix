@@ -44,7 +44,7 @@ Model-calling extensions use `ctx.modelRegistry.complete()` so authentication, p
 
 Project-local lat integration exposes search, section, locate, check, expand, and refs tools through direct argument execution.
 
-`before_agent_start` requires lat search before file access. `agent_before_settle` runs `lat check` after successful runs and their recovery work, while the post-edit hook runs project `prek` after successful writes.
+`before_agent_start` adds the search reminder and resets the correction limit only for user-message runs; custom-message runs preserve that state. The reminder requires lat search before file access. `agent_before_settle` runs `lat check` after successful runs and their recovery work, while the post-edit hook runs project `prek` after successful writes.
 
 A failed check appends a boundary message and requests at most one correction per prompt. The next successful boundary rechecks the result without creating an unbounded correction loop; errors and aborts do not trigger corrections.
 
@@ -73,6 +73,8 @@ Document frequency counts each term once per session across title and content. L
 ### name-session extension
 
 Name-session derives a short title from the first real prompt while preserving manual or restored names and ignoring extension-generated prompts.
+
+Custom-message runs are ignored before changing prompt-origin tracking, so they cannot consume the next user prompt’s naming state.
 
 Generation uses the active model at `minimal` when supported, otherwise its current effort. It is best effort and guarded against session switches so stale calls cannot rename another session.
 

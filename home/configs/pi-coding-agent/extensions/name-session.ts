@@ -159,6 +159,8 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.on("before_agent_start", async (event, ctx) => {
+    if (event.messageType !== "user") return;
+
     const shouldNameFromThisPrompt = nextPromptFromUser;
     nextPromptFromUser = false;
 
