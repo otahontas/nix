@@ -33,8 +33,8 @@ function collapsibleResult(
   );
 }
 
-/** Absolute path to the lat binary, injected by `lat init`. */
-const LAT = "lat";
+/** Executable and prefix arguments, injected by `lat init`. */
+const LAT = { command: "lat", args: [] };
 
 async function run(
   pi: ExtensionAPI,
@@ -42,7 +42,7 @@ async function run(
   cwd: string,
   signal?: AbortSignal,
 ): Promise<string> {
-  const result = await pi.exec(LAT, args, { cwd, signal, timeout: 30_000 });
+  const result = await pi.exec(LAT.command, [...LAT.args, ...args], { cwd, signal, timeout: 30_000 });
   if (result.code !== 0 || result.killed) {
     throw new Error(result.stdout || result.stderr || "lat command failed");
   }
@@ -169,15 +169,19 @@ export default function (pi: ExtensionAPI) {
     name: "lat_check",
     label: "lat check",
     description:
-      "Validate all wiki links and code refs in lat.md. Returns errors or 'All checks passed'",
-    promptSnippet: "Validate lat.md links and code refs",
+      "Run full lat.md validation. Returns errors or 'All checks passed'",
+    promptSnippet: "Run full lat.md validation",
     parameters: Type.Object({}),
     async execute(_id, _params, signal, _onUpdate, ctx) {
       try {
         const output = await run(pi, ["check"], ctx.cwd, signal);
         return { content: [{ type: "text", text: output }], details: {} };
       } catch (error) {
-        throw new Error(error instanceof Error ? error.message : "Check failed");
+        return {
+          content: [{ type: "text", text: error instanceof Error ? error.message : "Check failed" }],
+          details: {},
+          isError: true,
+        };
       }
     },
     renderCall(_args, theme) {
@@ -252,7 +256,7 @@ export default function (pi: ExtensionAPI) {
       const hint = keyHint("app.tools.expand", "to expand");
       box.addChild(new Text(
         theme.fg("accent", "lat.md") + " " +
-        theme.fg("dim", `Search lat.md before starting work. Keep lat.md/ in sync. (${hint})`),
+        theme.fg("dim", `Search lat.md before starting work. Keep lat.md/ focused. (${hint})`),
         0, 0,
       ));
     }
@@ -293,7 +297,7 @@ export default function (pi: ExtensionAPI) {
       "Use `lat_section` to read the full content of relevant matches.",
       "Do not read files, write code, or run commands until you have searched.",
       "",
-      "Remember: `lat.md/` must stay in sync with the codebase. If you change code, update the relevant sections in `lat.md/` and run `lat_check` before finishing.",
+      "Remember: `lat.md/` must stay in sync with meaningful codebase state. If you change implemented behavior, architecture, or tests, update the relevant current-state sections and run `lat_check` before finishing. Plans may be drafted in `lat.md/` alongside implementation, with the intent that by commit time they describe what was implemented. Otherwise, keep proposals, hypothetical designs, and future work outside `lat.md/` unless the user explicitly requests them there. Do not use `lat.md/` as a journal/changelog or add notes for insignificant details.",
     ].join("\n");
 
     return {
@@ -308,25 +312,73 @@ export default function (pi: ExtensionAPI) {
   pi.on("agent_before_settle", async (event, ctx) => {
     if (event.outcome !== "completed") return;
 
+    let checkFailed = false;
     try {
       await run(pi, ["check"], ctx.cwd);
     } catch {
-      if (checkRequested) return;
-      checkRequested = true;
-
-      return {
-        entries: [
-          ...event.entries,
-          {
-            type: "custom_message" as const,
-            customType: "lat-check",
-            content:
-              "`lat check` failed. Run `lat_check`, fix the errors, and repeat until it passes.",
-            display: true,
-          },
-        ],
-        continue: true,
-      };
+      checkFailed = true;
     }
+
+    let needsSync = false;
+    let codeLines = 0;
+    try {
+      const result = await pi.exec("git", ["diff", "HEAD", "--numstat"], { cwd: ctx.cwd, timeout: 30_000 });
+      if (result.code === 0 && !result.killed) {
+        let latMdLines = 0;
+        for (const line of result.stdout.split("\n")) {
+          const parts = line.split("\t");
+          if (parts.length < 3) continue;
+          const added = parseInt(parts[0], 10) || 0;
+          const removed = parseInt(parts[1], 10) || 0;
+          const file = parts[2];
+          const changed = added + removed;
+          if (file.startsWith("lat.md/")) {
+            latMdLines += changed;
+          } else if (/\.(ts|tsx|js|jsx|py|rs|go|c|h)$/.test(file)) {
+            codeLines += changed;
+          }
+        }
+        if (codeLines >= 5) {
+          const effectiveLatMd = latMdLines === 0 ? 0 : Math.max(latMdLines, 1);
+          needsSync = effectiveLatMd < codeLines * 0.05;
+        }
+      }
+    } catch {
+      // git not available or no HEAD — skip diff check
+    }
+
+    if ((!checkFailed && !needsSync) || checkRequested) return;
+    checkRequested = true;
+
+    const parts: string[] = [];
+    if (checkFailed && needsSync) {
+      parts.push(
+        `\`lat check\` found errors AND the codebase has changes (${codeLines} lines) with no updates to \`lat.md/\`. Before finishing:`,
+        "",
+        "1. Update relevant current-state `lat.md/` sections if the changes affect behavior, architecture, tests, or plans; do not add journal/changelog notes.",
+        "2. Run `lat_check` until it passes.",
+      );
+    } else if (checkFailed) {
+      parts.push(
+        "`lat check` failed. Run `lat_check`, fix the errors, and repeat until it passes.",
+      );
+    } else {
+      parts.push(
+        `The codebase has changes (${codeLines} lines) but \`lat.md/\` was not updated. Review whether current-state \`lat.md/\` sections need updates; do not add journal/changelog notes just to satisfy this reminder. Run \`lat_search\` to find relevant sections and \`lat_check\` at the end.`,
+      );
+    }
+
+    return {
+      entries: [
+        ...event.entries,
+        {
+          type: "custom_message" as const,
+          customType: "lat-check",
+          content: parts.join("\n"),
+          display: true,
+        },
+      ],
+      continue: true,
+    };
   });
 }

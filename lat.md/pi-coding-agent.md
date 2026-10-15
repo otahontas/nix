@@ -4,31 +4,29 @@ Home Manager owns Pi CLI installation, global configuration, local extensions, s
 
 ## Home Manager ownership
 
-Tracked files under `home/configs/pi-coding-agent/` are source of truth for global Pi state.
+Tracked files under [[home/configs/pi-coding-agent]] are source of truth for global Pi state.
 
-`default.nix` installs the wrapped Pi package and links local resources. `settings.json` owns package and startup model defaults; activation merges it with other Pi preferences. `models.json` owns model metadata overrides; `mcp.json` owns MCP server configuration.
+[[home/configs/pi-coding-agent/default.nix]] installs the wrapped Pi package and links local resources. [[home/configs/pi-coding-agent/settings.json]] owns package and startup model defaults; [[home/configs/pi-coding-agent/merge-settings.sh]] merges these with other Pi preferences. [[home/configs/pi-coding-agent/models.json]] owns model metadata overrides; [[home/configs/pi-coding-agent/mcp.json]] owns MCP server configuration.
 
 `defaultTools: ["+codemode"]` keeps codemode available without MCP while preserving the inherited default tools.
 
-`home/configs/symlinks/default.nix` links Pi's session directory to iCloud-backed `~/Documents/pi-coding-agent-sessions`. Cutover requires Pi to be stopped and both stores verified; keep the original directory until the new link is confirmed.
+[[home/configs/symlinks/default.nix]] links Pi's session directory to iCloud-backed `~/Documents/pi-coding-agent-sessions`. Changing that link requires Pi to be stopped and both stores verified.
 
-Pi's top-level default stores provider and bare model ID separately; OpenAI GPT-6.1 Sol starts at `medium`. Model cycling is not restricted. Subagents inherit the active parent model unless their own definitions or run options select another.
+[[home/configs/pi-coding-agent/settings.json|Startup defaults]] store provider and bare model ID separately and select the initial thinking effort without restricting model cycling. Subagents inherit the active parent model unless their own definitions or run options select another.
 
-OpenAI GPT-6.1 Sol uses Pi's default context window and provider service tier without local model overrides. `models.json` keeps an empty provider map; no priority/Fast tier is requested by local configuration.
+[[home/configs/pi-coding-agent/models.json|Model overrides]] leave context windows, provider service tiers, and supported thinking levels to Pi. No local priority/Fast tier is requested.
 
-GPT-6.1 Sol uses Pi's built-in thinking choices without a local thinking-level override. The explicit startup default is `medium`; subagents may request other supported levels.
-
-The OpenAI chat default requires `/login openai`. Legacy Codex chat overrides are removed; subscription image generation separately requires `/login openai-codex`. Built-in MCP reads the Home Manager-linked `mcp.json` without the unused adapter.
+The OpenAI chat default requires `/login openai`; subscription image generation separately requires `/login openai-codex`. Built-in MCP reads [[home/configs/pi-coding-agent/mcp.json]].
 
 Global AGENTS and system-prompt sources follow [[architecture#AGENTS.md pipeline]]. Root `.pi/` contains repository-only extensions and lat.md skill source.
 
-`APPEND_SYSTEM.md` prioritizes information needed to understand, decide, or act, while preserving necessary reasoning and clear grammar. It omits obvious caveats and mandatory closing summaries, retaining neutral tone, sentence-case headings, and no unsolicited time estimates.
+[[home/configs/pi-coding-agent/sources/APPEND_SYSTEM.md]] prioritizes information needed to understand, decide, or act, while preserving necessary reasoning and clear grammar. It omits obvious caveats and mandatory closing summaries, retaining neutral tone, sentence-case headings, and no unsolicited time estimates.
 
 ## Wrapper behavior
 
 The Pi wrapper loads API keys from pass, exposes wrapper-only tools, and sets process-level integration required by installed packages.
 
-It supplies Gemini, Context7, GitHits, and LAT credentials and exposes `lat.md`, Plannotator, Poppler, and `rtk`.
+[[home/configs/pi-coding-agent/default.nix]] supplies Gemini, Context7, and GitHits credentials and exposes `lat.md`, Plannotator, Poppler, and `rtk`. It does not load or export LAT credentials.
 
 Plannotator and Chrome DevTools MCP use `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`, not a Nix browser. Plannotator does not select a Chrome profile.
 
@@ -36,29 +34,39 @@ Package-managed extensions update through `pi update --extensions`; image genera
 
 ## Local extensions
 
-Home Manager extensions are global; root extensions apply only to this repository. Root `tsconfig.json` checks both sets against Pi's installed package types.
+Home Manager extensions are global; [[.pi/extensions|root extensions]] apply only to this repository. [[tsconfig.json]] checks both sets against Pi's installed package types.
 
 Model-calling extensions use `ctx.modelRegistry.complete()` so authentication, provider composition, model settings, and endpoint overrides match the active Pi session.
 
 ### Project lat extension
 
-Project-local lat integration exposes search, section, locate, check, expand, and refs tools through direct argument execution.
+[[.pi/extensions/lat.ts]] exposes Lat's six navigation and validation tools, prompt reminder, and end-of-task checks using the upstream Pi template adapted to the installed Pi API.
 
-`before_agent_start` adds the search reminder and resets the correction limit only for user-message runs; custom-message runs preserve that state. The reminder requires lat search before file access. `agent_before_settle` runs `lat check` after successful runs and their recovery work, while the post-edit hook runs project `prek` after successful writes.
+[[.pi/extensions/lat.ts#run]] executes the configured command and prefix arguments without a shell, preserving queries as literal arguments and forwarding tool cancellation. [[.pi/extensions/lat.ts#tryRun]] retains upstream's empty-result fallback for navigation failures; `lat_check` returns validation failures as errors. [[.pi/extensions/lat.ts#collapsibleResult]] renders compact search and section previews.
 
-A failed check appends a boundary message and requests at most one correction per prompt. The next successful boundary rechecks the result without creating an unbounded correction loop; errors and aborts do not trigger corrections.
+`before_agent_start` requires search before file access and reminds agents to maintain meaningful current-state documentation rather than a journal. It resets the correction limit only for user-message runs; custom-message runs preserve that state.
+
+`agent_before_settle` runs full validation and upstream's Git diff documentation-sync heuristic after successful runs and their recovery work. The heuristic requests review, not filler documentation. A failed check or sync warning requests at most one correction per prompt; the next successful boundary rechecks without an unbounded loop. Errors and aborts do not trigger corrections.
+
+The installed Pi API requires its current package imports, keybinding IDs, tool result details, message rendering, and actionable settlement boundary instead of upstream's older `agent_end` follow-up API. [[.pi/extensions/post-edit-hook.ts]] separately runs project `prek` after successful writes.
+
+#### Local search backend
+
+Lat's bundled MiniLM model supports offline embeddings without an API key, inference server, or model download at search time.
+
+This checkout uses Lat's native user-level local preference and local search index. The preference is keyed by the absolute vault path and is not transferred with a clone. `lat paths --config` reports the user config; `lat reindex --local` selects the local backend using upstream's normal workflow. No repository-specific backend wrapper or enforcement configuration is installed.
 
 ### starship widget extension
 
 Starship renders above Pi's built-in footer and removes only its duplicate location row, leaving upstream footer status intact.
 
-The prompt refresh waits for `agent_settled` so retries, compaction, and queued continuations finish first.
+[[home/configs/pi-coding-agent/extensions/starship-widget.ts]] refreshes on `agent_settled` so retries, compaction, and queued continuations finish first; [[home/configs/pi-coding-agent/extensions/starship-widget.ts#patchFooterLocationLine]] owns the footer adjustment.
 
 ### stop-hook extension
 
 Stop-hook asks the current session model whether another pass is needed after tool-using turns and stops after repeated gatekeeper failures.
 
-Its prompt preserves requested scope, so investigation-only work reports findings instead of applying fixes. `agent_before_settle` waits for retries, compaction, and queued work before checking; errors and aborts are ignored.
+[[home/configs/pi-coding-agent/extensions/stop-hook.ts#GATEKEEPER_PROMPT]] preserves requested scope, so investigation-only work reports findings instead of applying fixes. `agent_before_settle` waits for retries, compaction, and queued work before checking; errors and aborts are ignored.
 
 Tool-use tracking resets for each non-extension input, so old transcript tools cannot trigger a nudge for a new tool-free prompt. One boundary message requests a continuation without inserting a synthetic user message or requiring another completion confirmation.
 
@@ -66,9 +74,9 @@ Tool-use tracking resets for each non-extension input, so old transcript tools c
 
 Search-sessions reads a launchd-built BM25 index; session reads are restricted to JSONL files inside Pi's session directory.
 
-The indexer follows the session directory symlink and publishes rebuilt indexes with an atomic rename. Each query checks the index modification time and refreshes cached entries and BM25 metadata when it changes.
+[[home/configs/pi-coding-agent/scripts/build-session-index.sh|The indexer]] follows the session directory symlink and publishes rebuilt indexes with an atomic rename. [[home/configs/pi-coding-agent/extensions/search-sessions.ts#loadIndex]] checks the index modification time and refreshes cached entries and BM25 metadata when it changes.
 
-Document frequency counts each term once per session across title and content. Length normalization uses token counts, and positive IDF keeps common terms searchable.
+[[home/configs/pi-coding-agent/extensions/search-sessions.ts#computeMeta]] counts document frequency once per term per session across title and content. [[home/configs/pi-coding-agent/extensions/search-sessions.ts#bm25Score]] uses token counts for length normalization and positive IDF to keep common terms searchable. [[home/configs/pi-coding-agent/extensions/search-sessions.ts#resolveSessionPath]] enforces the session-directory boundary.
 
 ### name-session extension
 
@@ -76,17 +84,17 @@ Name-session derives a short title from the first real prompt while preserving m
 
 Custom-message runs are ignored before changing prompt-origin tracking, so they cannot consume the next user prompt’s naming state.
 
-Generation uses the active model at `minimal` when supported, otherwise its current effort. It is best effort and guarded against session switches so stale calls cannot rename another session.
+[[home/configs/pi-coding-agent/extensions/name-session.ts#generateTitle]] requests minimal reasoning when supported, otherwise the active session's current effort. Generation is best effort and guarded against session switches so stale calls cannot rename another session.
 
 ### clone-cmd extension
 
-`/clone-cmd` clones the current session leaf and copies a launch command without switching the active pane.
+[[home/configs/pi-coding-agent/extensions/clone-cmd.ts]] registers `/clone-cmd` to clone the current session leaf and copy a launch command without switching the active pane.
 
 ### notify extension
 
 Notifications fire after non-aborted `agent_settled` events in interactive sessions and use sanitized session names with a fixed `done` body. Cancelled runs produce neither a notification nor BEL.
 
-OSC 777 plus BEL lets Ghostty own visual and attention effects without transcript parsing or model calls.
+[[home/configs/pi-coding-agent/extensions/notify.ts#notify]] emits OSC 777 plus BEL so Ghostty owns visual and attention effects without transcript parsing or model calls.
 
 Ghostty 1.3.1 answers an OSC 4 control query but not the OSC 7501 support query. Pi's program-status detection stays automatic; forcing reports cannot add missing terminal support.
 
@@ -94,13 +102,11 @@ Ghostty 1.3.1 answers an OSC 4 control query but not the OSC 7501 support query.
 
 Reusable behavior stays package-managed instead of being copied into local extensions.
 
-`settings.json` owns subagents, Plannotator, RTK, web access, and image-generation packages. Pi's built-in MCP reads `mcp.json`; pi-subagents runtime definitions remain authoritative.
+[[home/configs/pi-coding-agent/settings.json]] owns subagents, Plannotator, RTK, web access, and the pinned image-generation package. Pi's built-in MCP reads [[home/configs/pi-coding-agent/mcp.json]]; pi-subagents runtime definitions remain authoritative.
 
-Ponytail and Caveman are not loaded. Coding scope and KISS/YAGNI rules remain in global AGENTS; response style comes from `APPEND_SYSTEM.md` without package-injected brevity or mandatory risk footers.
+Coding scope and KISS/YAGNI rules remain in [[home/configs/pi-coding-agent/sources/GLOBAL_AGENTS.md]]; response style comes from [[home/configs/pi-coding-agent/sources/APPEND_SYSTEM.md]].
 
-The legacy MCP adapter and `pi-codex-image-gen` package are not installed. Effect MCP is absent from `mcp.json` and its stale installation and cache entries are removed.
-
-`@abhishek944/pi-image-gen@0.4.2` supplies `image_generate`. Its fixed `codex-subscription` / `gpt-image-2` route uses separate Codex OAuth without changing the OpenAI chat default or silently falling back to paid API billing. It calls the Codex image endpoints directly and does not require the standalone Codex CLI. Reference edits, size, quality, and native transparency are exposed; actual backend output needs workflow testing.
+The image-generation package supplies `image_generate`. Its fixed `codex-subscription` / `gpt-image-2` route uses separate Codex OAuth without changing the OpenAI chat default or silently falling back to paid API billing. It calls the Codex image endpoints directly and does not require the standalone Codex CLI. Reference edits, size, quality, and native transparency are exposed; actual backend output needs workflow testing.
 
 ## Verification
 
@@ -116,12 +122,12 @@ Paired speed checks hold model, effort, and prompt fixed, balance request order,
 
 ## Skills and prompts
 
-Home Manager links repo-owned skills and prompts into Pi's global config.
+[[home/configs/pi-coding-agent/default.nix]] links repo-owned skills and prompts into Pi's global config.
 
-`/merge-worktree` infers its non-main target from context, commits all changes, rebases onto local `main`, fast-forwards `main`, then safely removes the merged worktree and branch without remote operations. The worktree skill covers local branches only; PR fetching and PR-specific diff guidance are removed.
+Repository Lat guidance lives in [[AGENTS.md]] and [[.pi/skills/lat-md/SKILL.md]], refreshed from upstream's instruction and authoring templates. Project-specific knowledge belongs in `lat.md/`, not generated guidance. The instruction template's stale hosted-key requirement is corrected to reflect upstream's offline local backend.
 
-GitHits' guided skill comes from its locked source. Explain Diff generates self-contained HTML walkthroughs for code changes. `/plannotator-loop` revises one file in the current Pi context until approval. Skills installed outside this repo remain user state.
+[[home/configs/pi-coding-agent/prompts/merge-worktree.md|/merge-worktree]] infers its non-main target from context, commits all changes, rebases onto local `main`, fast-forwards `main`, then safely removes the merged worktree and branch without remote operations. [[home/configs/pi-coding-agent/skills/git-worktrees/SKILL.md|The worktree skill]] covers local branches only.
 
-ui.sh skills are removed from shared `~/.agents/skills/`, and Home Manager no longer downloads them during activation.
+GitHits' guided skill comes from its locked source. [[home/configs/pi-coding-agent/skills/explain-diff-html/SKILL.md|Explain Diff]] generates self-contained HTML walkthroughs for code changes. [[home/configs/pi-coding-agent/prompts/plannotator-loop.md|/plannotator-loop]] revises one file in the current Pi context until approval. Skills installed outside this repo remain user state.
 
-Impeccable 4.5.0 and its required native engine 0.1.11 are Nix-pinned. Home Manager links the global Pi skill; `IMPECCABLE_BIN` selects the store binary without first-use downloads. Invoke `/skill:impeccable`; automatic edit hooks are not installed. Its native image workflow can use `image_generate`, with prompt metadata and sidecars handled by the skill.
+[[home/configs/pi-coding-agent/default.nix|Impeccable and its required native engine]] are Nix-pinned. Home Manager links the global Pi skill; `IMPECCABLE_BIN` selects the store binary without first-use downloads. Invoke `/skill:impeccable`; automatic edit hooks are not installed. Its native image workflow can use `image_generate`, with prompt metadata and sidecars handled by the skill.

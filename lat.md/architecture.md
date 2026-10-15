@@ -6,24 +6,24 @@ Two-flake Nix setup for macOS: Home Manager owns user tools, nix-darwin owns sys
 
 Each configuration layer has one owner, preventing root development tooling from leaking into user or system state.
 
-- `home/` contains the Home Manager flake and per-tool configs.
-- `system/` contains nix-darwin settings and keyboard data.
-- `devenv.nix` imports tracked `.devenv-modules/` for root packages, tasks, formatting, and hooks.
-- `.nvim.lua`, `.nvim/`, and `.pi/` contain tracked repository-local editor and Pi behavior.
+- [[home/flake.nix]] owns Home Manager inputs and imports [[home/configs|per-tool configs]].
+- [[system/flake.nix]] owns nix-darwin settings and imports [[system/keyboard|keyboard data]].
+- [[devenv.nix]] imports [[.devenv-modules]] for root packages, tasks, formatting, and hooks.
+- [[.nvim.lua]], [[.nvim]], and [[.pi]] contain tracked repository-local editor and Pi behavior.
 
 ## Root devenv setup
 
 Root devenv behavior stays in tracked source rather than generated wrappers or shell-entry mutations.
 
-Treefmt configuration lives in `.devenv-modules/treefmt.nix`. Generated `.devenv/`, lock files, and root `AGENTS.md` are excluded where needed; tracked modules remain normal formatted files.
+[[.devenv-modules/treefmt.nix]] owns formatting exclusions for generated files, lock files, and upstream Lat resources; tracked modules remain normal formatted files.
 
-`.nvim.lua` loads repository modules from `.nvim/lua/` and LSP overrides from `.nvim/lsp/`. Home Manager owns global Neovim behavior; root files add only repository behavior.
+[[.nvim.lua]] loads repository modules from [[.nvim/lua]] and LSP overrides from [[.nvim/lsp]]. Home Manager owns global Neovim behavior; root files add only repository behavior.
 
 ### Root language tooling
 
 Editor diagnostics and commit hooks use matching engines where practical; exceptions below record only constraints that source configuration cannot explain.
 
-Manual hook runs use `prek`. `.pre-commit-config.yaml` is generated configuration, not the command to run.
+[[.devenv-modules/git-hooks.nix]] owns commit checks. Manual hook runs use `prek`; `.pre-commit-config.yaml` is generated configuration, not the command to run.
 
 Gitleaks uses the upstream hook entry and arguments together to preserve staged scanning and redaction; overriding only the entry can pair legacy subcommands with incompatible flags.
 
@@ -43,7 +43,7 @@ Statix remains alongside nixd because it catches style checks that nixd misses; 
 
 Markdown uses markdownlint in hooks and repository-local nvim-lint.
 
-The local linter passes file paths instead of stdin so `.markdownlintignore` applies consistently.
+[[.nvim/lua/local_lint.lua|The local linter]] passes file paths instead of stdin so [[.markdownlintignore]] applies consistently.
 
 #### Bash diagnostics
 
@@ -65,7 +65,7 @@ The standalone `vscode-json-languageserver` package is required because the extr
 
 JSON, YAML, and TOML use config-file-validator in hooks and SchemaStore.nvim in Neovim.
 
-Unknown files receive syntax checks only. `devenv.yaml` has an explicit schema mapping. The validator comes from the `otahontas-nixpkgs` devenv input.
+Unknown files receive syntax checks only. [[devenv.yaml]] has an explicit schema mapping. The validator comes from the `otahontas-nixpkgs` devenv input.
 
 #### Keyboard layout diagnostics
 
@@ -75,7 +75,7 @@ The generated file contains Apple-valid control references and CR line endings r
 
 #### Lua diagnostics
 
-Lua uses EmmyLua in Neovim and hooks, with `.emmyrc.json` as the shared source of truth for LuaJIT, globals, ignored paths, and plugin runtime libraries.
+Lua uses EmmyLua in Neovim and hooks, with [[.emmyrc.json]] as the shared source of truth for LuaJIT, globals, ignored paths, and plugin runtime libraries.
 
 `mini.nvim`'s `mini/base16.lua` stays ignored because EmmyLua 0.23.2 hangs while indexing it. Remove the ignore when upstream handles the module.
 
@@ -83,9 +83,9 @@ Lua uses EmmyLua in Neovim and hooks, with `.emmyrc.json` as the shared source o
 
 TypeScript checks root and Home Manager Pi extensions against Pi's installed package types rather than local ambient declarations.
 
-The generated `.devenv/pi-node-modules` symlink exposes those types. `home/flake.lock` owns the Pi revision, while root devenv follows `home/pi-nix`.
+[[.devenv-modules/git-hooks.nix]] creates the `.devenv/pi-node-modules` symlink that exposes those types. [[home/flake.lock]] owns the Pi revision, while [[devenv.yaml]] follows `home/pi-nix`.
 
-The hook runs the full project for staged TypeScript changes; Neovim uses the same `tsconfig.json` through `ts_ls`.
+The hook runs the full project for staged TypeScript changes; Neovim uses the same [[tsconfig.json]] through `ts_ls`.
 
 Path mappings use explicit `./` targets without `baseUrl`, which TypeScript 7 removed.
 
@@ -107,8 +107,8 @@ The Home Manager flake owns Pi and user-tool inputs. Root devenv imports `./home
 
 Pi concatenates global and repository `AGENTS.md` files, so each file contains only rules for its scope.
 
-Home Manager links `home/configs/pi-coding-agent/sources/GLOBAL_AGENTS.md` and `APPEND_SYSTEM.md` into global Pi state. Root `AGENTS.md` remains tracked and carries repository lat.md workflow.
+Home Manager links [[home/configs/pi-coding-agent/sources/GLOBAL_AGENTS.md]] and [[home/configs/pi-coding-agent/sources/APPEND_SYSTEM.md]] into global Pi state. Root [[AGENTS.md]] remains tracked and carries the upstream Lat workflow within its managed markers.
 
 Global product UI copy rules distinguish task-relevant text from implementation commentary and redundant guidance; assistant response style remains separate.
 
-Edit Home Manager-managed source files at their tracked paths, then run `devenv tasks run home:apply`; edit root files directly.
+Edit Home Manager-managed source files at their tracked paths, then run `devenv tasks run home:apply`. Refresh the managed Lat instructions and [[.pi/skills/lat-md/SKILL.md|authoring skill]] from upstream templates; record project-specific architecture and guidance in `lat.md/`.

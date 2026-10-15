@@ -4,13 +4,13 @@ nix-darwin owns macOS defaults, accounts, firewall, Nix daemon settings, keyboar
 
 ## System ownership
 
-System configuration is limited to state that requires machine-wide or nix-darwin ownership.
+[[system/flake.nix]] owns state that requires machine-wide or nix-darwin ownership.
 
 This includes macOS UI and input defaults, Touch ID sudo, firewall policy, Nix daemon settings, Fish as the default shell, keyboard layouts, and declarative Mac App Store apps.
 
 User CLI tools, services, and selected app settings belong to Home Manager; GUI app bundles remain outside Nix.
 
-Only selected App Store apps in `system/flake.nix` are provisioned through `programs.mas.packages`; nix-darwin does not run App Store updates.
+Only the App Store apps declared in [[system/flake.nix]] are provisioned through nix-darwin; App Store updates remain manual.
 
 ## Manual applications
 
@@ -30,4 +30,4 @@ Other vendor audio software stays manual under the same rule; absent packages do
 
 The custom keylayout is generated Apple keyboard data, not ordinary XML configuration.
 
-`system/keyboard/us-international-nodeadkeys.keylayout` contains Apple-valid control references and CR line endings, so generic XML tools and `plutil` are intentionally skipped.
+[[system/keyboard/us-international-nodeadkeys.keylayout]] contains Apple-valid control references and CR line endings, so generic XML tools and `plutil` are intentionally skipped.
