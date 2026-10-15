@@ -1,14 +1,3 @@
 {
-  "providers": {
-    "openai": {
-      "modelOverrides": {
-        "gpt-6.1-sol": {
-          "contextWindow": 872000,
-          "samplingParams": {
-            "service_tier": "priority"
-          }
-        }
-      }
-    }
-  }
+  "providers": {}
 }

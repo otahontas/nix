@@ -19,7 +19,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     pi-nix = {
-      url = "github:lukasl-dev/pi.nix";
+      url = "github:lukasl-dev/pi.nix/master";
     };
     githits-cli = {
       url = "github:githits-com/githits-cli";
