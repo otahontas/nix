@@ -99,6 +99,8 @@ Home, system, and root devenv use unstable nixpkgs while each lock file owns its
 
 The Home Manager flake owns Pi and user-tool inputs. Root devenv imports `./home` only so `pi-nix` follows the Home Manager revision used by installed Pi extensions.
 
+[[home/flake.nix]] uses upstream D-Bus unchanged: nixpkgs includes the Darwin session-bus fix. A global D-Bus override changes dependent package hashes, preventing use of their upstream cached binaries, including devenv.
+
 `pi-nix` explicitly tracks upstream `master` because GitHub's commits API fails to resolve `HEAD` for this repository.
 
 `pi-nix` retains its upstream nixpkgs lock: its build still requires `typescript-go`, removed from newer nixpkgs. Do not make it follow Home Manager's nixpkgs until upstream supports the rename.

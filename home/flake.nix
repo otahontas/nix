@@ -48,17 +48,6 @@
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = [
-          # https://github.com/NixOS/nixpkgs/pull/485980
-          (_: prev: {
-            dbus = prev.dbus.overrideAttrs (old: {
-              mesonFlags = old.mesonFlags or [ ] ++ [
-                (prev.lib.mesonOption "dbus_session_bus_listen_address" "unix:tmpdir=/tmp")
-              ];
-            });
-          })
-
-        ];
       };
     in
     {

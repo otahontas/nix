@@ -37,6 +37,7 @@ Only ownership boundaries and non-obvious conflicts are documented here; package
 - **Obsidian** — app, settings, updates, and vaults stay user-managed.
 - **Syncthing** — [[home/configs/syncthing/default.nix]] enables the native Home Manager CLI and macOS launchd agent; devices and folders stay user-managed and survive service restarts. Web UI/API stays on loopback; no desktop app is installed.
 - **IINA** — [[home/configs/iina/default.nix]] applies media associations through the activation store path after `writeBoundary`; app installation remains manual.
+- **Atuin** — [[home/configs/atuin/default.nix]] disables build tests only for version 18.23.0 because `filtered_commands_leave_no_captured_output` times out on macOS. Other versions use the unmodified upstream package automatically. A cached binary appearing for 18.23.0 does not deactivate the override.
 - **fzf** — [[home/configs/fzf/default.nix]] leaves history search to [[home/configs/atuin/default.nix|atuin]] instead of claiming its keybinding.
 - **Git worktrees** — [[home/configs/git/default.nix]] owns local-branch helpers, shell aliases, and Bash/Fish wrappers. [[home/configs/git/scripts/git-worktree-helper.sh|Helpers]] assume dash-only branch and path names and use standard worktree creation; wrappers only change directories and provide completion.
 - **Neovim** — [[home/configs/neovim/default.nix]] owns plugins and global save hooks; [[.nvim.lua]] owns repository-only LSP and lint behavior documented in [[architecture#Root devenv setup]].
